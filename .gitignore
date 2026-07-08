@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# 시뮬 실험 scratch / 대용량 실데이터 캐시 (GitHub 업로드 제외)
+Simul_test/_scratch_*.py
+Simul_test/_real_step3_scratch/
+Simul_test/_real_step3_scratch/**
+
+# 실데이터 캡처 (용량 큼, 로컬 전용)
+calb_data_*/
+Simul_test/*.egg-info
+
+# OS / 에디터
+.DS_Store
+*.swp

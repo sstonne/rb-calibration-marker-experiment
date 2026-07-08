@@ -1,0 +1,20 @@
+# 메인 캘리브레이션 파이프라인 의존성 (PC 가상환경용)
+#
+# 설치:
+#   python3 -m venv .venv && source .venv/bin/activate
+#   pip install -U pip
+#   pip install -r requirements.txt
+#
+# 주의:
+#  - opencv-python 이 아니라 opencv-contrib-python 필요 (ArUco 모듈이 contrib 에 있음).
+#    두 패키지를 동시에 설치하면 충돌하므로 contrib 하나만 설치할 것.
+#  - 코드가 신형 ArUco API(CharucoDetector 등, OpenCV 4.7+)를 사용하므로 4.7 이상 필요.
+#  - 로봇 SDK(i611_*, rbsys, teachdata)는 pip 설치 불가하며 로봇 컨트롤러 전용이라 제외.
+#    PC 파이프라인은 robot_comm.py 의 소켓(TCP/JSON) 통신으로 로봇과 연결됨.
+#  - pyrealsense2 는 실제 RealSense 카메라 연결 시에만 필요(오프라인 처리는 생략 가능).
+
+opencv-contrib-python>=4.7
+numpy
+scipy
+matplotlib
+pyrealsense2
