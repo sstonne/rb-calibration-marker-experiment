@@ -1,0 +1,1905 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2023년 이후 캘리브레이션 실측 문헌 비교</title><style>
+:root { color-scheme:light; font-family:Arial,"Noto Sans KR",sans-serif; color:#20252b; }
+body { margin:0; background:white; line-height:1.75; }
+main { max-width:1200px; margin:auto; padding:38px 30px 80px; }
+h1 { font-size:2rem; line-height:1.35; margin:0 0 28px; }
+h2 { margin-top:56px; padding-top:14px; border-top:2px solid #343a40; font-size:1.45rem; }
+h3 { margin-top:36px; font-size:1.12rem; }
+a { color:#18588a; text-underline-offset:3px; }
+p { max-width:1050px; }
+.table-scroll { overflow-x:auto; margin:20px 0; }
+table { width:100%; border-collapse:collapse; font-size:.87rem; line-height:1.6; }
+th { background:#30363d; color:white; font-weight:600; text-align:left; }
+td,th { padding:10px 12px; border-bottom:1px solid #d7dce1; vertical-align:top; min-width:85px; }
+tr:nth-child(even) td { background:#f5f6f7; }
+td:first-child { min-width:125px; }
+code { background:#f1f2f3; padding:1px 4px; }
+.footnote { font-size:.86rem; overflow-wrap:anywhere; }
+.toc { columns:2; border-bottom:1px solid #ddd; padding-bottom:20px; }
+.toc ul { padding-left:20px; }
+.toc li { margin:4px 0; }
+nav { margin-bottom:24px; font-size:.9rem; }
+@media(max-width:700px) { main { padding:22px 16px; } .toc { columns:1; } h1 { font-size:1.6rem; } }
+@media print { main { max-width:none; padding:0; } nav,.toc { display:none; }
+ h2,h3 { break-after:avoid; } tr { break-inside:avoid; } .table-scroll { overflow:visible; }
+ th { background:#eee; color:black; } table { font-size:8pt; } td,th { min-width:0; padding:5px; } }
+</style></head><body><main><h1 id="2023">멀티카메라 및 로봇–카메라 캘리브레이션: 2023년 이후 실측 결과 비교</h1><nav><a href="calibration_papers_real_measurements.xlsx">비교 엑셀</a> · <a href="paper_comparison.csv">논문 목록 CSV</a> · <a href="2023plus_calibration_review.md">Markdown 원본</a></nav><div class="toc">
+<ul>
+<li><a href="#1">1. 프로젝트와 비교 범위</a><ul>
+<li><a href="#10-23-mm">1.0 신규 물체 위치 오차 2~3 mm와의 비교</a></li>
+<li><a href="#11">1.1 현재 구현에서 확인한 구성</a></li>
+<li><a href="#12">1.2 저장소 문서의 차이</a></li>
+</ul>
+</li>
+<li><a href="#2-sota">2. SOTA·관련성 표시 읽는 법</a></li>
+<li><a href="#3">3. 전체 논문 목록</a></li>
+<li><a href="#4">4. 카메라끼리만 하는 캘리브레이션</a><ul>
+<li><a href="#c1-fusedba-jatesiktat-lim-ang-2024">C1. FusedBA — Jatesiktat, Lim, Ang, 2024</a></li>
+<li><a href="#c2-wand-zhang-fu-2024">C2. 비동기 wand — Zhang, Fu, 2024</a></li>
+<li><a href="#c3-lee-nishino-nobuhara-2025">C3. 사람 움직임 기반 시공간 보정 — Lee, Nishino, Nobuhara, 2025</a></li>
+<li><a href="#c4-weighted-apriltag-pnp-multi-view-triangulation-demidova-zhuravlev-2026">C4. Weighted AprilTag PnP + multi-view triangulation — Demidova, Zhuravlev, 2026</a></li>
+<li><a href="#c5-3d-laven-et-al-2026">C5. 불완전한 3D 타깃 — Laven et al., 2026</a></li>
+<li><a href="#c6-timestamp-wand-ohshima-2026">C6. Timestamp 없는 비동기 wand — Ohshima, 2026</a></li>
+<li><a href="#c7-caliscope-prible-2024">C7. Caliscope — Prible, 2024</a></li>
+<li><a href="#c8-airls-multi-camera-yuhai-et-al-photonics-2024">C8. AIRLS multi-camera — Yuhai et al., Photonics 2024</a></li>
+<li><a href="#c9-process-uncertainty-budget-leizea-et-al-sensors-2023">C9. Process uncertainty budget — Leizea et al., Sensors 2023</a></li>
+</ul>
+</li>
+<li><a href="#5">5. 로봇을 포함한 캘리브레이션</a><ul>
+<li><a href="#r1-graph-based-multi-camera-handeye-evangelista-et-al-icra-2023">R1. Graph-based multi-camera hand–eye — Evangelista et al., ICRA 2023</a></li>
+<li><a href="#r2-multi-camera-hand-eye-calibration-allegro-terreran-ghidoni-ra-l-2024">R2. Multi-Camera Hand-Eye Calibration — Allegro, Terreran, Ghidoni, RA-L 2024</a></li>
+<li><a href="#r3-multi-handeye-graph-zhou-et-al-2023-tie-2024">R3. Multi-hand/eye graph — Zhou et al., 2023 공개 / TIE 2024</a></li>
+<li><a href="#r4-probabilistic-axyb-junhyoung-ha-t-ro-2023">R4. Probabilistic AX=YB — Junhyoung Ha, T-RO 2023</a></li>
+<li><a href="#r5-uncertainty-aware-handeye-calibration-ulrich-hillemann-t-ro-2024">R5. Uncertainty-Aware Hand–Eye Calibration — Ulrich, Hillemann, T-RO 2024</a></li>
+<li><a href="#r6-kalib-tang-et-al-iros-2025">R6. Kalib — Tang et al., IROS 2025</a></li>
+<li><a href="#r7-easyhec-chen-et-al-ra-l-2023">R7. EasyHeC — Chen et al., RA-L 2023</a></li>
+<li><a href="#r8-easyhec-hong-zheng-chen-iros-2024">R8. EasyHeC++ — Hong, Zheng, Chen, IROS 2024</a></li>
+<li><a href="#r9-calib3r-allegro-et-al-arxiv-2025-v2-2026">R9. Calib3R — Allegro et al., arXiv 2025 / v2 2026</a></li>
+<li><a href="#r10-certifiable-generalized-rwhec-wise-et-al-ijrr-2026">R10. Certifiable generalized RWHEC — Wise et al., IJRR 2026</a></li>
+<li><a href="#r11-planehec-wang-et-al-2025-preprint">R11. PlaneHEC — Wang et al., 2025 preprint</a></li>
+<li><a href="#r12-ual-hed-chen-et-al-2026-preprint">R12. UAL-HED — Chen et al., 2026 preprint</a></li>
+<li><a href="#r13-multi-unit-dual-quaternion-zhu-shen-ng-2026">R13. Multi-unit dual quaternion — Zhu, Shen, Ng, 2026</a></li>
+<li><a href="#r14-enhanced-robotic-flexible-3d-scanning-zhou-et-al-sensors-2025">R14. Enhanced robotic flexible 3D scanning — Zhou et al., Sensors 2025</a></li>
+<li><a href="#r15-gwm-view-liu-et-al-rcim-2023">R15. GWM-View — Liu et al., RCIM 2023</a></li>
+</ul>
+</li>
+<li><a href="#6-gt">6. 데이터셋과 GT</a><ul>
+<li><a href="#d1-metric-allegro-et-al-information-2023">D1. METRIC — Allegro et al., Information 2023</a></li>
+</ul>
+</li>
+<li><a href="#7-sota">7. 지금 무엇을 SOTA라고 표시할 수 있나</a></li>
+<li><a href="#8">8. 우리 결과와 논문을 연결하는 평가 지표</a><ul>
+<li><a href="#81-calibration">8.1 저장소의 기존 calibration 결과와 신규 물체 결과</a></li>
+<li><a href="#82-baseline">8.2 우선 실행할 baseline</a></li>
+<li><a href="#83">8.3 논문 주장과 필요한 추가 검증</a></li>
+</ul>
+</li>
+<li><a href="#9">9. 추가 후보·연도 제외</a></li>
+<li><a href="#10">10. 참고문헌·원문 위치</a></li>
+</ul>
+</div>
+
+<p>가장 직접적인 비교 논문은 <strong>Allegro et al.의 Multi-Camera Hand-Eye Calibration(2024)</strong>과 <strong>Evangelista et al.의 Graph-based Multi-Camera Hand-Eye Calibration(2023)</strong>이다. 로봇 FK 불확실성 처리를 주장하려면 <strong>Ulrich–Hillemann(2024)</strong>과 <strong>Ha(2023)</strong>를 함께 비교해야 한다. 카메라만 보정하는 분야에서는 <strong>FusedBA(2024)</strong>의 독립 3D 검증과 <strong>Laven et al.(2026)</strong>의 불완전한 3D 타깃 보정이 이 프로젝트에 특히 중요하다.<sup id="fnref:R1"><a class="footnote-ref" href="#fn:R1">8</a></sup><sup id="fnref:R2"><a class="footnote-ref" href="#fn:R2">9</a></sup><sup id="fnref:R4"><a class="footnote-ref" href="#fn:R4">11</a></sup><sup id="fnref:R5"><a class="footnote-ref" href="#fn:R5">12</a></sup><sup id="fnref:C1"><a class="footnote-ref" href="#fn:C1">1</a></sup><sup id="fnref:C5"><a class="footnote-ref" href="#fn:C5">5</a></sup></p>
+<p>조사 범위는 <strong>2023년을 포함한 2023-01-01~2026-09-09</strong>다. 정식 출판연도를 우선하되 최초 공개일과 최신 원고 버전을 구분했다. 핵심 문헌 25편의 문제 설정, 저자 주장, 평가 지표, 주요 정량 결과, SOTA 근거 및 프로젝트 관련성을 정리했다. 모든 논문의 모든 그래프 점을 수치화한 전수조사는 아니며, 주요 결과표와 결론을 바꾸는 비교·ablation을 중심으로 했다. 원문에서 확인하지 못한 수치는 추정해서 채우지 않았다.</p>
+<p><strong>결과 선정 기준: 실제 장비·실촬영 데이터의 결과만 수록한다. 시뮬레이션 수치는 결과표와 SOTA 판단에서 제외한다.</strong> 실험 종류를 확인하지 못한 초록 수치도 제외한다. 문헌 25편을 검토했으며, 실측 수치 확인이 부족한 C5·C7·R4는 정량 순위에 넣지 않는다.</p>
+<p><strong>서로 다른 논문의 mm·px 수치만 나열해 전체 순위를 매길 수는 없다.</strong> 실측 결과도 ① 독립 계측 기준, ② 영상·FK 기반 참조값 대비 오차, ③ 실제 targeting 오차, ④ 재투영·폐루프·반복 일관성으로 구분한다. ④의 작은 수치는 절대 물리 정확도를 입증하지 않는다. SOTA 표시는 실제 데이터의 같은 평가 조건에서 확인되는 우위만 뜻한다.</p>
+<h2 id="1">1. 프로젝트와 비교 범위</h2>
+<h3 id="10-23-mm">1.0 신규 물체 위치 오차 2~3 mm와의 비교</h3>
+<p>이 비교에서는 <strong>로봇 FK로 산출한 물체 위치가 정확한 정답이며, 신규 물체 위치 추정 오차가 2~3 mm</strong>라는 실험 조건을 채택한다. 아래는 실제 장비 결과만으로 고른 비교군이다. 서로 다른 지표도 포함하되, ‘논문의 보고 오차가 더 작다’와 ‘동일 신규 물체 문제에서 더 우수함이 입증됐다’를 구별한다.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>논문</th>
+<th>실제 장비에서 보고한 결과</th>
+<th>2~3 mm 대비</th>
+<th>처음 보는 물체 평가와의 관계</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>R15 GWM-View, 2023</strong></td>
+<td>복잡한 산업 부품의 평균 positioning error <strong>1 mm 미만</strong></td>
+<td><strong>확연히 작은 보고값; 물체 위치 작업 면에서 우선 확인</strong></td>
+<td>3카메라+ABB 로봇; 임의 초기 자세의 알려진 부품. 미지 물체 일반화는 미확인; 초록·공개 실험 절만 확인</td>
+</tr>
+<tr>
+<td><strong>R12 UAL-HED, 2026</strong></td>
+<td>별도 99개 측정에서 FK 대비 conversion <strong>0.202~0.342 mm</strong></td>
+<td><strong>확연히 작음; FK 기준 변환이라는 점에서 가까움</strong></td>
+<td>카메라 대신 laser tracker+T-Mac의 6DoF 측정. 신규 물체 vision 인식은 없음</td>
+</tr>
+<tr>
+<td><strong>R14 Enhanced robotic 3D scanning, 2025</strong></td>
+<td>CMM 기준 구 사이 거리: 평균 <strong>0.373 mm</strong>, 최대 <strong>0.421 mm</strong></td>
+<td><strong>확연히 작음; 3D 형상 계측 기준</strong></td>
+<td>로봇+정밀 structured-light scanner. 구 간 거리이므로 물체 원점 위치와는 다름</td>
+</tr>
+<tr>
+<td><strong>C8 AIRLS multi-camera, 2024</strong></td>
+<td>검증 wand 길이 평균 오차 <strong>0.42±0.09 / 0.46±0.13 mm</strong></td>
+<td><strong>확연히 작음; 카메라만의 거리 측정 기준</strong></td>
+<td>4대 광학 카메라, 보정과 다른 검증 wand. 알려진 반사 마커 간 거리이며 robot-base 절대 위치 아님</td>
+</tr>
+<tr>
+<td><strong>C1 FusedBA, 2024</strong></td>
+<td>별도 기록의 mocap 기준 3D 점 평균 오차 <strong>2.14310 mm</strong></td>
+<td><strong>비슷함; 3D 점 위치 평가로 가장 가까운 카메라 비교군</strong></td>
+<td>마커 점의 위치, 궤적 간 강체 정합 후 평가. 일반 물체 중심·자세 인식은 없음</td>
+</tr>
+<tr>
+<td>C1의 MocapAssisted baseline</td>
+<td>같은 평가에서 <strong>1.35763 mm</strong></td>
+<td>수치상 더 낮음</td>
+<td>보정에도 mocap을 사용하는 추가 장비 조건</td>
+</tr>
+<tr>
+<td>C6 Ohshima, 2026</td>
+<td>5카메라 3D 점 <strong>2.113±0.662 mm</strong>, 10카메라 <strong>1.445±0.833 mm</strong></td>
+<td>5대는 비슷함, 10대는 낮음</td>
+<td>영상 기반 참조 calibration과 비교. 알려진 고정점, 일반 물체 인식 아님</td>
+</tr>
+<tr>
+<td><strong>R8 EasyHeC++, 2024</strong></td>
+<td>실제 robot targeting <strong>3.0 / 3.1 mm</strong></td>
+<td><strong>비슷한 수준; 수치상 우리보다 작지는 않음</strong></td>
+<td>로봇이 목표점을 짚는 작업; 위치 추정 외 tool·동작 오차 포함</td>
+</tr>
+</tbody>
+</table></div>
+<p>근거: 각 ID의 실물 결과표·원문 위치를 아래 개별 항목에 연결했다.<sup id="fnref:R15"><a class="footnote-ref" href="#fn:R15">26</a></sup><sup id="fnref:R12"><a class="footnote-ref" href="#fn:R12">19</a></sup><sup id="fnref:R14"><a class="footnote-ref" href="#fn:R14">25</a></sup><sup id="fnref:C8"><a class="footnote-ref" href="#fn:C8">23</a></sup><sup id="fnref2:C1"><a class="footnote-ref" href="#fn:C1">1</a></sup><sup id="fnref:C6"><a class="footnote-ref" href="#fn:C6">6</a></sup><sup id="fnref:R8"><a class="footnote-ref" href="#fn:R8">15</a></sup> <strong>넓은 의미의 실측 mm 성능에서 더 좋은 보고값은 존재한다. 그러나 이 목록만으로 ‘처음 보는 물체 + 우리의 센서 구성 + 같은 GT 평가’ 전체를 더 잘 푼 방법이 확인된 것은 아니다.</strong> 가장 가까운 후속 검토 대상은 실제 부품 위치를 평가하는 GWM-View, 보정 후 별도 관측의 3D 점을 검증하는 FusedBA, 실제 로봇 목표점 접근을 평가하는 EasyHeC++다. UAL-HED·정밀 스캐닝은 FK와 센서 정확도의 상한을 논의할 때 중요하다.</p>
+<h3 id="11">1.1 현재 구현에서 확인한 구성</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>프로젝트의 실제 구성</th>
+<th>논문 비교에 주는 의미</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>센서</td>
+<td>여러 고정 카메라 + 손목의 eye-in-hand 카메라; Zeus 문서는 고정 3대 + 손목 1대</td>
+<td>고정 카메라만 다루는 방법과 혼합 구성을 구분</td>
+</tr>
+<tr>
+<td>로봇</td>
+<td>UR 계열 세션과 Zeus 별도 실험</td>
+<td>서로 다른 로봇·세션 결과를 한 표본처럼 합치지 않음</td>
+</tr>
+<tr>
+<td>타깃</td>
+<td>ChArUco 보드 + 파지·배치 가능한 다면 AprilTag 큐브</td>
+<td>다면 가시성, 타깃 강체 형상, 제작 오차가 핵심</td>
+</tr>
+<tr>
+<td>최종 추정</td>
+<td>원본 2D 코너의 pixel reprojection 최적화, 공유 target pose와 카메라 변환 추정</td>
+<td>PnP는 주로 초기화; pose-only AX=YB 방법과 목적함수가 다름</td>
+</tr>
+<tr>
+<td>intrinsic</td>
+<td>메인 비교에서 K,D 사전 보정 후 고정</td>
+<td>intrinsic도 함께 보정하는 외부 방법과 자유도 맞춤 필요</td>
+</tr>
+<tr>
+<td>강건성</td>
+<td>soft_l1, f_scale=2 px, 학습 frame prune/refit</td>
+<td>외부 baseline에도 동일 관측 품질 조건 필요</td>
+</tr>
+<tr>
+<td>FK 처리</td>
+<td>큐브 pose를 vision 추정 / raw-FK 고정 / 정렬 FK soft factor / 정렬 FK hard fixed로 변경</td>
+<td>손목 카메라 운동을 위한 FK 사용과 큐브 앵커 사용을 분리</td>
+</tr>
+<tr>
+<td>평가</td>
+<td>heldout cube px, cross-view px, camera-common mm/deg, 외부 GT 계획; Zeus에는 z/rz 소규모 실험</td>
+<td>내부 일관성과 독립 물리 정확도를 분리</td>
+</tr>
+</tbody>
+</table></div>
+<p>근거: <a href="../README.md">README</a>, <a href="../RESEARCH_STORYLINE.md">현재 연구 정의</a>, <a href="../calibration_pipeline/reprojection.py">pixel solver</a>, <a href="../zeus_gello_calibration/fit_calibration_methods.py">Zeus 통합·독립 solver</a>, <a href="../zeus_gello_calibration/ABLATION_RESULTS.md">Zeus 결과</a>.</p>
+<p><strong><code>no-FK</code>는 로봇 없이 카메라끼리만 보정한다는 뜻이 아니다.</strong> 손목 카메라 pose는 여전히 <code>T_base_gripper(event) @ T_gripper_camera</code>로 계산된다. 이 이름은 주로 배치 큐브 pose를 FK로 고정하지 않는다는 뜻이다. 따라서 본 프로젝트의 주 분야는 아래 B이고, A는 카메라 네트워크 부분을 평가하는 보조 비교군이다.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>분류</th>
+<th>구하는 것</th>
+<th>로봇 정보</th>
+<th>우리 실험에서의 역할</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. 카메라 간 캘리브레이션</td>
+<td>카메라 상대 pose, 경우에 따라 intrinsic·시간 오프셋·타깃 형상</td>
+<td>불필요</td>
+<td>고정 카메라 그룹의 relative calibration baseline</td>
+</tr>
+<tr>
+<td>B. 로봇 포함 캘리브레이션</td>
+<td>camera–base, camera–gripper, target–robot 등</td>
+<td>FK/robot poses 또는 대체 운동 측정</td>
+<td>전체 시스템의 직접 비교군</td>
+</tr>
+<tr>
+<td>C. 벤치마크·평가</td>
+<td>데이터와 GT·평가 정의 제공</td>
+<td>데이터에 따라 사용</td>
+<td>재현성 및 SOTA 주장 검증</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="12">1.2 저장소 문서의 차이</h3>
+<p>현재 <a href="../RESEARCH_STORYLINE.md">RESEARCH_STORYLINE</a>의 A5는 <strong>vision-aligned FK hard fixed</strong>다. 과거 <a href="../SOTA_Claim_Protocol.md">SOTA_Claim_Protocol</a>의 A5는 <strong>후처리 residual correction</strong>으로 적혀 있어 현재 정의와 다르다. 본 보고서는 현재 storyline와 구현을 따른다. <a href="../PAPER_BASELINES.md">PAPER_BASELINES</a>의 “Tabb는 단일 카메라”, “Allegro만 카메라 결합”, “Kalib는 단일 설정만 지원” 등으로 읽힐 수 있는 서술도 그대로 채택하지 않았다. Tabb 제목 자체가 eye(s)를 포함하고, 2023년 graph 방법도 다중 카메라를 결합하며, Kalib는 eye-in-hand와 eye-on-base를 모두 설명한다.<sup id="fnref2:R1"><a class="footnote-ref" href="#fn:R1">8</a></sup><sup id="fnref:R6"><a class="footnote-ref" href="#fn:R6">13</a></sup><sup id="fnref:OLD"><a class="footnote-ref" href="#fn:OLD">22</a></sup></p>
+<p>Zeus 문서의 FK 기준 검증에는 <code>session1</code> 비전으로 구한 <code>T_gripper_cube</code>가 들어간다. 따라서 <strong>완전히 비전과 독립된 외부 GT로 분류하지 않았다.</strong> 또한 Zeus의 <code>raw-fk</code> 변형은 메인 A3의 순수 기계적 raw-FK 고정과 동일하지 않다. 이 구분은 논문 수치와 우리 수치를 비교할 때 중요하다.</p>
+<h2 id="2-sota">2. SOTA·관련성 표시 읽는 법</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>표시</th>
+<th>의미</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S1: 제한된 실측 SOTA 근거</strong></td>
+<td>논문이 비교한 동일 실측 데이터·지표에서 우위가 확인됨. 현재 전 분야 최고라는 뜻은 아님</td>
+</tr>
+<tr>
+<td><strong>S2: SOTA 후보</strong></td>
+<td>최신 방법이고 유망하지만 preprint, 제한된 비교, 또는 재현·GT 한계가 있음</td>
+</tr>
+<tr>
+<td><strong>B: 강한 baseline / 선행연구</strong></td>
+<td>비교·인용 가치가 높지만 현재 최고라고 부를 근거는 부족</td>
+</tr>
+<tr>
+<td><strong>E: 평가·도구</strong></td>
+<td>데이터셋·실용 도구·평가 설계 논문. 정확도 SOTA와 구별</td>
+</tr>
+<tr>
+<td>관련성 5/5</td>
+<td>핵심 방법·기여 또는 직접적인 평가 문제와 겹침</td>
+</tr>
+<tr>
+<td>관련성 4/5</td>
+<td>중요 비교군이지만 센서 구성·목적함수·타깃 조건이 다름</td>
+</tr>
+<tr>
+<td>관련성 3/5</td>
+<td>보조 비교·구현 참고</td>
+</tr>
+<tr>
+<td>관련성 2/5</td>
+<td>주변 분야·추가 조건이 많음</td>
+</tr>
+</tbody>
+</table></div>
+<p>관련성은 본 보고서의 분석 판단이다. 논문의 우수성이나 학술지 등급을 뜻하지 않는다. “지표별 부분 우위”, “후속 논문 존재”, “독립 GT 없음”을 함께 읽어야 한다.</p>
+<h2 id="3">3. 전체 논문 목록</h2>
+<p>실측 근거를 아래처럼 나눠 읽는다. <strong>직접 계측 기준의 절대 정확도만 비교하려면 첫 행을 우선하고, 나머지 행의 수치를 같은 정확도 순위에 섞지 않는다.</strong></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실측 근거</th>
+<th>해당 논문</th>
+<th>실제로 검증하는 것</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>별도 계측 장비 기준</td>
+<td>C1 mocap, C9 CMM, R10의 OptiTrack 관련 항목</td>
+<td>3D 점·타깃 변환 오차; C1은 궤적 정합 후 평가</td>
+</tr>
+<tr>
+<td>실제 물체의 알려진 거리</td>
+<td>C2, C8, R14(CMM 기준 거리)</td>
+<td>두 구 사이 거리 재구성; camera pose의 독립 6DoF GT 아님</td>
+</tr>
+<tr>
+<td>영상·FK 기반 참조 calibration</td>
+<td>C3, C6, R2, R10의 Kalibr 항목, D1</td>
+<td>기준 calibration 대비 차이; 기준 자체의 오차 존재</td>
+</tr>
+<tr>
+<td>실측 pose 결과지만 GT 구축 상세 미확인</td>
+<td>R9</td>
+<td>실촬영 데이터의 pose 오차; 독립 계측 SOTA 판단 보류</td>
+</tr>
+<tr>
+<td>실제 로봇 targeting·부품 positioning</td>
+<td>R7, R8, R15(상세 GT 미확인)</td>
+<td>목표점 접근 오차; robot·tool·vision 오차가 함께 포함</td>
+</tr>
+<tr>
+<td>영상 잔차·운동학 일관성·반복성</td>
+<td>C4, R1, R3, R5, R6, R11, R12, R13</td>
+<td>실측 데이터 적합도·정밀도; 독립 절대 정확도와 구분</td>
+</tr>
+<tr>
+<td>실측 정량 검증 부족</td>
+<td>C5, C7, R4</td>
+<td>관련 연구로 유지하되 정량 SOTA 비교 제외</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>논문 / 방법</th>
+<th>출판·버전</th>
+<th>분류</th>
+<th>관련성</th>
+<th>SOTA 판단</th>
+<th>가장 중요한 결과 또는 한계</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>Multi-Camera Calibration Using Far-Range Dual-LED Wand and Near-Range Chessboard Fused in Bundle Adjustment</td>
+<td>Sensors 2024</td>
+<td>카메라</td>
+<td><strong>5/5: 평가 설계</strong></td>
+<td><strong>S1: 해당 stand-alone 비교</strong></td>
+<td>FusedBA 독립 기록 3D 오차 2.14310 mm; mocap-assisted는 더 낮음</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Wand-Based Calibration of Unsynchronized Multiple Cameras for 3D Localization</td>
+<td>Sensors 2024</td>
+<td>카메라</td>
+<td>2/5</td>
+<td>B</td>
+<td>비동기 3카메라; 거리 재구성 오차 1.3425~18.5684 mm</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>Spatiotemporal Multi-Camera Calibration using Freely Moving People</td>
+<td>RA-L 2025, arXiv v3</td>
+<td>카메라</td>
+<td>2/5</td>
+<td>S1: 실영상 pose·대응 추정</td>
+<td>동기화 실영상 Table I만 사용; translation은 정규화 값, mm 아님</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>Incremental Multi-Camera Extrinsic Calibration Method Based on PnP Integrating Weighted AprilTag Detections and Multi-View Triangulation</td>
+<td>Algorithms 2026</td>
+<td>카메라</td>
+<td>4/5</td>
+<td>B: 초기화 비교</td>
+<td>평균 reprojection 7.451→1.006 px; 전역 BA 이전 초기화 성능</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>Multi-Camera Calibration With Imperfect 3-D Targets for Imaging Biological Systems</td>
+<td>IEEE TIM 2026</td>
+<td>카메라</td>
+<td><strong>5/5: 큐브 형상</strong></td>
+<td>B: 실측 정량 판단 보류</td>
+<td>초록만 확인; 실측 조건과 수치 대응을 확인할 수 없어 정량 비교 제외</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>Wand-Based Calibration Accuracy for Unsynchronized Multicamera Systems Without Timestamps</td>
+<td>Sensors 2026</td>
+<td>카메라</td>
+<td>3/5</td>
+<td>B</td>
+<td>10카메라 3D 복원 1.445±0.833 mm; 3카메라는 개선 안 됨</td>
+</tr>
+<tr>
+<td>C7</td>
+<td>Caliscope: GUI Based Multicamera Calibration and Motion Tracking</td>
+<td>JOSS 2024</td>
+<td>카메라</td>
+<td>3/5</td>
+<td>E</td>
+<td>공개 실용 도구; 논문에 정량 정확도 비교표 없음</td>
+</tr>
+<tr>
+<td>C8</td>
+<td>Enhanced Three-Axis Frame and Wand-Based Multi-Camera Calibration Method Using Adaptive Iteratively Reweighted Least Squares and Comprehensive Error Integration</td>
+<td>Photonics 2024</td>
+<td>카메라</td>
+<td><strong>5/5: 별도 물체 검증</strong></td>
+<td>S1: 검증 wand 거리</td>
+<td>실물 4카메라, 검증 wand 거리 0.42±0.09 / 0.46±0.13 mm</td>
+</tr>
+<tr>
+<td>C9</td>
+<td>Calibration Procedure of a Multi-Camera System: Process Uncertainty Budget</td>
+<td>Sensors 2023</td>
+<td>카메라·계측</td>
+<td>4/5</td>
+<td>E: CMM 기반 평가</td>
+<td>CMM 기준 LME, 선택 조건 최대 0.030 mm; 정밀 측정 환경</td>
+</tr>
+<tr>
+<td>R1</td>
+<td>A Graph-Based Optimization Framework for Hand-Eye Calibration for Multi-Camera Setups</td>
+<td>ICRA 2023</td>
+<td>로봇</td>
+<td><strong>5/5: 직접 비교</strong></td>
+<td>S1: 발표 당시 비교</td>
+<td>실물 3카메라 평균 reprojection 1.6818 px</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>Multi-Camera Hand-Eye Calibration for Human-Robot Collaboration in Industrial Robotic Workcells</td>
+<td>RA-L 2024</td>
+<td>로봇</td>
+<td><strong>5/5: 최우선 비교</strong></td>
+<td><strong>S1: METRIC 실물 위치 오차</strong></td>
+<td>실물 13.21~51.18 mm; GT는 AprilTag+CAD+FK, 지표별 예외 있음</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>Simultaneously Calibration of Multi Hand-Eye Robot System Based on Graph</td>
+<td>2023 공개 / TIE 71(5), 2024</td>
+<td>로봇</td>
+<td>4/5</td>
+<td>B</td>
+<td>UR3+UR5×2, 카메라 5대; 0.6274~0.6938 mm는 폐루프 오차</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>Probabilistic Framework for Hand–Eye and Robot–World Calibration AX=YB</td>
+<td>T-RO 2023, online 2022</td>
+<td>로봇</td>
+<td><strong>5/5: 불확실성</strong></td>
+<td>B</td>
+<td>측정별 covariance와 MLE; 정량 결과 원문표 미확인</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>Uncertainty-Aware Hand–Eye Calibration</td>
+<td>T-RO 2024, online 2023</td>
+<td>로봇</td>
+<td><strong>5/5: 불확실성</strong></td>
+<td><strong>S1: 실측 잔차·재구성</strong></td>
+<td>UR3e 0.193 px, RAE 0.00073 mm²; robot poses 보정 포함</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Kalib: Easy Hand-Eye Calibration with Reference Point Tracking</td>
+<td>IROS 2025 / arXiv 2024→2025</td>
+<td>로봇</td>
+<td>4/5</td>
+<td>B</td>
+<td>CAD 없는 기준점 추적; DROID IoU 0.80, 전체 GT pose 오차 아님</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>EasyHeC: Accurate and Automatic Hand-eye Calibration via Differentiable Rendering and Space Exploration</td>
+<td>RA-L 2023</td>
+<td>로봇</td>
+<td>3/5</td>
+<td>B: 후속 EasyHeC++ 존재</td>
+<td>실물 targeting 약 4 mm; extrinsic GT 오차 아님</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>EasyHeC++: Fully Automatic Hand-Eye Calibration with Pretrained Image Models</td>
+<td>IROS 2024</td>
+<td>로봇</td>
+<td>4/5</td>
+<td>S1: 실측 targeting 비교</td>
+<td>실제 targeting 3.0/3.1 mm; PCK에서는 일부 baseline보다 낮음</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>Calib3R: Hand-Eye Calibration and 3D Metric-Scaled Scene Reconstruction with 3D Foundation Models</td>
+<td>arXiv 2025, <strong>v2 2026-08-08</strong></td>
+<td>로봇</td>
+<td>4/5</td>
+<td><strong>S2: markerless joint</strong></td>
+<td>UR Object 6.36 mm / 0.017 rad; 모든 marker-based보다 좋지는 않음</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>A Certifiably Correct Algorithm for Generalized Robot-World and Hand-Eye Calibration</td>
+<td>arXiv 2025 / IJRR 2026</td>
+<td>로봇·일반 운동계</td>
+<td>4/5</td>
+<td>B: 실측 지표별 부분 우위</td>
+<td>실물 카메라 상대 오차 3.20 cm / 0.99°; 목적함수 최적성은 별도 기여</td>
+</tr>
+<tr>
+<td>R11</td>
+<td>PlaneHEC: Efficient Hand-Eye Calibration for Multi-view Robotic Arm via Any Point Cloud Plane Detection</td>
+<td>arXiv 2025 v1</td>
+<td>로봇</td>
+<td>3/5</td>
+<td>S2: depth·plane</td>
+<td>3.35 mm / 0.13°는 반복 추정 분산 기반; 독립 GT 아님</td>
+</tr>
+<tr>
+<td>R12</td>
+<td>Optimal Uncertainty-Aware Calibration for the AX=YB Problem</td>
+<td>arXiv 2026, IJRR 심사 중</td>
+<td>로봇·레이저 트래커</td>
+<td>4/5</td>
+<td>S2: 불확실성 적응</td>
+<td>실측 conversion 0.342 mm; 카메라 실험 아닌 tracker–FK 비교</td>
+</tr>
+<tr>
+<td>R13</td>
+<td>Multi-Camera Robot-World Hand-Eye Calibration by Solving Multi-Unit Dual Quaternion Equations</td>
+<td>CSIAM Trans. Applied Math. 2026</td>
+<td>로봇</td>
+<td>4/5</td>
+<td>B: 빠른 대수 해법</td>
+<td>실물 dataset 7: 2.48/2.54/1.67 px, 0.30 s; pixel 정확도 최고 아님</td>
+</tr>
+<tr>
+<td>R14</td>
+<td>Enhanced Calibration Method for Robotic Flexible 3D Scanning System</td>
+<td>Sensors 2025</td>
+<td>로봇·3D 스캐너</td>
+<td>4/5</td>
+<td>S1: 해당 구 간격 비교</td>
+<td>실물 평균 구 간 거리 오차 0.373 mm, 최대 0.421 mm</td>
+</tr>
+<tr>
+<td>R15</td>
+<td>GWM-view: Gradient-weighted multi-view calibration method for machining robot positioning</td>
+<td>RCIM 2023</td>
+<td>로봇·멀티카메라</td>
+<td><strong>5/5: 실제 부품 위치</strong></td>
+<td>B: 상세 SOTA 판단 보류</td>
+<td>실제 부품 평균 positioning 1 mm 미만; 실험표·GT 상세 미확인</td>
+</tr>
+<tr>
+<td>D1</td>
+<td>METRIC—Multi-Eye to Robot Indoor Calibration Dataset</td>
+<td>Information 2023</td>
+<td>벤치마크</td>
+<td><strong>5/5: 공개 평가</strong></td>
+<td>E</td>
+<td>실제 GT는 AprilTag+CAD+FK로 구성; laser tracker GT 아님</td>
+</tr>
+</tbody>
+</table></div>
+<p>각 행의 원문 링크와 출처는 아래 개별 항목 및 참고문헌에 있다. EoB는 eye-on-base(eye-to-hand), EiH는 eye-in-hand다.</p>
+<h2 id="4">4. 카메라끼리만 하는 캘리브레이션</h2>
+<h3 id="c1-fusedba-jatesiktat-lim-ang-2024">C1. FusedBA — Jatesiktat, Lim, Ang, 2024</h3>
+<p>7대 동기화 RGB 카메라의 먼 거리 dual-LED wand 관측과 근거리 checkerboard 관측을 함께 BA한다. 주장하는 핵심은 wand-only 최적화의 과적합을 줄이고, 보정에 쓰지 않은 기록의 3D 정확도를 개선한다는 것이다. 33회 calibration 후 별도 2분 mocap 기록에서 삼각측량 점의 평균 Euclidean 오차를 평가한다. 좌표계는 검증 궤적 사이의 강체 정합으로 맞춘다.<sup id="fnref3:C1"><a class="footnote-ref" href="#fn:C1">1</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>방법</th>
+<th style="text-align: right;">독립 기록 3D 평균 오차 RDB, mm</th>
+<th style="text-align: right;">DLT, mm</th>
+<th style="text-align: right;">학습 wand RMS 재투영, px</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anipose</td>
+<td style="text-align: right;">10.05912 ± 2.07237</td>
+<td style="text-align: right;">10.67667 ± 2.77518</td>
+<td style="text-align: right;">N/A</td>
+</tr>
+<tr>
+<td>MocapAssisted</td>
+<td style="text-align: right;">1.35763 ± 0.00705</td>
+<td style="text-align: right;">1.42898 ± 0.00808</td>
+<td style="text-align: right;">N/A</td>
+</tr>
+<tr>
+<td>BAp15</td>
+<td style="text-align: right;">2.32816 ± 0.02848</td>
+<td style="text-align: right;">2.39151 ± 0.02804</td>
+<td style="text-align: right;"><strong>0.23108 ± 0.00419</strong></td>
+</tr>
+<tr>
+<td><strong>FusedBA</strong></td>
+<td style="text-align: right;"><strong>2.14310 ± 0.01418</strong></td>
+<td style="text-align: right;"><strong>2.22776 ± 0.01427</strong></td>
+<td style="text-align: right;">0.26048 ± 0.00365</td>
+</tr>
+<tr>
+<td>FusedBA+W</td>
+<td style="text-align: right;">2.14911 ± 0.01470</td>
+<td style="text-align: right;">2.22979 ± 0.01464</td>
+<td style="text-align: right;">0.26230 ± 0.00367</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table 1, §4.6, pp.17–19. ±는 calibration 반복 간 변동이다. <strong>낮은 학습 px가 좋은 독립 3D 성능을 보장하지 않는 실제 반례</strong>다. 같은 비교의 독립 보정 방법 중 FusedBA가 우수하지만, mocap-assisted가 더 정확하다. 검증 궤적으로 강체 정합하므로 robot-base 절대 정렬 평가와 같지 않다. 우리에게는 새 solver보다 <strong>평가 설계</strong>가 가장 중요하다. <a href="https://koonyook.github.io/MCalib/">데이터·프로젝트</a>.</p>
+<h3 id="c2-wand-zhang-fu-2024">C2. 비동기 wand — Zhang, Fu, 2024</h3>
+<p>Timestamp matching과 pixel fitting으로 프레임레이트·전송 지연이 다른 카메라를 보정하고 EKF 기반 3D localization에 사용한다. 지표는 카메라별 RMS reprojection과 알려진 구 사이 거리의 재구성 오차다.<sup id="fnref:C2"><a class="footnote-ref" href="#fn:C2">2</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>평가</th>
+<th>조건</th>
+<th>보고 결과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3카메라 RMS reprojection</td>
+<td>60/60/110 Hz, 3회×3카메라</td>
+<td>2.405~7.780 px</td>
+</tr>
+<tr>
+<td>3카메라 RMS reprojection</td>
+<td>90/90/110 Hz, 3회×3카메라</td>
+<td>1.066~5.314 px</td>
+</tr>
+<tr>
+<td>거리 재구성 오차</td>
+<td>60/60/110 Hz</td>
+<td>7.9496 / 1.3425 / 4.3363 mm</td>
+</tr>
+<tr>
+<td>거리 재구성 오차</td>
+<td>75/75/110 Hz</td>
+<td>12.1173 / 18.5684 / 5.6703 mm</td>
+</tr>
+<tr>
+<td>거리 재구성 오차</td>
+<td>90/90/110 Hz</td>
+<td>8.2264 / 1.6776 / 16.1708 mm</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Tables 4–6, pp.12–13. 범위는 해당 표 원소의 최솟값~최댓값이며 평균이 아니다. 세 거리 오차는 카메라 위치 오차와 다르다. 정지 촬영 중심인 우리 세팅의 직접 경쟁자는 아니지만, 이동 중 촬영·비동기 문제의 참고문헌이다.</p>
+<h3 id="c3-lee-nishino-nobuhara-2025">C3. 사람 움직임 기반 시공간 보정 — Lee, Nishino, Nobuhara, 2025</h3>
+<p>사전학습 3D 인체 pose를 이용해 camera pose, 시간 오프셋, 사람 대응을 결합 추정한다. rotation은 rad, translation RMSE는 <strong>첫 두 카메라 GT 거리로 정규화한 무차원 값</strong>, 재투영은 px, 시간 오차는 frame, 대응 품질은 precision이다.<sup id="fnref:C3"><a class="footnote-ref" href="#fn:C3">3</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>동기화 실촬영 데이터 / IBA</th>
+<th style="text-align: right;">회전 rad</th>
+<th style="text-align: right;">정규화 translation</th>
+<th style="text-align: right;">reprojection px</th>
+<th style="text-align: right;">대응 precision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Panoptic 160906_pizza1</td>
+<td style="text-align: right;">0.027</td>
+<td style="text-align: right;">0.023</td>
+<td style="text-align: right;">3.875</td>
+<td style="text-align: right;">0.706</td>
+</tr>
+<tr>
+<td>ZJU soccer1_6</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;">3.778</td>
+<td style="text-align: right;">0.722</td>
+</tr>
+<tr>
+<td>MMPTRACK industry_safety_2</td>
+<td style="text-align: right;">0.024</td>
+<td style="text-align: right;">0.033</td>
+<td style="text-align: right;">2.415</td>
+<td style="text-align: right;">0.896</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table I, §§V-A/B. 실제 촬영한 각 장면에서 카메라 4대를 사용한다. 비동기 Table II는 실영상에 인위적 시간 offset을 주었으므로 엄격한 실측 비교에서는 제외했다. 같은 세 장면에서 ReID-Calib IBA의 회전은 1.448/1.465/1.051 rad로 제안보다 크다. <strong>사람 장면의 pose·대응 추정에서 제한된 실측 SOTA 근거</strong>이며, 절대 mm 스케일이나 robot-base alignment와는 다른 문제다.</p>
+<h3 id="c4-weighted-apriltag-pnp-multi-view-triangulation-demidova-zhuravlev-2026">C4. Weighted AprilTag PnP + multi-view triangulation — Demidova, Zhuravlev, 2026</h3>
+<p>20카메라 object-centric rig에서 카메라를 순차 등록할 때, 가중 PnP와 다중시점 marker triangulation을 사용해 누적 drift를 줄인다. 실물 reprojection·angular·epipolar consistency와 후속 BA 수렴을 평가한다.<sup id="fnref:C4"><a class="footnote-ref" href="#fn:C4">4</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>초기화 방법</th>
+<th style="text-align: right;">median reprojection px</th>
+<th style="text-align: right;">mean reprojection px</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline</td>
+<td style="text-align: right;">6.417</td>
+<td style="text-align: right;">7.451</td>
+</tr>
+<tr>
+<td>Weighted PnP만</td>
+<td style="text-align: right;">5.828</td>
+<td style="text-align: right;">7.244</td>
+</tr>
+<tr>
+<td>Triangulation만</td>
+<td style="text-align: right;">0.894</td>
+<td style="text-align: right;">1.180</td>
+</tr>
+<tr>
+<td><strong>둘 다</strong></td>
+<td style="text-align: right;"><strong>0.757</strong></td>
+<td style="text-align: right;"><strong>1.006</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table 2, pp.22–23. 이 표는 <strong>후속 global BA 성능과 분리된 초기화 비교</strong>다. 주요 이득은 triangulation에서 나온다. 우리의 AprilTag 관측·초기값 생성에 관련되지만, 로봇 포함 최종 pixel BA보다 정확하다는 증거는 아니다.</p>
+<h3 id="c5-3d-laven-et-al-2026">C5. 불완전한 3D 타깃 — Laven et al., 2026</h3>
+<p>정확하다고 가정한 3D calibration target 자체에 제작 오차가 있을 때 target geometry와 calibration을 개선한다. 고해상도 인체·피부·장기 영상의 세 카메라 시스템에서 평가했다.<sup id="fnref2:C5"><a class="footnote-ref" href="#fn:C5">5</a></sup></p>
+<p>출처: 출판사 abstract. <strong>실험표 전체와 각 수치의 실측 조건을 확인하지 못해, 이 보고서에서는 정량 결과를 제외했다.</strong> 주장 지표는 Euclidean reprojection, target geometry 복원 오차, 대상 복원량이다. 타깃 형상 복원 정밀도를 camera extrinsic/TRE 정확도로 해석하면 안 된다. 우리 다면 큐브의 면 간 위치·각도·출력 치수 오차와 매우 관련 높지만 실측 SOTA 판단은 보류한다.</p>
+<h3 id="c6-timestamp-wand-ohshima-2026">C6. Timestamp 없는 비동기 wand — Ohshima, 2026</h3>
+<p>시간 offset과 프레임 간격 비율을 최적화 변수로 두고 보간한다. 20회 반복, 45개 고정점 재구성을 gold-standard calibration과 비교했다. 원문의 gold standard도 영상 기반 보정 결과이므로 독립 계측 장비의 절대 GT와 구분한다.<sup id="fnref2:C6"><a class="footnote-ref" href="#fn:C6">6</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>카메라 수</th>
+<th style="text-align: right;">3D 복원 Interp, mm</th>
+<th style="text-align: right;">No-interp, mm</th>
+<th style="text-align: right;">ray distance Interp, mm</th>
+<th style="text-align: right;">No-interp, mm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td style="text-align: right;">1.445 ± 0.833</td>
+<td style="text-align: right;">1.747 ± 0.908</td>
+<td style="text-align: right;">1.914 ± 0.222</td>
+<td style="text-align: right;">2.024 ± 0.186</td>
+</tr>
+<tr>
+<td>5</td>
+<td style="text-align: right;">2.113 ± 0.662</td>
+<td style="text-align: right;">2.324 ± 1.019</td>
+<td style="text-align: right;">1.777 ± 0.185</td>
+<td style="text-align: right;">2.030 ± 0.256</td>
+</tr>
+<tr>
+<td>3</td>
+<td style="text-align: right;">5.121 ± 2.753</td>
+<td style="text-align: right;">4.745 ± 2.304</td>
+<td style="text-align: right;">1.381 ± 0.367</td>
+<td style="text-align: right;">1.493 ± 0.448</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Tables 1–2, pp.11–12. 3D 오차의 유의한 개선은 10카메라에서만 확인된다. 3카메라에서는 보간이 수치상 더 나쁘므로 ‘항상 개선’이라고 할 수 없다. 초록·본문에 No-interp 1.746/1.747/1.757 표기 차이가 있어 <strong>Table 1의 1.747</strong>을 채택했다.</p>
+<h3 id="c7-caliscope-prible-2024">C7. Caliscope — Prible, 2024</h3>
+<p>비디오 기반 multicamera calibration·triangulation GUI 도구다. OpenCV 계열 intrinsic 4개와 distortion 5개를 추정하며 카메라 extrinsic 보정과 3D tracking을 연결한다. 3쪽 JOSS 논문에는 독립 GT pose error나 비교 정확도 결과표가 없다. 따라서 <strong>정량 성능은 ‘미보고’, SOTA는 해당 없음</strong>으로 둔다. 우리 고정 카메라 그룹의 실용적인 구현 비교 대상으로는 적합하다.<sup id="fnref:C7"><a class="footnote-ref" href="#fn:C7">7</a></sup></p>
+<h3 id="c8-airls-multi-camera-yuhai-et-al-photonics-2024">C8. AIRLS multi-camera — Yuhai et al., Photonics 2024</h3>
+<p>4대 OptiTrack FLEX13 카메라로 three-axis frame과 wand 기반 intrinsic·extrinsic·distortion을 보정한다. 약 2 m 거리에서 촬영하며, calibration과 다른 상용 검증 wand 두 종류를 5회씩 측정한다. <strong>보정 후 별도 물체를 측정한다는 점에서 직접 참고할 가치가 높다.</strong><sup id="fnref2:C8"><a class="footnote-ref" href="#fn:C8">23</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>검증 wand의 거리 오차 mm</th>
+<th style="text-align: right;">Normalized DLT</th>
+<th style="text-align: right;">Related method 1</th>
+<th style="text-align: right;">Related method 2</th>
+<th style="text-align: right;">AIRLS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>390 mm wand, 평균</td>
+<td style="text-align: right;">5.50 ± 1.80</td>
+<td style="text-align: right;">3.45 ± 0.15</td>
+<td style="text-align: right;">1.21 ± 0.17</td>
+<td style="text-align: right;"><strong>0.42 ± 0.09</strong></td>
+</tr>
+<tr>
+<td>500 mm wand, 평균</td>
+<td style="text-align: right;">6.73 ± 1.83</td>
+<td style="text-align: right;">3.77 ± 0.44</td>
+<td style="text-align: right;">1.74 ± 0.07</td>
+<td style="text-align: right;"><strong>0.46 ± 0.13</strong></td>
+</tr>
+<tr>
+<td>390 mm wand, 최대의 반복 통계</td>
+<td style="text-align: right;">11.89 ± 2.67</td>
+<td style="text-align: right;">7.65 ± 0.51</td>
+<td style="text-align: right;">3.88 ± 1.05</td>
+<td style="text-align: right;"><strong>1.48 ± 0.64</strong></td>
+</tr>
+<tr>
+<td>500 mm wand, 최대의 반복 통계</td>
+<td style="text-align: right;">14.22 ± 3.27</td>
+<td style="text-align: right;">9.29 ± 1.14</td>
+<td style="text-align: right;">5.55 ± 0.48</td>
+<td style="text-align: right;"><strong>1.82 ± 0.29</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table 3, §§2.4/3. ±는 5개 trial의 통계다. <strong>두 반사 마커 사이의 재구성 거리</strong>이므로 두 점이 함께 이동하는 공통 위치 편향은 검출하지 못한다. 우리 물체 원점의 FK 대비 오차와 동일 지표는 아니지만 sub-mm camera-only 계측을 입증하는 강한 비교군이다. 관련 비교에서 제한된 S1로 분류한다.</p>
+<h3 id="c9-process-uncertainty-budget-leizea-et-al-sensors-2023">C9. Process uncertainty budget — Leizea et al., Sensors 2023</h3>
+<p>CMM으로 이동시킨 마커가 만드는 virtual grid와 photogrammetry를 비교하고 calibration chain의 uncertainty를 분석한다. 여기서 virtual grid는 렌더링 영상이 아니라 <strong>실물 CMM 이동으로 생성한 관측</strong>이다. 두 카메라 계측계에서 실제 기준 좌표와의 LME를 검증한다.<sup id="fnref:C9"><a class="footnote-ref" href="#fn:C9">24</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Table 4 선택 조건</th>
+<th style="text-align: right;">LME 최대 mm</th>
+<th style="text-align: right;">평균 mm</th>
+<th style="text-align: right;">표준편차 mm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CMM cube intrinsic + CMM extrinsic</td>
+<td style="text-align: right;">0.030</td>
+<td style="text-align: right;">0.013</td>
+<td style="text-align: right;">0.008</td>
+</tr>
+<tr>
+<td>Test-field intrinsic + photogrammetry extrinsic</td>
+<td style="text-align: right;">0.160</td>
+<td style="text-align: right;">0.036</td>
+<td style="text-align: right;">0.0244</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: §3.3, Table 4. CMM 기준의 정밀 측정 조건에서는 우리보다 훨씬 작은 길이·좌표 측정 잔차가 가능함을 보여준다. <strong>일반 물체의 신규 자세 인식 또는 로봇 포함 정확도 결과가 아니다.</strong> 원문이 LME 평균·표준편차를 보고하므로 이를 곧바로 신규 물체 3D norm 평균으로 바꾸지 않는다. 정확도 SOTA보다 계측·불확실성 평가의 선행연구로 둔다.</p>
+<h2 id="5">5. 로봇을 포함한 캘리브레이션</h2>
+<h3 id="r1-graph-based-multi-camera-handeye-evangelista-et-al-icra-2023">R1. Graph-based multi-camera hand–eye — Evangelista et al., ICRA 2023</h3>
+<p>Robot/world·target·camera 관계를 graph로 만들고 기하 및 pixel 제약을 최적화한다. 카메라 사이 cross-observation을 활용하며 PnP는 초기화에 사용한다. 우리 <strong>순차 대 통합</strong>, <strong>pose 입력 대 원본 코너 최적화</strong> 논리와 직접 연결된다.<sup id="fnref3:R1"><a class="footnote-ref" href="#fn:R1">8</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실물 reprojection, px</th>
+<th style="text-align: right;">Camera 1</th>
+<th style="text-align: right;">Camera 2</th>
+<th style="text-align: right;">Camera 3</th>
+<th style="text-align: right;">카메라 평균</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Park</td>
+<td style="text-align: right;">0.520446</td>
+<td style="text-align: right;">0.346938</td>
+<td style="text-align: right;">26.2883</td>
+<td style="text-align: right;">9.0519</td>
+</tr>
+<tr>
+<td>Horaud</td>
+<td style="text-align: right;">0.432767</td>
+<td style="text-align: right;">0.350170</td>
+<td style="text-align: right;">25.0635</td>
+<td style="text-align: right;">8.61548</td>
+</tr>
+<tr>
+<td><strong>Graph Multi</strong></td>
+<td style="text-align: right;"><strong>0.337803</strong></td>
+<td style="text-align: right;"><strong>0.284408</strong></td>
+<td style="text-align: right;"><strong>4.4232</strong></td>
+<td style="text-align: right;"><strong>1.6818</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table I, PDF p.5. <strong>실물 1.6818 px는 독립 mm 정확도가 아니고, per-camera 값의 평균</strong>이다. 2023년 논문 내 실측 비교에서 우수하나 후속 2024 Allegro와 함께 평가해야 한다. <a href="https://bitbucket.org/freelist/gm_handeye">공개 코드</a>.</p>
+<h3 id="r2-multi-camera-hand-eye-calibration-allegro-terreran-ghidoni-ra-l-2024">R2. Multi-Camera Hand-Eye Calibration — Allegro, Terreran, Ghidoni, RA-L 2024</h3>
+<p>여러 카메라가 공유하는 board–end-effector 변환과 camera–camera 관계를 함께 최적화한다. Board 원본 corner 재투영과 cross-camera 재투영을 사용한다. <strong>이 프로젝트의 외부 baseline 최우선 후보</strong>다.<sup id="fnref2:R2"><a class="footnote-ref" href="#fn:R2">9</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>데이터 / 센서</th>
+<th style="text-align: right;">GT translation mm</th>
+<th style="text-align: right;">GT rotation deg</th>
+<th style="text-align: right;">AX=ZB translation mm</th>
+<th style="text-align: right;">AX=ZB rotation deg</th>
+<th style="text-align: right;">시간 s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>실물 small / Kinect V2</td>
+<td style="text-align: right;">22.01</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">6.54</td>
+<td style="text-align: right;">0.55</td>
+<td style="text-align: right;">16.79</td>
+</tr>
+<tr>
+<td>실물 small / D455</td>
+<td style="text-align: right;">13.21</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">9.21</td>
+<td style="text-align: right;">0.66</td>
+<td style="text-align: right;">20.11</td>
+</tr>
+<tr>
+<td>실물 small / L515</td>
+<td style="text-align: right;">13.68</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">24.95</td>
+<td style="text-align: right;">1.32</td>
+<td style="text-align: right;">42.21</td>
+</tr>
+<tr>
+<td>실물 large / Kinect V2</td>
+<td style="text-align: right;">51.18</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">12.17</td>
+<td style="text-align: right;">0.65</td>
+<td style="text-align: right;">77.99</td>
+</tr>
+<tr>
+<td>실물 large / D455</td>
+<td style="text-align: right;">45.18</td>
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">35.98</td>
+<td style="text-align: right;">2.12</td>
+<td style="text-align: right;">35.43</td>
+</tr>
+<tr>
+<td>실물 large / L515</td>
+<td style="text-align: right;">19.34</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">12.45</td>
+<td style="text-align: right;">0.85</td>
+<td style="text-align: right;">17.33</td>
+</tr>
+<tr>
+<td>산업 ABB</td>
+<td style="text-align: right;">미제공</td>
+<td style="text-align: right;">미제공</td>
+<td style="text-align: right;">6.31</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">3.12</td>
+</tr>
+<tr>
+<td>산업 KUKA</td>
+<td style="text-align: right;">미제공</td>
+<td style="text-align: right;">미제공</td>
+<td style="text-align: right;">14.12</td>
+<td style="text-align: right;">0.67</td>
+<td style="text-align: right;">7.15</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: 실물 Tables II–III. <strong>실측 camera–robot 위치 오차는 13~51 mm</strong>다. METRIC 실제 GT는 AprilTag+CAD+FK 기반이다. 논문 내 GT translation은 강하지만 모든 지표에서 1위는 아니다. 예: large Kinect rotation은 Evangelista 0.24°가 제안 0.30°보다 낮고, large L515 AX translation은 Evangelista 11.63 mm가 제안 12.45 mm보다 낮다. 따라서 <strong>METRIC 실물 위치 오차에서 강한 baseline</strong>이라는 표현이 정확하다. <a href="https://github.com/davidea97/Multi-Camera-Hand-Eye-Calibration">공개 코드</a>.</p>
+<h3 id="r3-multi-handeye-graph-zhou-et-al-2023-tie-2024">R3. Multi-hand/eye graph — Zhou et al., 2023 공개 / TIE 2024</h3>
+<p>최소신장트리로 초기 calibration 순서를 정하고 closed-loop graph optimization으로 누적 오차를 줄인다. 실물은 UR5 2대+UR3 1대, 카메라 5대(손목 3+고정 2)로, mixed 구성 면에서 우리와 가깝다.<sup id="fnref:R3"><a class="footnote-ref" href="#fn:R3">10</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실물 폐루프</th>
+<th style="text-align: right;">제안 mm</th>
+<th style="text-align: right;">Wu baseline mm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C–F–I–J–G–D</td>
+<td style="text-align: right;">0.6274</td>
+<td style="text-align: right;"><strong>0.4213</strong></td>
+</tr>
+<tr>
+<td>D–E–H–K–J–G</td>
+<td style="text-align: right;">0.6345</td>
+<td style="text-align: right;"><strong>0.5812</strong></td>
+</tr>
+<tr>
+<td>C–E–H–K–J–I–F</td>
+<td style="text-align: right;"><strong>0.6938</strong></td>
+<td style="text-align: right;">1.5923</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table IV, PDF p.8. <strong>실물은 참값을 측정하지 못해 폐루프 평가</strong>를 사용했다. 일부 loop만 개선되므로 포괄적 SOTA로 표시하지 않는다.</p>
+<h3 id="r4-probabilistic-axyb-junhyoung-ha-t-ro-2023">R4. Probabilistic AX=YB — Junhyoung Ha, T-RO 2023</h3>
+<p>측정 A와 B의 noise configuration, 개별 covariance, 상대 신뢰도를 명시해 MLE와 추정 uncertainty를 계산한다. ‘FK를 불확실하게 취급한다’는 아이디어의 직접 선행연구다. 저자 공개 MATLAB 코드에는 측정별 translation/rotation inverse covariance 입력과 pose uncertainty 계산이 존재한다.<sup id="fnref2:R4"><a class="footnote-ref" href="#fn:R4">11</a></sup></p>
+<p><strong>확인 범위:</strong> 출판사 초록·저자 코드에서 이론, 수치·하드웨어 검증의 존재와 covariance 출력은 확인했다. 실험 결과표 원문은 확보하지 못했으므로 <strong>mm/deg 성능 수치는 미확인</strong>이다. 다른 논문이 이 방법을 평가한 수치를 이 논문의 자체 결과로 바꾸어 쓰지 않았다. 정식 권호는 2023년, online publication은 2022-10-28이므로 경계 사례다. <a href="https://github.com/hjhdog1/probabilisticAXYB">공개 코드</a>.</p>
+<h3 id="r5-uncertainty-aware-handeye-calibration-ulrich-hillemann-t-ro-2024">R5. Uncertainty-Aware Hand–Eye Calibration — Ulrich, Hillemann, T-RO 2024</h3>
+<p>Robot pose와 image noise를 확률적으로 모델링하는 GMF를 제시하고 robot pose correction 및 uncertainty estimation을 수행한다. <strong>우리 A4의 target-pose soft factor와 적용 위치는 다르지만, FK 불확실성을 반영하는 최신 필수 baseline</strong>이다.<sup id="fnref2:R5"><a class="footnote-ref" href="#fn:R5">12</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>UR3e 실물, Table II</th>
+<th style="text-align: right;">RRMSE px</th>
+<th style="text-align: right;">RAE <strong>mm²</strong></th>
+<th style="text-align: right;">시간 s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daniilidis</td>
+<td style="text-align: right;">0.708</td>
+<td style="text-align: right;">0.00462</td>
+<td style="text-align: right;">0.2</td>
+</tr>
+<tr>
+<td>Tabb rp1</td>
+<td style="text-align: right;">0.545</td>
+<td style="text-align: right;">0.00212</td>
+<td style="text-align: right;">0.3</td>
+</tr>
+<tr>
+<td>GMF, original robot poses로 평가</td>
+<td style="text-align: right;">0.771</td>
+<td style="text-align: right;">0.02103</td>
+<td style="text-align: right;">3.4</td>
+</tr>
+<tr>
+<td>GMF, intrinsic 고정</td>
+<td style="text-align: right;">0.196</td>
+<td style="text-align: right;">0.00073</td>
+<td style="text-align: right;">3.4</td>
+</tr>
+<tr>
+<td><strong>GMF</strong></td>
+<td style="text-align: right;"><strong>0.193</strong></td>
+<td style="text-align: right;"><strong>0.00073</strong></td>
+<td style="text-align: right;">3.4</td>
+</tr>
+<tr>
+<td>GMF self-calibration</td>
+<td style="text-align: right;">0.178</td>
+<td style="text-align: right;">N/A</td>
+<td style="text-align: right;">14.2</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Tabb 공개 데이터, Table VI</th>
+<th style="text-align: right;">Dataset 1</th>
+<th style="text-align: right;">Dataset 2</th>
+<th style="text-align: right;">Dataset 3</th>
+<th style="text-align: right;">Dataset 4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GMF RRMSE px</td>
+<td style="text-align: right;">0.076</td>
+<td style="text-align: right;">0.176</td>
+<td style="text-align: right;">0.479</td>
+<td style="text-align: right;">0.389</td>
+</tr>
+<tr>
+<td>GMF RAE mm²</td>
+<td style="text-align: right;">0.113</td>
+<td style="text-align: right;">0.031</td>
+<td style="text-align: right;">1.188</td>
+<td style="text-align: right;">1.380</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Tables II/VI, PDF pp.11–12. RAE는 <strong>평균 제곱 Euclidean 재구성 오차</strong>다. 0.00073 mm²를 0.00073 mm 정확도로 읽으면 안 된다. 작은 pixel 잔차는 <strong>보정된 robot pose를 사용한 결과</strong>다. 실측 잔차·재구성에서 강하지만, 우리처럼 raw FK를 고정한 평가와 직접 동일하지 않다.</p>
+<h3 id="r6-kalib-tang-et-al-iros-2025">R6. Kalib — Tang et al., IROS 2025</h3>
+<p>로봇 운동학으로 3D 위치를 알 수 있는 기준점 하나를 foundation tracker로 추적하고 PnP로 변환을 추정한다. CAD mesh·새 로봇별 재학습 없이 EiH와 eye-on-base를 모두 설명한다. <strong>멀티카메라 joint solver는 아니므로 카메라별 적용이 필요</strong>하다.<sup id="fnref2:R6"><a class="footnote-ref" href="#fn:R6">13</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>DROID 실영상 평가</th>
+<th style="text-align: right;">mean IoU</th>
+<th>조건</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>기존 dataset calibration</td>
+<td style="text-align: right;">0.87</td>
+<td>논문의 비교 기준</td>
+</tr>
+<tr>
+<td>EasyHeC</td>
+<td style="text-align: right;">0.77</td>
+<td>동일 실영상 비교</td>
+</tr>
+<tr>
+<td>Kalib</td>
+<td style="text-align: right;">0.80</td>
+<td>전체 60 sequence</td>
+</tr>
+<tr>
+<td>Kalib, 실패성 sequence 제외</td>
+<td style="text-align: right;">0.85</td>
+<td>9/60 제외; 전체 결과와 분리</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: §IV-C의 real-world validation. 약 2분/calibration, tracking 약 5 FPS(RTX3090). <strong>실물 extrinsic의 mm/deg GT 수치는 확인되지 않았으며, IoU를 대신 변환해서 제시하지 않는다.</strong> 기존 dataset calibration보다 IoU가 낮으므로 실측 정확도 SOTA로 표시하지 않는다. 손목 적용은 관측 가능한 기준점과 해당 기구학을 확보해야 한다. <a href="https://github.com/robotflow-initiative/Kalib">코드</a>.</p>
+<h3 id="r7-easyhec-chen-et-al-ra-l-2023">R7. EasyHeC — Chen et al., RA-L 2023</h3>
+<p>Robot segmentation과 differentiable rendering으로 pose를 보정하고, informative joint pose를 선택한다. 정확한 robot geometry와 visibility 조건이 필요하다. 실제 xArm에서 pointer로 ArUco board corner를 짚은 평균 거리 오차는 <strong>약 0.4 cm=4 mm</strong>다(§IV-C). Baxter 실영상에서는 2D/3D PCK를 평가하며 3 views PCK3D@2 cm는 <strong>0.15</strong>, @5 cm는 <strong>0.80</strong>다.<sup id="fnref:R7"><a class="footnote-ref" href="#fn:R7">14</a></sup></p>
+<p>‘실제 4 mm’는 camera extrinsic translation GT가 아니라 <strong>로봇·검출·tool offset이 합쳐진 targeting 오차</strong>다. EasyHeC++가 후속으로 존재하므로 현재 학습 기반 SOTA를 대표할 때는 두 논문을 구분한다. <a href="https://ootts.github.io/easyhec/">코드·프로젝트</a>.</p>
+<h3 id="r8-easyhec-hong-zheng-chen-iros-2024">R8. EasyHeC++ — Hong, Zheng, Chen, IROS 2024</h3>
+<p>사전학습 영상 모델을 사용해 초기화와 segmentation을 개선하고 EiH로 확장한다. 로봇별 학습 부담은 줄지만 differentiable rendering용 robot geometry는 필요하다.<sup id="fnref2:R8"><a class="footnote-ref" href="#fn:R8">15</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>설정 / 지표</th>
+<th>제안 결과</th>
+<th>비교 결과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>실물 eye-to-hand targeting</td>
+<td>0.30 cm=<strong>3.0 mm</strong></td>
+<td>EasyHeC 4.0 mm; EasyHeC(SAM) 3.0 mm</td>
+</tr>
+<tr>
+<td>실물 EiH targeting, 10 trials</td>
+<td>0.31 cm=<strong>3.1 mm</strong></td>
+<td>Zhang 13.5 mm; Valassakis 43.0 mm</td>
+</tr>
+<tr>
+<td>Baxter PCK3D, 3 views</td>
+<td>@2 cm <strong>0.30</strong>, @5 cm <strong>0.65</strong></td>
+<td>EasyHeC @2 cm 0.15, @5 cm <strong>0.80</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: 실물 Tables VI–VIII. 실측 targeting에서 강한 결과지만 PCK threshold에 따라 승자가 달라진다. ‘Fully Automatic’ 제목에도 원문 §III-F는 초기 EiH calibration의 수동 pose 초기화를 명시한다. 우리 Zeus에 CAD가 없으면 Kalib보다 적용 비용이 높다. <a href="https://ootts.github.io/easyhec_plus/">프로젝트</a>.</p>
+<h3 id="r9-calib3r-allegro-et-al-arxiv-2025-v2-2026">R9. Calib3R — Allegro et al., arXiv 2025 / v2 2026</h3>
+<p>Foundation-model pointmap, robot motion, camera-rig rigidity를 한 최적화에 넣어 hand–eye·scale·3D scene을 추정한다. <strong>v2는 2026-08-08 원고</strong>이며 v1과 제목·실험 범위가 달라 v2 표만 사용했다. 실험의 UR5는 손목에 D435 두 대를 단 구성으로, 우리 고정+손목 혼합 구성과 동일하지 않다.<sup id="fnref:R9"><a class="footnote-ref" href="#fn:R9">16</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Calib3R Table I</th>
+<th style="text-align: right;">translation 원문 cm</th>
+<th style="text-align: right;">환산 mm</th>
+<th style="text-align: right;">rotation 원문 rad</th>
+<th style="text-align: right;">환산 deg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Franka Pattern</td>
+<td style="text-align: right;">1.127</td>
+<td style="text-align: right;">11.27</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">0.802</td>
+</tr>
+<tr>
+<td>Franka Object</td>
+<td style="text-align: right;">0.415</td>
+<td style="text-align: right;">4.15</td>
+<td style="text-align: right;">0.011</td>
+<td style="text-align: right;">0.630</td>
+</tr>
+<tr>
+<td>UR Pattern</td>
+<td style="text-align: right;">1.512</td>
+<td style="text-align: right;">15.12</td>
+<td style="text-align: right;">0.014</td>
+<td style="text-align: right;">0.802</td>
+</tr>
+<tr>
+<td>UR Object</td>
+<td style="text-align: right;">0.636</td>
+<td style="text-align: right;">6.36</td>
+<td style="text-align: right;">0.017</td>
+<td style="text-align: right;">0.974</td>
+</tr>
+<tr>
+<td>GraspNet scene_0100</td>
+<td style="text-align: right;">1.744</td>
+<td style="text-align: right;">17.44</td>
+<td style="text-align: right;">0.023</td>
+<td style="text-align: right;">1.318</td>
+</tr>
+</tbody>
+</table></div>
+<p>Franka Pattern scale error는 <strong>0.11 cm=1.1 mm / 3.67%</strong>, baseline JCR+VGGT는 <strong>5.67%</strong>다(Table II). 하지만 pattern-based Evangelista의 translation은 Franka Pattern <strong>7.81 mm</strong>, UR Pattern <strong>6.91 mm</strong>로 Calib3R보다 낮다. 따라서 <strong>markerless joint 방식의 SOTA 후보</strong>이지 모든 marker 방식보다 정확한 확정 SOTA는 아니다. 원고는 code를 acceptance 이후 공개한다고 명시한다. GT 구축·독립성 세부 설명은 이 평가 절에서 충분히 확인되지 않아 주의가 필요하다.</p>
+<h3 id="r10-certifiable-generalized-rwhec-wise-et-al-ijrr-2026">R10. Certifiable generalized RWHEC — Wise et al., IJRR 2026</h3>
+<p>여러 센서·타깃·unknown scale을 최대우도 문제로 묶고 전역 최적성 certificate를 제공한다. 이는 <strong>정의된 목적함수의 최적성</strong>이며 실제 calibration 오차가 모든 방법보다 작다는 보장이 아니다.<sup id="fnref:R10"><a class="footnote-ref" href="#fn:R10">17</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실물 Table 6</th>
+<th style="text-align: right;">카메라 상대 translation cm</th>
+<th style="text-align: right;">rotation deg</th>
+<th style="text-align: right;">AprilTag20–OptiTrack translation cm</th>
+<th style="text-align: right;">rotation deg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wang2022</td>
+<td style="text-align: right;">3.46 ± 1.69</td>
+<td style="text-align: right;">1.38 ± 0.81</td>
+<td style="text-align: right;">11.7</td>
+<td style="text-align: right;">5.30</td>
+</tr>
+<tr>
+<td>LOM(Wang)</td>
+<td style="text-align: right;">3.34 ± 2.44</td>
+<td style="text-align: right;"><strong>0.88 ± 0.49</strong></td>
+<td style="text-align: right;"><strong>11.4</strong></td>
+<td style="text-align: right;"><strong>4.50</strong></td>
+</tr>
+<tr>
+<td>제안 known scale</td>
+<td style="text-align: right;"><strong>3.20 ± 1.88</strong></td>
+<td style="text-align: right;">0.99 ± 0.52</td>
+<td style="text-align: right;">11.5</td>
+<td style="text-align: right;">4.73</td>
+</tr>
+<tr>
+<td>제안 unknown scale</td>
+<td style="text-align: right;">2.87 ± 1.94</td>
+<td style="text-align: right;">0.99 ± 0.52</td>
+<td style="text-align: right;">7.94</td>
+<td style="text-align: right;">4.72</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table 6, §§9–10. 카메라 상대 GT는 Kalibr 기준, target–world는 OptiTrack 기준이다. 잘 초기화한 local solver와 정확도는 거의 같다. 실물 unknown-scale global solver는 최대 약 5분, local solver는 최대 1초다. 실측 모든 지표의 최고 방법은 아니며 전역 최적성 certificate를 정확도 SOTA와 구분한다. <a href="https://github.com/utiasSTARS/certifiable-rwhe-calibration">공개 Julia 코드</a>.</p>
+<h3 id="r11-planehec-wang-et-al-2025-preprint">R11. PlaneHEC — Wang et al., 2025 preprint</h3>
+<p>Depth point cloud의 벽·테이블 평면만으로 closed-form 초기화와 iterative hand–eye optimization을 수행한다. RealSense D435+Flexiv-Rizon4 실험이며, 논문의 multi-view는 여러 로봇 자세 관측을 포함하므로 다중 고정 카메라 network와 같지 않다.<sup id="fnref:R11"><a class="footnote-ref" href="#fn:R11">18</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>표본 수</th>
+<th style="text-align: right;">iterative e_t mm</th>
+<th style="text-align: right;">e_r deg</th>
+<th style="text-align: right;">e_xy mm</th>
+<th style="text-align: right;">e_z mm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td style="text-align: right;">26.22</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">8.56</td>
+<td style="text-align: right;">24.78</td>
+</tr>
+<tr>
+<td>10</td>
+<td style="text-align: right;">7.54</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">2.67</td>
+<td style="text-align: right;">7.05</td>
+</tr>
+<tr>
+<td>20</td>
+<td style="text-align: right;">4.67</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">1.63</td>
+<td style="text-align: right;">4.38</td>
+</tr>
+<tr>
+<td>30</td>
+<td style="text-align: right;">3.35</td>
+<td style="text-align: right;">0.13</td>
+<td style="text-align: right;">1.20</td>
+<td style="text-align: right;">3.13</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Tables I–II, §IV-B1. <strong>300개 관측에서 subset을 50회 추출해 얻은 변환의 표준편차 기반 평가</strong>다. 표 안에 mean error라는 표현도 섞여 있지만, 본문 절차상 독립 GT 절대오차로 읽어서는 안 된다. 0.28 s runtime은 데이터 수집을 제외한다. 기존 논문별 센서 정밀도가 다른 결과를 <code>e_t/max(E_c,E_R)</code>로 비교하므로 전체 accuracy SOTA 근거는 제한적이다.</p>
+<h3 id="r12-ual-hed-chen-et-al-2026-preprint">R12. UAL-HED — Chen et al., 2026 preprint</h3>
+<p>AX=YB의 Lie-algebra iterative solution에 source-data uncertainty 지표를 적용해 업데이트를 조정한다. 실물 장비는 ABB IRB 6700과 Leica AT960 laser tracker·T-Mac이며, RGB 카메라 실험은 아니다. Tracker의 6DoF 측정과 로봇 교시기/FK의 변환 차이를 평가한다. 원고 상태는 <strong>IJRR under review</strong>다.<sup id="fnref2:R12"><a class="footnote-ref" href="#fn:R12">19</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>방법</th>
+<th style="text-align: right;">높은 불확실성 공간 conversion error mm</th>
+<th style="text-align: right;">낮은 불확실성 공간 mm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L-HED</td>
+<td style="text-align: right;">0.346</td>
+<td style="text-align: right;"><strong>0.193</strong></td>
+</tr>
+<tr>
+<td>UAL-HED</td>
+<td style="text-align: right;"><strong>0.342</strong></td>
+<td style="text-align: right;">0.202</td>
+</tr>
+<tr>
+<td>Dual-Quaternion</td>
+<td style="text-align: right;">0.671</td>
+<td style="text-align: right;">0.256</td>
+</tr>
+<tr>
+<td>Kronecker-Product</td>
+<td style="text-align: right;">1.170</td>
+<td style="text-align: right;">0.557</td>
+</tr>
+<tr>
+<td>LMI</td>
+<td style="text-align: right;">1.137</td>
+<td style="text-align: right;">0.843</td>
+</tr>
+<tr>
+<td>Point-Cloud Matching</td>
+<td style="text-align: right;">1.160</td>
+<td style="text-align: right;">0.607</td>
+</tr>
+<tr>
+<td>SI-AH</td>
+<td style="text-align: right;">0.501</td>
+<td style="text-align: right;">0.267</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Tables 8–9, §5.2. Calibration에 쓰지 않은 추가 99 data pairs로 6D conversion consistency를 검증한다. <strong>변환 일관성 오차이지 독립 external TRE라고 확인된 수치는 아니다.</strong> 높은 불확실성에서는 최소지만 낮은 불확실성에서는 L-HED보다 나쁘다. 우리 FK 처리의 보조 비교·추가 인용 후보이며 확정 SOTA는 아니다.</p>
+<h3 id="r13-multi-unit-dual-quaternion-zhu-shen-ng-2026">R13. Multi-unit dual quaternion — Zhu, Shen, Ng, 2026</h3>
+<p>다중 카메라 RWHE를 부호 모호성을 다루는 subspace-constrained least-squares로 풀고 real-data correction을 제안한다. 대수적 잔차, camera별 RRMSE, runtime을 평가한다. 저자 주장도 ‘competitive’이며 모든 지표 우위를 주장하는 논문은 아니다.<sup id="fnref:R13"><a class="footnote-ref" href="#fn:R13">20</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Tabb 실물 데이터</th>
+<th>제안 camera별 RRMSE px</th>
+<th style="text-align: right;">제안 시간 s</th>
+<th>비교: rp1_axis RRMSE px / 시간 s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dataset 6, 2 cameras</td>
+<td>18.0 / 17.7</td>
+<td style="text-align: right;">0.27</td>
+<td>0.683 / 0.695 / 1233.82 s</td>
+</tr>
+<tr>
+<td>Dataset 7, 3 cameras</td>
+<td>2.48 / 2.54 / 1.67</td>
+<td style="text-align: right;">0.30</td>
+<td>1.06 / 1.09 / 0.767 / 3593.28 s</td>
+</tr>
+<tr>
+<td>Dataset 8, 3 cameras</td>
+<td>2.72 / 2.87 / 1.38</td>
+<td style="text-align: right;">0.31</td>
+<td>1.34 / 1.52 / 0.744 / 3345.76 s</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Tables 2–4, §4.2. 예를 들어 dataset 7의 Wang2022는 2.50/2.56/1.67 px, 0.04 s다. 제안은 비선형 반복군보다 매우 빠르지만 Wang보다 빠르지는 않고, pixel refinement보다 정확하지도 않다. <strong>빠른 pose-level baseline</strong>으로 가치가 있으며 pixel-level SOTA로 부르지 않는다. 극소 대수 잔차를 mm pose 정확도로 해석해서는 안 된다.</p>
+<h3 id="r14-enhanced-robotic-flexible-3d-scanning-zhou-et-al-sensors-2025">R14. Enhanced robotic flexible 3D scanning — Zhou et al., Sensors 2025</h3>
+<p>KUKA 로봇과 LMI Gocator structured-light scanner의 hand–eye 및 robot kinematic parameters를 함께 보정한다. Sphere target의 기하 제약과 scanner 측정 오차를 모델링한다. 검증은 별도 standard scale의 두 구 중심 간 거리를 CMM 기준으로 측정하는 방식이다.<sup id="fnref2:R14"><a class="footnote-ref" href="#fn:R14">25</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실제 standard scale, 10개 위치</th>
+<th style="text-align: right;">평균 거리 오차 mm</th>
+<th style="text-align: right;">최대 오차 mm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>보정 전</td>
+<td style="text-align: right;">0.814</td>
+<td style="text-align: right;">1.053</td>
+</tr>
+<tr>
+<td>보정 후</td>
+<td style="text-align: right;"><strong>0.373</strong></td>
+<td style="text-align: right;"><strong>0.421</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Table 4, §4.2. CMM 기준 구 간격은 299.546 mm다. 다른 실측 3개 위치에서도 제안 평균 0.385/0.322/0.307 mm가 Ren의 0.627/0.598/0.601 mm 및 Mu의 0.536/0.501/0.457 mm보다 낮다(Fig.8 본문). <strong>실측 sub-mm 근거는 강하지만 정밀 scanner와 알려진 구를 사용한 거리 평가</strong>이며 물체 원점의 base 좌표 오차와 다르다. 해당 비교에 한정한 S1이다.</p>
+<h3 id="r15-gwm-view-liu-et-al-rcim-2023">R15. GWM-View — Liu et al., RCIM 2023</h3>
+<p>3대 산업용 카메라와 ABB 6700을 사용해 자동차 부품의 임의 초기 자세를 추정하고 로봇 가공 위치를 정한다. Main/auxiliary camera 관계와 gradient-weighted suppression으로 시야 부족·가림·큰 관측각의 매칭 오차를 줄인다. Multi-view 좌표를 hand–eye 보정으로 robot base에 연결한다.<sup id="fnref2:R15"><a class="footnote-ref" href="#fn:R15">26</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실측 작업</th>
+<th>논문의 보고 결과</th>
+<th>확인 범위</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>임의 초기 자세의 복잡 부품 positioning</td>
+<td><strong>평균 1 mm 미만</strong></td>
+<td>출판사 Highlights·abstract 및 공개 Experimental setup</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>새 물체 위치 추정 2~3 mm보다 낮은 작업 오차를 보고한 관련성 높은 후보</strong>다. 다만 확인한 공개 범위에는 세부 trial 수, 독립 GT 구축, 물체별 정확한 평균 표가 없어 그 이상 정밀한 값이나 전체 SOTA 우위를 주장하지 않는다. 알려진 산업 부품의 임의 자세와 학습·모델에 없는 신규 물체 일반화도 구분한다. 원문 상세 실험표 확보 우선순위가 높다.</p>
+<h2 id="6-gt">6. 데이터셋과 GT</h2>
+<h3 id="d1-metric-allegro-et-al-information-2023">D1. METRIC — Allegro et al., Information 2023</h3>
+<p>카메라 네트워크와 robot-world hand–eye를 함께 평가하는 공개 데이터셋이다. 여기서는 실제 2개 작업셀과 Kinect V2·D455·L515 네트워크만 다룬다. 지표는 camera-to-camera와 camera-to-robot의 translation mm·rotation deg다.<sup id="fnref:D1"><a class="footnote-ref" href="#fn:D1">21</a></sup></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실물 RWHE / 평균 translation mm</th>
+<th style="text-align: right;">Small Kinect</th>
+<th style="text-align: right;">Small D455</th>
+<th style="text-align: right;">Small L515</th>
+<th style="text-align: right;">Large Kinect</th>
+<th style="text-align: right;">Large D455</th>
+<th style="text-align: right;">Large L515</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Evangelista</td>
+<td style="text-align: right;">42.79 ± 16.70</td>
+<td style="text-align: right;">45.14 ± 16.06</td>
+<td style="text-align: right;">26.20 ± 15.50</td>
+<td style="text-align: right;">77.26 ± 8.27</td>
+<td style="text-align: right;">136.39 ± 57.89</td>
+<td style="text-align: right;">60.59 ± 8.40</td>
+</tr>
+<tr>
+<td>Tabb</td>
+<td style="text-align: right;">51.57 ± 17.48</td>
+<td style="text-align: right;">63.98 ± 17.53</td>
+<td style="text-align: right;">34.59 ± 15.25</td>
+<td style="text-align: right;">105.01 ± 9.11</td>
+<td style="text-align: right;">153.2 ± 37.05</td>
+<td style="text-align: right;">75.33 ± 9.01</td>
+</tr>
+<tr>
+<td>Li</td>
+<td style="text-align: right;">66.67 ± 17.07</td>
+<td style="text-align: right;">51.03 ± 9.83</td>
+<td style="text-align: right;">23.70 ± 4.65</td>
+<td style="text-align: right;">129.39 ± 25.77</td>
+<td style="text-align: right;">수렴 실패</td>
+<td style="text-align: right;">26.39 ± 6.56</td>
+</tr>
+<tr>
+<td>Shah</td>
+<td style="text-align: right;">27.22 ± 6.12</td>
+<td style="text-align: right;">23.90 ± 6.99</td>
+<td style="text-align: right;">18.51 ± 4.22</td>
+<td style="text-align: right;">54.92 ± 9.13</td>
+<td style="text-align: right;">수렴 실패</td>
+<td style="text-align: right;">26.15 ± 5.30</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>실물 RWHE / 평균 rotation deg</th>
+<th style="text-align: right;">Small Kinect</th>
+<th style="text-align: right;">Small D455</th>
+<th style="text-align: right;">Small L515</th>
+<th style="text-align: right;">Large Kinect</th>
+<th style="text-align: right;">Large D455</th>
+<th style="text-align: right;">Large L515</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Evangelista</td>
+<td style="text-align: right;">0.57 ± 0.14</td>
+<td style="text-align: right;">0.43 ± 0.23</td>
+<td style="text-align: right;">0.39 ± 0.10</td>
+<td style="text-align: right;">0.77 ± 0.28</td>
+<td style="text-align: right;">1.33 ± 0.64</td>
+<td style="text-align: right;">0.43 ± 0.06</td>
+</tr>
+<tr>
+<td>Tabb</td>
+<td style="text-align: right;">0.73 ± 0.14</td>
+<td style="text-align: right;">1.36 ± 0.24</td>
+<td style="text-align: right;">0.94 ± 0.16</td>
+<td style="text-align: right;">0.75 ± 0.12</td>
+<td style="text-align: right;">1.74 ± 0.24</td>
+<td style="text-align: right;">0.77 ± 0.07</td>
+</tr>
+<tr>
+<td>Li</td>
+<td style="text-align: right;">0.73 ± 0.16</td>
+<td style="text-align: right;">0.72 ± 0.43</td>
+<td style="text-align: right;">0.31 ± 0.07</td>
+<td style="text-align: right;">0.72 ± 0.28</td>
+<td style="text-align: right;">수렴 실패</td>
+<td style="text-align: right;">0.30 ± 0.07</td>
+</tr>
+<tr>
+<td>Shah</td>
+<td style="text-align: right;">0.75 ± 0.06</td>
+<td style="text-align: right;">0.54 ± 0.23</td>
+<td style="text-align: right;">0.34 ± 0.10</td>
+<td style="text-align: right;">0.73 ± 0.19</td>
+<td style="text-align: right;">수렴 실패</td>
+<td style="text-align: right;">0.31 ± 0.08</td>
+</tr>
+</tbody>
+</table></div>
+<p>출처: Tables 9–10, §5. 표 caption에는 camera network라고 적혀 있으나 §5 본문 및 Appendix A9/A10은 camera–robot RWHE 평가임을 명시한다. ±는 카메라 간 분산이며 반복 calibration의 신뢰구간이 아니다. R2 후속 논문의 재평가 결과와 섞지 않는다.</p>
+<p>실제 GT는 <strong>15 cm AprilTag + 3D-printed mount의 CAD + robot FK + AprilTag pose 추정</strong>을 조합한다(§3.2). 따라서 외부 laser tracker나 mocap이 직접 측정한 카메라 pose와 동일하지 않다. R2의 실물 GT 오차 해석에도 이 제한이 이어진다. 공개 benchmark 재현에는 최우선이지만, 우리 논문의 독립 6DoF GT 실험을 대체하지는 못한다.</p>
+<h2 id="7-sota">7. 지금 무엇을 SOTA라고 표시할 수 있나</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>세부 문제</th>
+<th>표시할 방법</th>
+<th>정확한 판단</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>마커 기반 fixed multi-camera + robot</td>
+<td><strong>Allegro 2024</strong></td>
+<td>METRIC 내 translation에서 강한 비교 근거; 우리 주 baseline. 모든 rotation·runtime 1위는 아님</td>
+</tr>
+<tr>
+<td>Robot uncertainty를 모델링한 hand–eye</td>
+<td><strong>Ulrich–Hillemann 2024</strong></td>
+<td>실물 재투영·재구성에서 강한 근거. robot pose correction 포함; 독립 extrinsic GT 우위로 확대 불가</td>
+</tr>
+<tr>
+<td>Markerless reconstruction + multi-camera hand–eye joint</td>
+<td><strong>Calib3R v2</strong></td>
+<td>최신 SOTA 후보; preprint·코드 공개 예정·구성 차이 명시</td>
+</tr>
+<tr>
+<td>다중 센서·타깃·unknown-scale</td>
+<td><strong>Wise et al. 2026: baseline</strong></td>
+<td>실물 translation에서 부분 우위; rotation 등에서 열세. certificate는 이론 기여로 별도 표시</td>
+</tr>
+<tr>
+<td>Camera-only, stand-alone calibration의 독립 3D 검증</td>
+<td><strong>FusedBA 2024</strong></td>
+<td>자체 MCalib 조건에서 강함; mocap-assisted보다 우수하지 않음</td>
+</tr>
+<tr>
+<td>Camera-only, 별도 wand의 거리 측정</td>
+<td><strong>AIRLS 2024</strong></td>
+<td>4카메라·두 종류 검증 wand의 Table 3에서 비교군보다 낮은 평균 오차; 절대 point 위치 SOTA와 구분</td>
+</tr>
+<tr>
+<td>Robot+scanner의 구 간격 측정</td>
+<td><strong>Zhou et al. 2025</strong></td>
+<td>CMM 기준 실측 및 논문 내 Ren·Mu 비교에서 강함; 센서와 평가량이 다름</td>
+</tr>
+<tr>
+<td>Multi-camera+robot의 실제 산업 부품 위치</td>
+<td><strong>GWM-View 2023: 우선 확인 후보</strong></td>
+<td>평균 1 mm 미만 보고; 상세 결과표·GT 조건 미확인으로 SOTA 확정 보류</td>
+</tr>
+<tr>
+<td>Camera-only, 인체 기반 보정</td>
+<td><strong>Lee et al. 2025</strong></td>
+<td>동기화 실영상의 pose·대응에서 강함; 인위적 비동기 평가는 제외; mm 순위와 분리</td>
+</tr>
+<tr>
+<td>Robot segmentation/rendering 기반 calibration</td>
+<td><strong>EasyHeC++ 2024</strong></td>
+<td>실물 targeting에서 강함. PCK threshold에 따라 승자는 다름</td>
+</tr>
+<tr>
+<td>우리 mixed fixed+wrist + board+cube + FK target handling 전체</td>
+<td><strong>확정된 단일 SOTA 없음</strong></td>
+<td>조사한 논문과 우리 구현을 동일 세팅·독립 GT에서 직접 비교해야 판정 가능</td>
+</tr>
+</tbody>
+</table></div>
+<p>위 판단은 R2/R5/R9/R10/C1/C3/R8의 결과표를 종합한 분석이다. 최신이라는 이유만으로 SOTA로 승격하지 않았으며, 본 조사가 모든 관련 논문을 망라했다는 의미도 아니다.</p>
+<h2 id="8">8. 우리 결과와 논문을 연결하는 평가 지표</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>지표</th>
+<th>정의 / 단위</th>
+<th>검증 대상</th>
+<th>대표 문헌</th>
+<th>해석상 주의</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Extrinsic translation error</td>
+<td>norm(t_est−t_GT), mm</td>
+<td>특정 camera transform의 위치 정확도</td>
+<td>R2, R9</td>
+<td>transform 방향·원점·GT 측정법을 통일</td>
+</tr>
+<tr>
+<td>Geodesic rotation error</td>
+<td>acos((tr(R_GTᵀR_est)−1)/2), deg</td>
+<td>orientation 정확도</td>
+<td>R2</td>
+<td>rad와 deg 구분; matrix Frobenius error와 구별</td>
+</tr>
+<tr>
+<td>Pixel reprojection RMSE</td>
+<td>sqrt(mean(norm(u_pred−u_obs)²)), px</td>
+<td>이미지 적합도</td>
+<td>C4, R1, R5</td>
+<td>mean Euclidean·per-axis RMS·per-camera 평균과 다름</td>
+</tr>
+<tr>
+<td>Heldout reprojection</td>
+<td>학습에 안 쓴 관측에 frozen calibration 적용</td>
+<td>관측 일반화</td>
+<td>우리 main pipeline</td>
+<td>test target pose를 test pixel로 재적합하면 별도 조건</td>
+</tr>
+<tr>
+<td>Camera-common consistency</td>
+<td>각 카메라 target pose 추정 간 거리·회전</td>
+<td>상대 일관성</td>
+<td>우리 Zeus, R3의 관련 loop 지표</td>
+<td>공통 systematic bias는 검출 못함</td>
+</tr>
+<tr>
+<td>AX=YB / AX=ZB closure</td>
+<td>운동학 변환 양변의 translation·rotation 차이</td>
+<td>모델·운동학 일관성</td>
+<td>R2, R12</td>
+<td>robot/image 측정이 공통으로 틀려도 작아질 수 있음</td>
+</tr>
+<tr>
+<td>Independent target TRE</td>
+<td>robot frame의 예측 target point와 독립 GT point 거리</td>
+<td>실제 작업공간 위치 정확도</td>
+<td>우리 주 평가 제안</td>
+<td>camera-origin translation error와 동일하지 않음</td>
+</tr>
+<tr>
+<td>Reconstruction error</td>
+<td>복원한 3D 점·거리와 기준의 차이, mm</td>
+<td>3D geometry</td>
+<td>C1, C2, C6</td>
+<td>pointwise/거리/정합 후 평가를 구분</td>
+</tr>
+<tr>
+<td>RAE squared</td>
+<td>평균 squared 3D 거리, mm²</td>
+<td>타깃 재구성</td>
+<td>R5</td>
+<td>mm로 쓰려면 제곱근이며 원문 지표와 구분 표시</td>
+</tr>
+<tr>
+<td>Repeatability / dispersion</td>
+<td>반복 추정 변환의 표준편차</td>
+<td>정밀도·안정성</td>
+<td>R11</td>
+<td>절대 정확도 증거 아님</td>
+</tr>
+<tr>
+<td>IoU / PCK</td>
+<td>mask overlap / threshold 이내 point 비율</td>
+<td>투영·keypoint·응용 품질</td>
+<td>R6–R8</td>
+<td>GT extrinsic mm 오차로 대체 불가</td>
+</tr>
+<tr>
+<td>Runtime / data efficiency</td>
+<td>실행시간, 입력 수, 성공률</td>
+<td>실용성</td>
+<td>R2, R6, R9, R10, R13</td>
+<td>CPU/GPU·검출·수집 포함 여부와 실패 제외 조건 명시</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="81-calibration">8.1 저장소의 기존 calibration 결과와 신규 물체 결과</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>내부 실험</th>
+<th>방법</th>
+<th style="text-align: right;">heldout cube px</th>
+<th>camera-common mm / deg</th>
+<th>외부 검증 상태</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session04 canonical</td>
+<td>A1</td>
+<td style="text-align: right;">4.1402</td>
+<td>8.8294 / 1.0503</td>
+<td>External cube GT pending</td>
+</tr>
+<tr>
+<td>Session04 canonical</td>
+<td>A2</td>
+<td style="text-align: right;">3.5958</td>
+<td>7.2868 / 1.0280</td>
+<td>pending</td>
+</tr>
+<tr>
+<td>Session04 canonical</td>
+<td>A4</td>
+<td style="text-align: right;">3.5805</td>
+<td>7.3077 / 1.0151</td>
+<td>pending; FK covariance 측정 대기</td>
+</tr>
+<tr>
+<td>Session04 canonical</td>
+<td>A5</td>
+<td style="text-align: right;">3.2274</td>
+<td>6.6745 / 0.8862</td>
+<td>pending; GT 평가 전 방법 고정 필요</td>
+</tr>
+<tr>
+<td>Zeus 2026-09-09</td>
+<td>통합_no-fk_px</td>
+<td style="text-align: right;">2.9557</td>
+<td>4.2250 / 1.0534</td>
+<td>z 1.24 mm / rz 0.69°, n=3</td>
+</tr>
+<tr>
+<td>Zeus 2026-09-09</td>
+<td>통합_raw-fk_px</td>
+<td style="text-align: right;">2.2087</td>
+<td>4.6416 / 1.1567</td>
+<td>z 0.94 mm / rz 0.65°, n=3</td>
+</tr>
+<tr>
+<td>Zeus 2026-09-09</td>
+<td>독립_no-fk_px</td>
+<td style="text-align: right;">3.8053</td>
+<td>3.9182 / 1.1376</td>
+<td>z 1.65 mm / rz 0.63°, n=3</td>
+</tr>
+</tbody>
+</table></div>
+<p>신규 물체의 FK 기준 2~3 mm는 본 비교에서 유효한 위치 GT 오차로 채택한다. 위 표는 저장소의 별도 calibration·큐브 평가 기록으로, 신규 물체 결과와 자동으로 동일시하지 않는다.</p>
+<p>출처: <a href="../CP_result/session04/late_table1/TABLE1_RESULTS.md">Session04 Table 1</a>, <a href="../zeus_gello_calibration/ABLATION_RESULTS.md">Zeus 현재 결과</a>. 두 평가의 split·GT 정의가 다르므로 세션끼리나 논문 수치와 직접 순위를 매기지 않는다. Zeus 결과는 일부 축과 세 trial에 한정되고, FK·비전으로 산출한 grasp offset 및 수동 정렬 영향을 받으므로 <strong>full 6DoF independent TRE 달성으로 해석하지 않는다.</strong></p>
+<h3 id="82-baseline">8.2 우선 실행할 baseline</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>우선순위</th>
+<th>비교군</th>
+<th>필요한 입력·변경</th>
+<th>답할 질문</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>R2 Allegro 2024</td>
+<td>고정 카메라의 board-on-gripper 영상+FK; 손목 구성은 별도 지원 확인</td>
+<td>최근 멀티카메라 joint hand–eye보다 이득이 있는가</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>R1 Evangelista 2023</td>
+<td>같은 corner·intrinsic·FK, 포맷 adapter</td>
+<td>기존 pixel graph에 비해 mixed target 연결이 유효한가</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>R5 Ulrich–Hillemann, R4 Ha</td>
+<td>covariance 모델·robot pose 처리 차이 기록; Ha는 PnP pose covariance 입력</td>
+<td>FK-aware 처리의 이득이 기존 uncertainty 방법 이상인가</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>C1 평가 프로토콜 + C8 AIRLS + camera-only BA baseline</td>
+<td>고정 카메라 relative transform만 평가, 별도 blind target 사용</td>
+<td>로봇 앵커의 영향과 순수 camera-network 품질을 분리할 수 있는가</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>R6 Kalib 또는 R8 EasyHeC++</td>
+<td>연속 video+FK+reference point; EasyHeC++는 robot geometry</td>
+<td>마커 사용에 따른 정확도·준비시간 trade-off</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td>R9 Calib3R / R10 Wise / R13 Zhu</td>
+<td>코드 가용성·rig 구성·pose 입력을 맞춤</td>
+<td>markerless joint, global solver, 빠른 algebraic solver와의 위치</td>
+</tr>
+</tbody>
+</table></div>
+<p>신규 물체의 위치 정확도를 주요 기여로 삼는다면 <strong>R15 GWM-View의 실험표 확보와 C8의 별도 검증 물체 평가를 추가 우선순위</strong>로 둔다. 이 우선순위는 프로젝트 구조와 재현 가능성에 대한 분석 제안이다. <strong>모든 외부 방법을 지금 실행했다는 의미는 아니다.</strong> 아래 결과는 문헌 보고값이며 이 프로젝트에서 재현 실행한 외부 baseline 결과가 아니다.</p>
+<h3 id="83">8.3 논문 주장과 필요한 추가 검증</h3>
+<p>통합 pixel 최적화, multi-camera graph, uncertainty-aware hand–eye, markerless calibration은 각각 이미 선행연구가 있다. 따라서 ‘통합 최적화를 최초 제안’, ‘FK를 soft하게 믿는 최초 방법’, ‘다면 타깃 자체가 최초’처럼 넓게 주장하기 어렵다.<sup id="fnref4:R1"><a class="footnote-ref" href="#fn:R1">8</a></sup><sup id="fnref3:R2"><a class="footnote-ref" href="#fn:R2">9</a></sup><sup id="fnref3:R4"><a class="footnote-ref" href="#fn:R4">11</a></sup><sup id="fnref3:R5"><a class="footnote-ref" href="#fn:R5">12</a></sup><sup id="fnref3:C5"><a class="footnote-ref" href="#fn:C5">5</a></sup><sup id="fnref2:OLD"><a class="footnote-ref" href="#fn:OLD">22</a></sup></p>
+<p>우리 기여는 <strong>고정·손목 혼합 카메라에서 파지/배치 가능한 다면 큐브와 보드를 공유 latent target pose로 연결하고, target FK 처리 전략을 같은 관측·같은 목적함수·같은 독립 평가로 비교하는 것</strong>으로 좁히는 편이 현재 증거에 맞다. Cube geometry를 고정한 실험과 형상 오차에 민감한 실험, board-only와 cube-only, 독립과 순차와 통합을 구분하면 각 효과를 설명할 수 있다.</p>
+<p>최종 비교는 같은 설치 세션에서 mean/median target TRE, rotation, P95, 실패율·카메라 coverage, runtime·촬영량을 기록하는 것이 적합하다. 한 카메라 원점의 t error와 작업영역 target TRE를 함께 기록하면 lever-arm에 따른 회전오차 영향을 드러낼 수 있다. 외부 GT를 본 뒤 parameter를 바꾸지 말고, train/heldout split과 타깃 pose 추정 규칙을 모든 방법에 동일하게 적용해야 한다.</p>
+<h2 id="9">9. 추가 후보·연도 제외</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>항목</th>
+<th>처리</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A method for calibrating multi-camera systems based on sparse reconstruction of a 3D object, Measurement 240, 2025, 115561</td>
+<td>3D 타깃·graph 기반으로 관련성 높음. 출판사 초록까지 확인했으나 상세 정량 결과는 미확인; 핵심 25편의 수치 비교에는 미포함. <a href="https://www.sciencedirect.com/science/article/pii/S0263224124014465">출판사</a></td>
+</tr>
+<tr>
+<td>CALICO, 2024 개정</td>
+<td>최초 공개는 <strong>2019</strong>, 2024는 v3. 신규 2023+ 논문으로 세지 않음. Pattern rig·non-overlap 특성은 큐브 관련 선행연구로 중요. <a href="https://arxiv.org/abs/1903.06811">버전 이력</a></td>
+</tr>
+<tr>
+<td>MC-Calib</td>
+<td>저자 저장소 citation의 논문은 <strong>2022</strong>. 최신 코드 업데이트를 새 논문 연도로 취급하지 않음. <a href="https://github.com/rameau-fr/MC-Calib">저자 코드</a></td>
+</tr>
+<tr>
+<td>Tsai 1989, Daniilidis 1999, Shah 2013, Tabb 2017</td>
+<td>연도 범위 밖이므로 독립 상세 항목 제외. 2023+ 논문의 비교 baseline 또는 우리 재현 실험 기준선으로는 유지</td>
+</tr>
+<tr>
+<td>Simultaneous Robot-World and Hand-Eye Calibration, arXiv:2311.11818</td>
+<td>arXiv 업로드 연도만 보고 신작으로 포함하지 않음. 원출판연도 검증 없이 2023 논문으로 세지 않음</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="10">10. 참고문헌·원문 위치</h2>
+<p>아래 링크는 논문 원문·출판사·저자 공개본이다. 수치에는 해당 Table/section을 함께 기록했다. <code>미보고</code>는 확인한 논문에 해당 결과가 없음을, <code>미확인</code>은 접근 또는 원문 확인 범위가 부족함을 뜻한다.</p>
+<div class="footnote">
+<hr/>
+<ol>
+<li id="fn:C1">
+<p>Prayook Jatesiktat, Guan Ming Lim, Wei Tech Ang. “Multi-Camera Calibration Using Far-Range Dual-LED Wand and Near-Range Chessboard Fused in Bundle Adjustment.” Sensors 24(23), 7416, 2024-11-21. <a href="https://www.mdpi.com/1424-8220/24/23/7416">논문</a>, <a href="https://mdpi-res.com/d_attachment/sensors/sensors-24-07416/article_deploy/sensors-24-07416.pdf">공개 PDF</a>. Table 1, §4.6; DOI 10.3390/s24237416. <a class="footnote-backref" href="#fnref:C1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref2:C1" title="Jump back to footnote 1 in the text">↩</a><a class="footnote-backref" href="#fnref3:C1" title="Jump back to footnote 1 in the text">↩</a></p>
+</li>
+<li id="fn:C2">
+<p>Sujie Zhang, Qiang Fu. “Wand-Based Calibration of Unsynchronized Multiple Cameras for 3D Localization.” Sensors 24(1), 284, 2024-01-03. <a href="https://www.mdpi.com/1424-8220/24/1/284">논문</a>. Tables 4–6; DOI 10.3390/s24010284. <a class="footnote-backref" href="#fnref:C2" title="Jump back to footnote 2 in the text">↩</a></p>
+</li>
+<li id="fn:C3">
+<p>Sang-Eun Lee, Ko Nishino, Shohei Nobuhara. “Spatiotemporal Multi-Camera Calibration using Freely Moving People.” IEEE Robotics and Automation Letters, 2025. <a href="https://arxiv.org/html/2502.12546v3">원문 v3</a>, <a href="https://arxiv.org/abs/2502.12546">서지</a>. Table I, §§V-A/B. <a class="footnote-backref" href="#fnref:C3" title="Jump back to footnote 3 in the text">↩</a></p>
+</li>
+<li id="fn:C4">
+<p>Liliya A. Demidova, Vladimir E. Zhuravlev. “Incremental Multi-Camera Extrinsic Calibration Method Based on PnP Integrating Weighted AprilTag Detections and Multi-View Triangulation.” Algorithms 19(5), 371, 2026-05-08. <a href="https://www.mdpi.com/1999-4893/19/5/371">논문</a>, <a href="https://mdpi-res.com/d_attachment/algorithms/algorithms-19-00371/article_deploy/algorithms-19-00371.pdf">PDF</a>. Table 2; DOI 10.3390/a19050371. <a class="footnote-backref" href="#fnref:C4" title="Jump back to footnote 4 in the text">↩</a></p>
+</li>
+<li id="fn:C5">
+<p>Robin Laven, Thiranja Prasad Babarenda Gamage, Alexander Dixon, Gonzalo D. Maso Talou, Merryn H. Tawhai, Andrew J. Taberner, Martyn P. Nash, Poul M. F. Nielsen. “Multi-Camera Calibration With Imperfect 3-D Targets for Imaging Biological Systems.” IEEE Transactions on Instrumentation and Measurement 75, 5005208, 2026-02-23. <a href="https://ieeexplore.ieee.org/document/11408373/">출판사 초록</a>. DOI 10.1109/TIM.2026.3667321. 초록 확인; 실측 조건별 수치는 미확인으로 정량 비교 제외. <a class="footnote-backref" href="#fnref:C5" title="Jump back to footnote 5 in the text">↩</a><a class="footnote-backref" href="#fnref2:C5" title="Jump back to footnote 5 in the text">↩</a><a class="footnote-backref" href="#fnref3:C5" title="Jump back to footnote 5 in the text">↩</a></p>
+</li>
+<li id="fn:C6">
+<p>Yuji Ohshima. “Wand-Based Calibration Accuracy for Unsynchronized Multicamera Systems Without Timestamps.” Sensors 26(3), 777, 2026-01-23. <a href="https://www.mdpi.com/1424-8220/26/3/777">논문</a>, <a href="https://mdpi-res.com/d_attachment/sensors/sensors-26-00777/article_deploy/sensors-26-00777.pdf">PDF</a>. Tables 1–2; DOI 10.3390/s26030777. <a class="footnote-backref" href="#fnref:C6" title="Jump back to footnote 6 in the text">↩</a><a class="footnote-backref" href="#fnref2:C6" title="Jump back to footnote 6 in the text">↩</a></p>
+</li>
+<li id="fn:C7">
+<p>Donald Prible. “Caliscope: GUI Based Multicamera Calibration and Motion Tracking.” JOSS 9(102), 7155, 2024-10-15. <a href="https://joss.theoj.org/papers/10.21105/joss.07155">논문</a>, <a href="https://www.theoj.org/joss-papers/joss.07155/10.21105.joss.07155.pdf">PDF</a>. pp.1–3; DOI 10.21105/joss.07155. <a class="footnote-backref" href="#fnref:C7" title="Jump back to footnote 7 in the text">↩</a></p>
+</li>
+<li id="fn:R1">
+<p>Daniele Evangelista, Emilio Olivastri, Davide Allegro, Emanuele Menegatti, Alberto Pretto. “A Graph-Based Optimization Framework for Hand-Eye Calibration for Multi-Camera Setups.” ICRA 2023, pp.11474–11480. <a href="https://arxiv.org/pdf/2303.04747">PDF</a>, <a href="https://bitbucket.org/freelist/gm_handeye">코드</a>. Table I; DOI 10.1109/ICRA48891.2023.10160758. <a class="footnote-backref" href="#fnref:R1" title="Jump back to footnote 8 in the text">↩</a><a class="footnote-backref" href="#fnref2:R1" title="Jump back to footnote 8 in the text">↩</a><a class="footnote-backref" href="#fnref3:R1" title="Jump back to footnote 8 in the text">↩</a><a class="footnote-backref" href="#fnref4:R1" title="Jump back to footnote 8 in the text">↩</a></p>
+</li>
+<li id="fn:R2">
+<p>Davide Allegro, Matteo Terreran, Stefano Ghidoni. “Multi-Camera Hand-Eye Calibration for Human-Robot Collaboration in Industrial Robotic Workcells.” IEEE Robotics and Automation Letters, 2024. <a href="https://arxiv.org/html/2406.11392">원문</a>, <a href="https://www.research.unipd.it/retrieve/059b99bf-2f5a-4deb-b5f3-4cbc80ca1e99/RAL_MultiCameraHandEye_CameraReady.pdf">카메라 레디</a>, <a href="https://github.com/davidea97/Multi-Camera-Hand-Eye-Calibration">코드</a>. Tables II–III. <a class="footnote-backref" href="#fnref:R2" title="Jump back to footnote 9 in the text">↩</a><a class="footnote-backref" href="#fnref2:R2" title="Jump back to footnote 9 in the text">↩</a><a class="footnote-backref" href="#fnref3:R2" title="Jump back to footnote 9 in the text">↩</a></p>
+</li>
+<li id="fn:R3">
+<p>Zishun Zhou, Liping Ma, Xilong Liu, Zhiqiang Cao, Junzhi Yu. “Simultaneously Calibration of Multi Hand-Eye Robot System Based on Graph.” arXiv 2023; IEEE Transactions on Industrial Electronics 71(5), 5010–5020, 2024. <a href="https://arxiv.org/pdf/2305.02518">PDF</a>. Table IV; DOI 10.1109/TIE.2023.3283693. <a class="footnote-backref" href="#fnref:R3" title="Jump back to footnote 10 in the text">↩</a></p>
+</li>
+<li id="fn:R4">
+<p>Junhyoung Ha. “Probabilistic Framework for Hand–Eye and Robot–World Calibration AX=YB.” IEEE Transactions on Robotics 39(2), 1196–1211, 2023; online 2022-10-28. <a href="https://doi.org/10.1109/TRO.2022.3214350">출판사</a>, <a href="https://github.com/hjhdog1/probabilisticAXYB">저자 코드</a>, <a href="https://intro.unist.ac.kr/publications/">저자 서지</a>. 실험표 미확인. <a class="footnote-backref" href="#fnref:R4" title="Jump back to footnote 11 in the text">↩</a><a class="footnote-backref" href="#fnref2:R4" title="Jump back to footnote 11 in the text">↩</a><a class="footnote-backref" href="#fnref3:R4" title="Jump back to footnote 11 in the text">↩</a></p>
+</li>
+<li id="fn:R5">
+<p>Markus Ulrich, Markus Hillemann. “Uncertainty-Aware Hand–Eye Calibration.” IEEE Transactions on Robotics 40, 573–591, 2024; online 2023-11-06. <a href="https://publikationen.bibliothek.kit.edu/1000167305">저자기관 서지</a>, <a href="https://publikationen.bibliothek.kit.edu/1000167305/152029292">공개 PDF</a>. Tables II/VI, Fig.9; DOI 10.1109/TRO.2023.3330609. <a class="footnote-backref" href="#fnref:R5" title="Jump back to footnote 12 in the text">↩</a><a class="footnote-backref" href="#fnref2:R5" title="Jump back to footnote 12 in the text">↩</a><a class="footnote-backref" href="#fnref3:R5" title="Jump back to footnote 12 in the text">↩</a></p>
+</li>
+<li id="fn:R6">
+<p>Tutian Tang, Minghao Liu, Wenqiang Xu, Cewu Lu. “Kalib: Easy Hand-Eye Calibration with Reference Point Tracking.” IROS 2025; arXiv first 2024, v2 2025-03-24. <a href="https://arxiv.org/html/2408.10562">원문</a>, <a href="https://arxiv.org/abs/2408.10562">서지·DOI</a>, <a href="https://github.com/robotflow-initiative/Kalib">코드</a>. §IV-C; DOI 10.1109/IROS60139.2025.11247188. <a class="footnote-backref" href="#fnref:R6" title="Jump back to footnote 13 in the text">↩</a><a class="footnote-backref" href="#fnref2:R6" title="Jump back to footnote 13 in the text">↩</a></p>
+</li>
+<li id="fn:R7">
+<p>Linghao Chen, Yuzhe Qin, Xiaowei Zhou, Hao Su. “EasyHeC: Accurate and Automatic Hand-eye Calibration via Differentiable Rendering and Space Exploration.” IEEE Robotics and Automation Letters, 2023. <a href="https://ootts.github.io/easyhec/files/EasyHeC.pdf">저자 PDF</a>, <a href="https://ootts.github.io/easyhec/">프로젝트</a>. 실물 PCK 표 및 §IV-C. <a class="footnote-backref" href="#fnref:R7" title="Jump back to footnote 14 in the text">↩</a></p>
+</li>
+<li id="fn:R8">
+<p>Zhengdong Hong, Kangfu Zheng, Linghao Chen. “EasyHeC++: Fully Automatic Hand-Eye Calibration with Pretrained Image Models.” IROS 2024. <a href="https://arxiv.org/html/2410.09293">원문</a>, <a href="https://arxiv.org/abs/2410.09293">서지</a>. Tables VI–VIII, §III-F. <a class="footnote-backref" href="#fnref:R8" title="Jump back to footnote 15 in the text">↩</a><a class="footnote-backref" href="#fnref2:R8" title="Jump back to footnote 15 in the text">↩</a></p>
+</li>
+<li id="fn:R9">
+<p>Davide Allegro, Matteo Terreran, Stefano Ghidoni. “Calib3R: Hand-Eye Calibration and 3D Metric-Scaled Scene Reconstruction with 3D Foundation Models.” arXiv:2509.08813 <strong>v2</strong>, 2026-08-08; first 2025-09-10. <a href="https://arxiv.org/html/2509.08813v2">사용 원문 v2</a>. Tables I–II. v1 제목은 “Calib3R: A 3D Foundation Model for Multi-Camera to Robot Calibration and 3D Metric-Scaled Scene Reconstruction”. <a class="footnote-backref" href="#fnref:R9" title="Jump back to footnote 16 in the text">↩</a></p>
+</li>
+<li id="fn:R10">
+<p>Emmett Wise, Pushyami Kaveti, Qilong Cheng, Wenhao Wang, Hanumant Singh, Jonathan Kelly, David M. Rosen, Matthew Giamou. “A Certifiably Correct Algorithm for Generalized Robot-World and Hand-Eye Calibration.” The International Journal of Robotics Research, online 2026-03-09; preprint 2025. <a href="https://journals.sagepub.com/doi/10.1177/02783649261420308">출판사</a>, <a href="https://arxiv.org/html/2507.23045">공개 원문</a>, <a href="https://github.com/utiasSTARS/certifiable-rwhe-calibration">코드</a>. Table 6, §§9–10. 출판본 저자 표기를 사용; preprint metadata에는 Chen 표기도 있음. <a class="footnote-backref" href="#fnref:R10" title="Jump back to footnote 17 in the text">↩</a></p>
+</li>
+<li id="fn:R11">
+<p>Ye Wang, Haodong Jing, Yang Liao, Yongqiang Ma, Nanning Zheng. “PlaneHEC: Efficient Hand-Eye Calibration for Multi-view Robotic Arm via Any Point Cloud Plane Detection.” arXiv:2507.19851v1, 2025-07-26. <a href="https://arxiv.org/html/2507.19851">원문</a>, <a href="https://arxiv.org/pdf/2507.19851">PDF</a>. Tables I–II, §IV-B1. <a class="footnote-backref" href="#fnref:R11" title="Jump back to footnote 18 in the text">↩</a></p>
+</li>
+<li id="fn:R12">
+<p>Yanjia Chen, Xiangfei Li, Huan Zhao, Yiyuan Hong, Guanxiao Xia, Jiexin Zhang, Han Ding. “Optimal Uncertainty-Aware Calibration for the AX=YB Problem.” arXiv:2605.04809v1, 2026-05-06, under review in IJRR. <a href="https://arxiv.org/html/2605.04809">원문</a>, <a href="https://arxiv.org/abs/2605.04809">서지·상태</a>. Tables 8–9. <a class="footnote-backref" href="#fnref:R12" title="Jump back to footnote 19 in the text">↩</a><a class="footnote-backref" href="#fnref2:R12" title="Jump back to footnote 19 in the text">↩</a></p>
+</li>
+<li id="fn:R13">
+<p>Hong Zhu, Yuqing Shen, Michael K. Ng. “Multi-Camera Robot-World Hand-Eye Calibration by Solving Multi-Unit Dual Quaternion Equations.” CSIAM Transactions on Applied Mathematics 7(6), 1047–1079, 2026; online 2026-04-14. <a href="https://www.global-sci.com/csiam-am/article/view/24054">출판사 원문</a>, <a href="https://scholars.hkbu.edu.hk/en/publications/multi-camera-robot-world-hand-eye-calibration-by-solving-multi-un/">저자기관 서지</a>. Tables 2–4; DOI 10.4208/csiam-am.SO-2025-0052. <a class="footnote-backref" href="#fnref:R13" title="Jump back to footnote 20 in the text">↩</a></p>
+</li>
+<li id="fn:D1">
+<p>Davide Allegro, Matteo Terreran, Stefano Ghidoni. “METRIC—Multi-Eye to Robot Indoor Calibration Dataset.” Information 14(6), 314, 2023. <a href="https://www.mdpi.com/2078-2489/14/6/314">논문</a>, <a href="https://mdpi-res.com/d_attachment/information/information-14-00314/article_deploy/information-14-00314-v2.pdf">PDF</a>. §3.2, Tables 9–10, Appendix A9/A10; DOI 10.3390/info14060314. <a class="footnote-backref" href="#fnref:D1" title="Jump back to footnote 21 in the text">↩</a></p>
+</li>
+<li id="fn:OLD">
+<p>Amy Tabb, Khalil M. Ahmad Yousef. “Solving the Robot-World Hand-Eye(s) Calibration Problem with Iterative Methods.” Machine Vision and Applications, 2017. <a href="https://arxiv.org/abs/1907.12425">저자 공개본</a>. Amy Tabb et al., “Multi-camera calibration with pattern rigs, including for non-overlapping cameras: CALICO,” first 2019, revision 2024. <a href="https://arxiv.org/abs/1903.06811">버전 이력</a>. 연도 제외 및 multi-camera 선행연구 확인용. <a class="footnote-backref" href="#fnref:OLD" title="Jump back to footnote 22 in the text">↩</a><a class="footnote-backref" href="#fnref2:OLD" title="Jump back to footnote 22 in the text">↩</a></p>
+</li>
+<li id="fn:C8">
+<p>Oleksandr Yuhai, Yubin Cho, Ahnryul Choi, Joung Hwan Mun. “Enhanced Three-Axis Frame and Wand-Based Multi-Camera Calibration Method Using Adaptive Iteratively Reweighted Least Squares and Comprehensive Error Integration.” Photonics 11(9), 867, 2024. <a href="https://www.mdpi.com/2304-6732/11/9/867">논문</a>, <a href="https://mdpi-res.com/d_attachment/photonics/photonics-11-00867/article_deploy/photonics-11-00867.pdf">PDF</a>. Table 3, §2.4; DOI 10.3390/photonics11090867. <a class="footnote-backref" href="#fnref:C8" title="Jump back to footnote 23 in the text">↩</a><a class="footnote-backref" href="#fnref2:C8" title="Jump back to footnote 23 in the text">↩</a></p>
+</li>
+<li id="fn:C9">
+<p>Ibai Leizea, Imanol Herrera, Pablo Puerto. “Calibration Procedure of a Multi-Camera System: Process Uncertainty Budget.” Sensors 23(2), 589, 2023-01-04. <a href="https://www.mdpi.com/1424-8220/23/2/589">논문</a>, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9864742/">공개 원문</a>, <a href="https://mdpi-res.com/d_attachment/sensors/sensors-23-00589/article_deploy/sensors-23-00589.pdf">PDF</a>. §3.3, Table 4; DOI 10.3390/s23020589. <a class="footnote-backref" href="#fnref:C9" title="Jump back to footnote 24 in the text">↩</a></p>
+</li>
+<li id="fn:R14">
+<p>Zhilong Zhou, Jinyong Shangguan, Xuemei Sun, Yunlong Liu, Xu Zhang, Dengbo Zhang, Haoran Liu. “Enhanced Calibration Method for Robotic Flexible 3D Scanning System.” Sensors 25(15), 4661, 2025-07-27. <a href="https://www.mdpi.com/1424-8220/25/15/4661">논문</a>, <a href="https://mdpi-res.com/d_attachment/sensors/sensors-25-04661/article_deploy/sensors-25-04661.pdf">PDF</a>. Table 4, §4.2; DOI 10.3390/s25154661. <a class="footnote-backref" href="#fnref:R14" title="Jump back to footnote 25 in the text">↩</a><a class="footnote-backref" href="#fnref2:R14" title="Jump back to footnote 25 in the text">↩</a></p>
+</li>
+<li id="fn:R15">
+<p>Hongdi Liu, Jiahao Fu, Minqi He, Lin Hua, Dahu Zhu. “GWM-view: Gradient-weighted multi-view calibration method for machining robot positioning.” Robotics and Computer-Integrated Manufacturing 83, 102560, 2023. <a href="https://www.sciencedirect.com/science/article/abs/pii/S0736584523000364">출판사 Highlights·abstract</a>, <a href="https://www.sciencedirect.com/science/article/pii/S0736584523000364">공개 실험 절</a>. DOI 10.1016/j.rcim.2023.102560. 실제 부품 평균 위치 오차 1 mm 미만은 Highlights에 명시; 상세 결과표·GT 절차 미확인. <a class="footnote-backref" href="#fnref:R15" title="Jump back to footnote 26 in the text">↩</a><a class="footnote-backref" href="#fnref2:R15" title="Jump back to footnote 26 in the text">↩</a></p>
+</li>
+</ol>
+</div></main></body></html>
