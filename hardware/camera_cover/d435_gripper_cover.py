@@ -26,6 +26,8 @@ ENGINE = "manifold"
 CAM_L = 90.0          # 긴 축 길이
 CAM_H = 25.0          # 높이
 CAM_D = 25.0          # 깊이(앞뒤)
+CAM_R = 4.0           # 앞면 네 모서리 필렛 반경. 실제값보다 크게 잡아야 안전하다
+                      # (캐비티 필렛이 실제보다 작으면 모서리가 걸려 아예 안 들어간다)
 M3_SPACING = 45.0     # 뒷면 M3 구멍 중심간 거리
 M3_Z = 12.5           # 카메라 바닥면에서 M3 구멍 중심까지 높이  <-- 캘리퍼로 확인할 값
 M3_DEPTH = 2.5        # 나사산 깊이 (이보다 긴 나사를 쓰면 안 됨)
@@ -117,17 +119,38 @@ def cone(d_big, d_small, length, center, axis="z"):
     return mesh
 
 
+def rprism(x_half, z0, z1, y0, y1, r):
+    """XZ 단면이 둥근 사각형이고 Y 방향으로 밀어낸 형상.
+
+    D435 는 앞에서 봤을 때 90x25 사각형의 네 모서리가 둥글다. 그 단면을 그대로
+    깊이 방향으로 밀어낸 것이 카메라 바디이고, 캐비티도 같은 단면으로 판다.
+    """
+    r = min(r, x_half - 0.1, (z1 - z0) / 2 - 0.1)
+    yc, yl = (y0 + y1) / 2, y1 - y0
+    parts = [
+        span(-x_half, x_half, y0, y1, z0 + r, z1 - r),
+        span(-x_half + r, x_half - r, y0, y1, z0, z1),
+    ]
+    for sx in (-1, 1):
+        for z in (z0 + r, z1 - r):
+            parts.append(cyl(2 * r, yl, (sx * (x_half - r), yc, z), axis="y"))
+    return trimesh.boolean.union(parts, engine=ENGINE)
+
+
 def sleeve_body(half_x, with_pad=True, with_vents=True):
     """반폭 half_x 인 커버 하나. 게이지는 half_x 만 줄여서 같은 단면을 쓴다."""
     ox = half_x + WALL
     cx = half_x
 
+    r_in = CAM_R + CLR          # 캐비티 모서리 (카메라 실제 필렛보다 크게)
+    r_out = r_in + WALL         # 바깥 모서리는 벽 두께만큼 더 크다
+
     # 바깥 덩어리 (앞면은 아예 벽이 없다)
-    solid = span(-ox, ox, 0.0, OY, OZ_LO, OZ_HI)
+    solid = rprism(ox, OZ_LO, OZ_HI, 0.0, OY, r_out)
 
     cuts = []
     # 카메라가 들어갈 캐비티 — 앞쪽으로 뚫려 있다
-    cuts.append(span(-cx, cx, -1.0, CY, 0.0, CZ))
+    cuts.append(rprism(cx, 0.0, CZ, -1.0, CY, r_in))
     # 뒷판은 |x| <= REAR_HALF_X 만 남긴다 (USB-C 케이블 통로)
     if half_x > REAR_HALF_X:
         cuts.append(span(REAR_HALF_X, ox + 1, CY - 1, OY + 1, OZ_LO - 1, OZ_HI + 1))
