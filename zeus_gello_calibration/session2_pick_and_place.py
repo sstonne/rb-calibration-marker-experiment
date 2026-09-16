@@ -159,12 +159,15 @@ def grip(state, desc):
 
 def cap(desc, tag=None, settle_s=None):
     """tag=None: 캘리브레이션용 본 촬영(파킹 자세, out_root/NNN).
-    tag="held"/"released": 놓는 자리에서 그리퍼 열기 전/후 진단 촬영(out_root/<tag>/NNN).
-    held-released 차이가 릴리즈 슬립, held vs FK anchor 차이가 테이블 높이에서의 카메라-FK 편향."""
+    tag="picked"/"held"/"released": 그리퍼 닫은 직후(pick)/놓는 자리에서 열기 전(held)/
+    후(released) 진단 촬영(out_root/<tag>/NNN).
+    held-released 차이가 릴리즈 슬립, held vs FK anchor 차이가 테이블 높이에서의 카메라-FK
+    편향, picked vs FK anchor 차이가 이번 pick에서 새로 생긴 그립 슬립."""
     return {"kind": "capture", "desc": desc, "tag": tag, "settle_s": settle_s}
 
 
-RELEASE_SETTLE_S = 1.0   # 그리퍼 연 뒤 큐브가 자리 잡을 시간 (released 촬영 전)
+RELEASE_SETTLE_S = 2.0   # 그리퍼 연 뒤 큐브가 자리 잡을 시간 (released 촬영 전). 기존 1.0s에서 2배로.
+PICK_SETTLE_S = 2.0      # 그리퍼 닫은 뒤 그립이 자리 잡을 시간 (picked 촬영 전). RELEASE_SETTLE_S와 동일하게.
 
 
 def build_plan(items, start_pose, start_joints, cam_pose, cam_pose_joints, approach_mm, return_home,
@@ -174,9 +177,10 @@ def build_plan(items, start_pose, start_joints, cam_pose, cam_pose_joints, appro
     있는 구간마다 먼저 "제자리에서 회전만 정렬"(align_rotation)한 뒤에
     위치를 옮긴다. 그래야 각 movel이 더 단순해져서 Unreachable이 덜 난다.
 
-    held_released=True면 놓는 자리에서 그리퍼 열기 **전**(held)과 **후**(released)에
-    한 장씩 더 찍는다(로봇은 그 사이 안 움직임). 캘리브레이션 본 데이터는 그대로
-    파킹 자세 촬영(NNN/)이고, held/·released/는 진단용 별도 폴더."""
+    held_released=True면 pick에서 그리퍼 닫은 **직후**(picked)와, 놓는 자리에서 그리퍼
+    열기 **전**(held)·**후**(released)에 한 장씩 더 찍는다(로봇은 그 사이 안 움직임).
+    캘리브레이션 본 데이터는 그대로 파킹 자세 촬영(NNN/)이고, picked/·held/·released/는
+    진단용 별도 폴더."""
     steps = []
 
     def place_only_block(label, current_pose, dest_pose):
@@ -201,6 +205,9 @@ def build_plan(items, start_pose, start_joints, cam_pose, cam_pose_joints, appro
         steps.append(mv(approach_of(source_pose, approach_mm), move_speed, f"[{label}] pick approach 이동"))
         steps.append(mv(source_pose, descend_speed, f"[{label}] pick 수직 하강"))
         steps.append(grip("close", f"[{label}] 그리퍼 닫기 (pick)"))
+        if held_released:
+            steps.append(cap(f"[{label}] 진단 촬영: 그리퍼 닫은 후 (picked, {PICK_SETTLE_S}s 정착 대기)",
+                             tag="picked", settle_s=PICK_SETTLE_S))
         steps.append(mv(approach_of(source_pose, approach_mm), descend_speed, f"[{label}] pick 수직 상승"))
         place_only_block(label, approach_of(source_pose, approach_mm), dest_pose)
 
@@ -239,8 +246,8 @@ def execute_plan(steps, rb: ZeusClient, cams, labels, out_root: Path, view, no_s
                   skip_steps: int = 0):
     # 건너뛰는 스텝 중 몇 개가 "촬영" 스텝이었는지 세어서, 재개했을 때 캡처
     # 번호가 처음부터 다시 매겨지며 기존 파일을 덮어쓰지 않게 한다.
-    # 본 촬영(tag None)과 진단 촬영(held/released)은 번호를 따로 센다.
-    counters = {None: 0, "held": 0, "released": 0}
+    # 본 촬영(tag None)과 진단 촬영(picked/held/released)은 번호를 따로 센다.
+    counters = {None: 0, "picked": 0, "held": 0, "released": 0}
     for s in steps[:skip_steps]:
         if s["kind"] == "capture":
             counters[s.get("tag")] = counters.get(s.get("tag"), 0) + 1
@@ -303,7 +310,8 @@ def main():
     ap.add_argument("--jnt-speed", type=float, default=JNT_SPEED_PARK, help="movej(0단계, 촬영 파킹) 속도")
     ap.add_argument("--return-home", action="store_true", help="마지막에 큐브를 GRASP_REF_POSE 위치로 복귀")
     ap.add_argument("--no-held-released", action="store_true",
-                    help="놓는 자리에서 그리퍼 열기 전(held)/후(released) 진단 촬영을 생략 (기본은 촬영, out_root/held/, out_root/released/)")
+                    help="그리퍼 닫은 직후(picked)/놓는 자리에서 열기 전(held)/후(released) 진단 촬영을 생략 "
+                         "(기본은 촬영, out_root/picked/, out_root/held/, out_root/released/)")
     ap.add_argument("--execute", action="store_true", help="실제로 이동/그리퍼/촬영 (없으면 dry-run)")
     ap.add_argument("--no-step", action="store_true", help="스텝마다 Enter로 확인하지 않고 연속 실행")
     ap.add_argument("--skip-steps", type=int, default=0,
