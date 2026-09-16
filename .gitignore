@@ -28,3 +28,4 @@ data/**/meta.pre_depth_backup.json
 # 필요하면 f9d0d4c 이전 히스토리에서 복구할 수 있다.
 data/session02_NOUSE_session04_0814/
 ABLATION_TEST_result_*/session02_NOUSE_session04_0814/
+hardware/camera_cover/__pycache__/
