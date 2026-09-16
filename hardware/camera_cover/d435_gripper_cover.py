@@ -26,8 +26,11 @@ ENGINE = "manifold"
 CAM_L = 90.0          # 긴 축 길이
 CAM_H = 25.0          # 높이
 CAM_D = 25.0          # 깊이(앞뒤)
-CAM_R = 4.0           # 앞면 네 모서리 필렛 반경. 실제값보다 크게 잡아야 안전하다
-                      # (캐비티 필렛이 실제보다 작으면 모서리가 걸려 아예 안 들어간다)
+# 필렛 두 개는 모두 "실제보다 작게" 잡는 것이 안전한 방향이다.
+# 반경을 키우면 캐비티가 그만큼 깎여 작아지므로, 실제보다 크면 카메라가 걸려서
+# 안 들어간다. 작으면 그 부분만 살짝 뜰 뿐 평면들이 그대로 카메라를 잡는다.
+CAM_R = 3.0           # 앞면(렌즈면) 네 모서리 필렛 반경
+REAR_FILLET = 1.5     # 뒤로 갈수록 둘레가 깎여 들어가는 라운드의 반경
 M3_SPACING = 45.0     # 뒷면 M3 구멍 중심간 거리
 M3_Z = 12.5           # 카메라 바닥면에서 M3 구멍 중심까지 높이  <-- 캘리퍼로 확인할 값
 M3_DEPTH = 2.5        # 나사산 깊이 (이보다 긴 나사를 쓰면 안 됨)
@@ -137,20 +140,73 @@ def rprism(x_half, z0, z1, y0, y1, r):
     return trimesh.boolean.union(parts, engine=ENGINE)
 
 
+def _rrect_ring(hx, hz, r, zc, per_corner=10):
+    """XZ 평면의 둥근 사각형 외곽점. 반시계 방향."""
+    r = max(0.0, min(r, hx - 0.05, hz - 0.05))
+    pts = []
+    for sx, sz, a0 in ((1, 1, 0.0), (-1, 1, np.pi / 2),
+                       (-1, -1, np.pi), (1, -1, 1.5 * np.pi)):
+        cx_, cz_ = sx * (hx - r), sz * (hz - r)
+        for a in np.linspace(a0, a0 + np.pi / 2, per_corner, endpoint=False):
+            pts.append((cx_ + r * np.cos(a), zc + cz_ + r * np.sin(a)))
+    return np.array(pts)
+
+
+def camera_envelope(hx, hz, zc, y0, y1, r_corner, r_rear, n_arc=9):
+    """카메라 바디 외피.
+
+    앞(렌즈면 y0)은 단면이 가장 크고, 뒤쪽 y1 에 가까워지면 둘레가 반경 r_rear 의
+    라운드로 깎여 들어간다. 그 형상을 단면 링들을 쌓아 로프트로 만든다.
+    """
+    ys = [y0, y1 - r_rear]
+    insets = [0.0, 0.0]
+    for t in np.linspace(0, r_rear, n_arc)[1:]:
+        ys.append(y1 - r_rear + t)
+        insets.append(r_rear - np.sqrt(max(r_rear ** 2 - (r_rear - t) ** 2, 0.0)))
+
+    rings = [_rrect_ring(hx - d, hz - d, r_corner, zc) for d in insets]
+    n = len(rings[0])
+    verts, faces = [], []
+    for ring, y in zip(rings, ys):
+        verts.extend([(p[0], y, p[1]) for p in ring])
+    for k in range(len(rings) - 1):
+        a, b = k * n, (k + 1) * n
+        for i in range(n):
+            j = (i + 1) % n
+            faces += [[a + i, a + j, b + j], [a + i, b + j, b + i]]
+    # 앞뒤 뚜껑 (단면이 볼록하므로 중심 팬으로 충분)
+    for k, flip in ((0, True), (len(rings) - 1, False)):
+        c = len(verts)
+        verts.append((0.0, ys[k], zc))
+        base = k * n
+        for i in range(n):
+            j = (i + 1) % n
+            faces.append([c, base + j, base + i] if flip else [c, base + i, base + j])
+    mesh = trimesh.Trimesh(vertices=np.array(verts), faces=np.array(faces),
+                           process=True)
+    mesh.update_faces(mesh.nondegenerate_faces())
+    mesh.remove_unreferenced_vertices()
+    trimesh.repair.fix_normals(mesh)
+    if mesh.volume < 0:
+        mesh.invert()
+    return mesh
+
+
 def sleeve_body(half_x, with_pad=True, with_vents=True):
     """반폭 half_x 인 커버 하나. 게이지는 half_x 만 줄여서 같은 단면을 쓴다."""
     ox = half_x + WALL
     cx = half_x
 
-    r_in = CAM_R + CLR          # 캐비티 모서리 (카메라 실제 필렛보다 크게)
+    r_in = CAM_R + CLR          # 카메라 외피를 CLR 만큼 바깥으로 오프셋한 값
     r_out = r_in + WALL         # 바깥 모서리는 벽 두께만큼 더 크다
 
     # 바깥 덩어리 (앞면은 아예 벽이 없다)
     solid = rprism(ox, OZ_LO, OZ_HI, 0.0, OY, r_out)
 
     cuts = []
-    # 카메라가 들어갈 캐비티 — 앞쪽으로 뚫려 있다
-    cuts.append(rprism(cx, 0.0, CZ, -1.0, CY, r_in))
+    # 카메라가 들어갈 캐비티 — 앞쪽으로 뚫려 있고, 뒤로 갈수록 둘레가 깎인다
+    cuts.append(camera_envelope(cx, CZ / 2, CZ / 2, -1.0, CY,
+                                r_corner=r_in, r_rear=REAR_FILLET))
     # 뒷판은 |x| <= REAR_HALF_X 만 남긴다 (USB-C 케이블 통로)
     if half_x > REAR_HALF_X:
         cuts.append(span(REAR_HALF_X, ox + 1, CY - 1, OY + 1, OZ_LO - 1, OZ_HI + 1))
