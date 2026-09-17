@@ -15,8 +15,8 @@
 | Cube RMSE (px) | 큐브 코너를 이미지에 재투영했을 때 검출 코너와의 차이. `sqrt(mean(dx²+dy²))` |
 | joint 위치 mm | 고정캠 3대 코너를 한꺼번에 묶어 삼각측량한 큐브 위치 vs FK@T_flange_cube 정답. **정확도 기준 지표** |
 | 카메라 합의 mm | 고정캠 각 1대씩 따로 구한 큐브 위치끼리의 차이(pairwise). 단일 카메라 깊이 노이즈가 그대로 들어감 |
-| T_flange_cube | 플랜지→큐브 원점 변환. session1(공중 16포즈)로 비전 적합. A4/A5/B1/B2의 "corrected-FK" |
-| A5 | corrected-FK hard fixed: session1 T_flange_cube × 로봇 FK로 큐브 위치를 고정하고 카메라만 최적화 |
+| T_flange_cube (FtC) | 플랜지→큐브 원점 변환. session1(공중 16포즈)로 비전 적합. A5/B1/B2의 "FtC FK" |
+| A5 | FtC FK fixed: session1 T_flange_cube × 로봇 FK로 큐브 위치를 고정하고 카메라만 최적화 |
 
 ---
 
@@ -24,19 +24,25 @@
 
 848×480은 세트 11~14가 pick 실패(큐브가 세트 10 자리에 정지)로 **11세트**, session3 큐브 미사용. 1920/1280은 15세트 완전 데이터. 모든 행 15/15 fold 수렴.
 
-### 1.1 Held-out Cube RMSE (px) — 픽셀 크기가 달라 해상도 간 직접 비교는 불가
+### 1.1 방법별 전체 지표 (1920×1080, held-out 15-fold)
 
-| Row | 학습 표적 | 최적화 | FK 처리 | 1920×1080 | 1280×720 | 848×480 |
-|---|---|---|---|---:|---:|---:|
-| A0 | board | Sequential | VISION | 3.928 | 2.836 | 1.818 |
-| A1 | board+cube | Sequential | VISION | 2.851 | 2.089 | 1.233 |
-| A2 | board+cube | Unified | VISION | 2.621 | 1.974 | 1.345 |
-| **A5** | board+cube | Unified | **corrected-FK hard fixed** | **1.767** | **1.184** | **0.954** |
-| B1 | board+cube | Sequential | corrected-FK soft factor | 2.852 | 2.033 | 1.237 |
-| B2 | cube | Unified | corrected-FK soft factor | 2.788 | 2.005 | 1.228 |
-| B3 | board | Unified | VISION | 3.928 | 2.836 | 1.818 |
+| Row | 학습 표적 | 최적화 | FK 처리 | train px | held-out px | cross-view held-out px (전체 / 고정↔고정 / 고정↔그리퍼) | joint mm 평균 / 중앙값 / P95 | joint ° | 카메라 합의 mm | fold 수렴 |
+|---|---|---|---|---:|---:|---|---|---:|---:|---:|
+| A0 | board | Sequential | VISION | 3.93 | 3.93 | 9.52 / 10.55 / 8.39 | 1.73 / 1.80 / 2.53 | 0.41 | 6.12 | 15/15 |
+| A1 | board+cube | Sequential | VISION | 2.83 | 2.85 | 5.53 / 5.50 / 5.55 | 1.29 / 1.26 / 1.82 | 0.26 | 2.80 | 15/15 |
+| A2 | board+cube | Unified | VISION | 2.62 | 2.62 | 5.77 / 5.92 / 5.62 | 1.22 / 1.17 / 1.72 | 0.24 | 3.11 | 15/15 |
+| **A5** | board+cube | Unified | **FtC FK fixed** | **1.62** | **1.77** | **4.90** / 4.54 / 5.22 | **0.62 / 0.56 / 1.13** | 0.24 | **2.32** | 15/15 |
+| B1 | board+cube | Sequential | FtC FK fixed | 2.84 | 2.85 | 5.66 / 5.71 / 5.61 | 1.28 / 1.26 / 1.90 | 0.29 | 2.99 | 15/15 |
+| B2 | cube | Unified | FtC FK fixed | 2.77 | 2.79 | 5.37 / 5.21 / 5.52 | 1.42 / 1.34 / 1.83 | 0.29 | 2.71 | 15/15 |
+| B3 | board | Unified | VISION | 3.93 | 3.93 | 9.52 / 10.55 / 8.39 | 1.73 / 1.80 / 2.53 | 0.41 | 6.12 | 15/15 |
 
-### 1.2 Held-out joint 위치 mm (평균) / 회전 ° — 정확도 기준
+- **train / held-out px**: 학습 데이터 vs 학습에서 뺀 placement의 큐브 재투영 RMSE. 둘이 같으면 과적합 없음.
+- **cross-view px**: 카메라 A의 PnP 포즈를 캘리브레이션으로 B에 옮겨 B의 검출 코너와 비교. 고정↔고정은 카메라 외부파라미터, 고정↔그리퍼는 hand-eye+FK까지 검증.
+- **joint mm / °**: 고정캠 3대 공동 삼각측량 위치 vs FK@T_flange_cube (held-out placement). **정확도 기준 지표.** P95 = 상위 5% 최악값.
+- **카메라 합의 mm**: 카메라 한 대씩 따로 구한 held-out 큐브 위치끼리의 pairwise 차이. 외부파라미터 일관성.
+- FtC FK = session1 비전으로 잰 flange-to-cube 변환 × 로봇 FK. fixed = 큐브 위치를 이 값으로 고정하고 카메라만 최적화.
+
+### 1.2 해상도별 held-out joint 위치 mm (평균) / 회전 °
 
 | Row | 1920×1080 | 1280×720 | 848×480 |
 |---|---:|---:|---:|
@@ -51,7 +57,7 @@
 
 ### 1.3 결론
 - **A5가 모든 해상도·모든 지표에서 최고.** 2위(A2)의 절반. 방법 순위는 세 해상도에서 동일: A5 ≫ A2≈A1≈B1 > B2 > A0.
-- 큐브 추가(A0→A1) 1.73→1.29mm, 통합(A1→A2) 1.29→1.22mm, corrected-FK hard fixed(A2→A5) 1.22→0.62mm. → session1에서 한 번 정밀하게 잰 T_flange_cube가 매 세트 비전 추정보다 정확.
+- 큐브 추가(A0→A1) 1.73→1.29mm, 통합(A1→A2) 1.29→1.22mm, FtC FK fixed(A2→A5) 1.22→0.62mm. → session1에서 한 번 정밀하게 잰 T_flange_cube가 매 세트 비전 추정보다 정확.
 - Sequential(A1, B1)은 Unified(A2)보다 나쁨. 보드 제거(B2)는 A2 대비 1.22→1.42mm로 나빠짐 → 보드가 카메라 앵커로 유효.
 - 848의 A1/B1이 유독 좋은 건 11세트 표본 효과로 보임(A5는 세 해상도 안정).
 
@@ -172,7 +178,7 @@ held(놓기 직전, 그 위치의 첫 사진) 기준으로 released(그리퍼 �
 
 ## 7. 결론
 
-1. **A5(corrected-FK hard fixed)가 최적**: held-out 0.62mm / 0.24° (1920). 방법 순위는 해상도·재촬영에 불변.
+1. **A5(FtC FK fixed)가 최적**: held-out 0.62mm / 0.24° (1920). 방법 순위는 해상도·재촬영에 불변.
 2. **위치 정확도 바닥 ≈0.6mm는 해상도가 아니라** FK·큐브 기하·파지 반복성(y ±0.4mm)이 정함. 해상도는 회전(0.4°→0.24°)에만 효과.
 3. **그리퍼 열기·재파지 슬립은 중앙값 0.1mm, 최대 0.5mm**(3대 joint 기준, 해상도 무관). 오차는 파지 순간의 중심 위치(닫힘 방향)에서 결정.
 4. T_flange_cube: z 160.9±0.06mm, 16포즈로 ~0.3mm 불확실도.
