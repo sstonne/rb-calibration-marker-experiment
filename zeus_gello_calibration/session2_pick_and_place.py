@@ -70,7 +70,8 @@ SESSION3_DIR_DEFAULT = SESSION3_DIR
 
 # 실측: "Pos, -292.02, 400.03, 178.75, -90.00, -0.00, 180.00" -- 여기서
 # z/ry/rx만 고정값으로 쓴다 (x,y는 session2 각 자세에서 그대로 가져오므로 안 씀).
-GRASP_REF_POSE = [-292.02, 400.03, 178.75, -90.00, -0.00, 180.00]
+# z는 실측값(178.75)에서 2cm 낮춤 -- pick/place 높이를 전부 이걸로 통일해서 씀.
+GRASP_REF_POSE = [-292.02, 400.03, 178.75 - 20.0, -90.00, -0.00, 180.00]
 Z_FIXED = GRASP_REF_POSE[2]
 RY_FIXED = GRASP_REF_POSE[4]
 RX_FIXED = GRASP_REF_POSE[5]

@@ -108,15 +108,31 @@ REGRASP_JOINTS_DEFAULT = {
     1: [24.48, -33.28, -111.05, -179.99, 35.68, 24.48],
 }
 
+DESCEND_LIN_SPEED = 15.0     # 수직 하강은 느리게 (session2_pick_and_place.py 와 동일)
+REGRASP_Z_LOWER_MM = 20.0    # 파지 위치를 여기서 지정한 만큼 추가로 내림 (2cm)
 
-def run_regrasp_sequence(rb, joints, jnt_speed, overlap):
-    """큐브를 새로 쥐는 절차: Enter -> 그리퍼 열기+이동 -> "놓아주세요" -> Enter -> 그리퍼 닫기."""
+
+def run_regrasp_sequence(rb, joints, jnt_speed, overlap, z_lower_mm: float = REGRASP_Z_LOWER_MM):
+    """큐브를 새로 쥐는 절차: Enter -> 그리퍼 열기+이동 -> "놓아주세요" -> Enter -> 그리퍼 닫기.
+
+    joints(REGRASP_JOINTS_DEFAULT)는 관절각만 저장돼 있어 z를 직접 뺄 수 없다. 대신
+    그 자세로 movej 한 뒤 get_state()로 실제 pose를 읽고, z만 z_lower_mm 만큼 낮춘
+    pose로 movel 해서 컨트롤러 자체 IK로 내려간다 -- 새 관절각을 추측/하드코딩할
+    필요가 없다.
+    """
     input("\n[재파지] Enter를 누르면 그리퍼를 열고 지정 자세로 이동합니다 > ")
     rb.grip("open")
     time.sleep(SETTLE_S)
     rb.movej(joints, jnt_speed=jnt_speed, overlap=overlap)
     time.sleep(SETTLE_S)
     print(f"[재파지] 이동 완료: {[round(v, 2) for v in joints]}")
+    if z_lower_mm:
+        pose = rb.get_pose6()
+        lowered = list(pose)
+        lowered[2] = float(pose[2]) - float(z_lower_mm)
+        rb.movel(lowered, lin_speed=DESCEND_LIN_SPEED)
+        time.sleep(SETTLE_S)
+        print(f"[재파지] z {z_lower_mm}mm 추가 하강 완료: {[round(v, 2) for v in lowered]}")
     input("[재파지] 큐브를 그리퍼 위치에 놓아주세요. 다 놓으셨으면 Enter > ")
     rb.grip("close")
     time.sleep(SETTLE_S)
