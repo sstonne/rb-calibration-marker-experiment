@@ -109,7 +109,7 @@ REGRASP_JOINTS_DEFAULT = {
 }
 
 DESCEND_LIN_SPEED = 15.0     # 수직 하강은 느리게 (session2_pick_and_place.py 와 동일)
-REGRASP_Z_LOWER_MM = 20.0    # 파지 위치를 여기서 지정한 만큼 추가로 내림 (2cm)
+REGRASP_Z_LOWER_MM = 10.0    # 파지 위치를 여기서 지정한 만큼 추가로 내림 (1cm)
 
 
 def run_regrasp_sequence(rb, joints, jnt_speed, overlap, z_lower_mm: float = REGRASP_Z_LOWER_MM):
