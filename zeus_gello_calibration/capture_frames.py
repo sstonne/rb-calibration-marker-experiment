@@ -10,6 +10,8 @@
   python capture_frames.py --shots 5                    # Enter 누를 때마다 1장, 5장
   python capture_frames.py --shots 5 --no-robot         # 로봇 서버 없이 사진만
   python capture_frames.py --shots 5 --no-cam-reset     # USB 리셋 생략 (리셋이 카메라를 떨어뜨릴 때)
+  python capture_frames.py --shots 5 --width 1920 --height 1080 --depth-width 1280 --depth-height 720 \\
+      --device-map ../intrinsics_1920x1080_rgbd720/device_map.json   # 해상도 지정 (폴더명에 자동으로 붙음)
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ from robot.backends.zeus_client import ZeusClient  # noqa: E402
 from capture_session import (  # noqa: E402
     DEVICE_MAP_DEFAULT, ROBOT_IP_DEFAULT, ROBOT_PORT_DEFAULT, LiveView,
     connect_cameras, grab_frames, load_camera_labels, read_robot_state, stop_cameras, write_capture,
+    validate_intrinsics_stream, CAM_WIDTH, CAM_HEIGHT, CAM_FPS,
 )
 
 from paths import ZEUS_DATA_ROOT  # noqa: E402
@@ -45,11 +48,40 @@ def main():
     ap.add_argument("--robot", action="store_true", help="로봇 서버에 읽기 전용 접속해서 촬영 순간 pose를 같이 기록 (기본: 접속 안 함)")
     ap.add_argument("--no-cam-reset", action="store_true")
     ap.add_argument("--no-preview", action="store_true")
+    ap.add_argument("--width", type=int, default=CAM_WIDTH, help="RealSense color/depth width")
+    ap.add_argument("--height", type=int, default=CAM_HEIGHT, help="RealSense color/depth height")
+    ap.add_argument("--depth-width", type=int, default=None, help="RealSense depth width")
+    ap.add_argument("--depth-height", type=int, default=None, help="RealSense depth height")
+    ap.add_argument("--fps", type=int, default=CAM_FPS, help="RealSense stream FPS")
     args = ap.parse_args()
+
+    if (args.depth_width is None) != (args.depth_height is None):
+        ap.error("--depth-width와 --depth-height는 함께 지정해야 합니다.")
+    if (
+        args.width <= 0 or args.height <= 0 or args.fps <= 0
+        or (args.depth_width is not None and args.depth_width <= 0)
+        or (args.depth_height is not None and args.depth_height <= 0)
+    ):
+        ap.error("--width, --height, --depth-width, --depth-height, --fps 값은 모두 양수여야 합니다.")
+    depth_width = int(args.depth_width) if args.depth_width is not None else int(args.width)
+    depth_height = int(args.depth_height) if args.depth_height is not None else int(args.height)
+
+    # 해상도별로 여러 번 찍을 때 폴더가 안 겹치도록 자동으로 붙인다.
+    res_suffix = f"_{args.width}x{args.height}"
+    if not args.out_root.endswith(res_suffix):
+        args.out_root = args.out_root + res_suffix
 
     out_dir = Path(args.out_root) / time.strftime("%Y%m%d_%H%M%S")
     labels = load_camera_labels(Path(args.device_map))
-    cams, used_labels = connect_cameras(labels, no_reset=args.no_cam_reset)
+    validate_intrinsics_stream(
+        Path(args.device_map), args.width, args.height, args.fps,
+        depth_width=depth_width, depth_height=depth_height,
+    )
+    cams, used_labels = connect_cameras(
+        labels, no_reset=args.no_cam_reset,
+        width=args.width, height=args.height, fps=args.fps,
+        depth_width=depth_width, depth_height=depth_height,
+    )
     view = None
     if not args.no_preview:
         view = LiveView(cams, used_labels, window_name="capture_frames (q/ESC=닫기)")
