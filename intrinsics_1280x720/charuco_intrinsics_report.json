@@ -1,12 +1,13 @@
 {
-  "calibrated_at": "2026-09-16 23:20:09",
+  "calibrated_at": "2026-09-17 15:03:05",
   "mode": "from_images",
   "opencv": "4.13.0",
   "dist_model": "brown_conrady5",
   "calib_flags": {
     "use_factory_guess": true,
     "fix_aspect": false,
-    "zero_tangent": false
+    "zero_tangent": true,
+    "views_per_folder": 18
   },
   "board": {
     "squares_x": 9,
@@ -35,20 +36,20 @@
       "serial": "136622073980",
       "is_gripper": true,
       "status": "written",
-      "rms_px": 0.3510418710971335,
+      "rms_px": 0.4021283989652118,
       "num_views_used": 18,
-      "num_views_total": 20,
-      "num_dropped": 2,
+      "num_views_total": 18,
+      "num_dropped": 0,
       "K": [
         [
-          906.5101273429561,
+          907.9701215976048,
           0.0,
-          641.3943884983084
+          643.3133514734474
         ],
         [
           0.0,
-          913.3844375483864,
-          380.1997439823334
+          912.2107978518654,
+          382.39123106024465
         ],
         [
           0.0,
@@ -57,11 +58,11 @@
         ]
       ],
       "D": [
-        0.21441935570372173,
-        -0.7221920304742091,
-        0.001056794881357384,
-        0.0008994698974062826,
-        0.7333058188177966
+        0.1684429169826601,
+        -0.5306530342541755,
+        0.0,
+        0.0,
+        0.48556307513262936
       ],
       "factory_K": [
         [
@@ -87,6 +88,65 @@
         0.0,
         0.0
       ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.6666666368988801,
+          "offset_px": [
+            -1.197561095978017e-05,
+            6.925831485204981e-06
+          ]
+        },
+        "rms_px_pooled": 0.511787636999645,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 0,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.702833329085942,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 0,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4021283989652118,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 0,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.3549028539184313,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 0,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.3077473593310758,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
       "num_images": 20,
       "image_observations": [
         {
@@ -102,7 +162,7 @@
         {
           "file": "cam0/view_1789562884430277152.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam0/view_1789562886890060258.png",
@@ -157,7 +217,7 @@
         {
           "file": "cam0/view_1789562931348605377.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam0/view_1789562933698444190.png",
@@ -189,26 +249,30 @@
           "charuco_corners": 39,
           "status": "detected"
         }
-      ]
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
     },
     "1": {
       "serial": "319522062138",
       "is_gripper": false,
       "status": "written",
-      "rms_px": 0.44472295187604455,
-      "num_views_used": 22,
-      "num_views_total": 26,
-      "num_dropped": 4,
+      "rms_px": 0.4961877537464064,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
       "K": [
         [
-          913.4435077456501,
+          910.6551751313328,
           0.0,
-          610.8107689420558
+          623.2257663869283
         ],
         [
           0.0,
-          913.977134013154,
-          372.34312022502183
+          913.0107400946072,
+          376.5493049595291
         ],
         [
           0.0,
@@ -217,11 +281,11 @@
         ]
       ],
       "D": [
-        0.13193529710212176,
-        -0.40624852885790086,
-        -0.000388338888779722,
-        -0.0047187530109705856,
-        0.3842164649714844
+        0.13591662759182582,
+        -0.40763076310199553,
+        0.0,
+        0.0,
+        0.36944517547467626
       ],
       "factory_K": [
         [
@@ -247,6 +311,65 @@
         0.0,
         0.0
       ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.6666666517267443,
+          "offset_px": [
+            1.400803739670664e-05,
+            -1.2007558723325928e-05
+          ]
+        },
+        "rms_px_pooled": 0.582190355911406,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 1,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.8059703370073783,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 1,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4961877537464064,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 1,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.362929908142684,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 1,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.365829031539686,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
       "num_images": 26,
       "image_observations": [
         {
@@ -262,12 +385,12 @@
         {
           "file": "cam1/view_1789562996636183266.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789562998978143871.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789563001641024882.png",
@@ -282,12 +405,12 @@
         {
           "file": "cam1/view_1789563006277030199.png",
           "charuco_corners": 39,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789563008287744035.png",
           "charuco_corners": 39,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789563012578726710.png",
@@ -322,7 +445,7 @@
         {
           "file": "cam1/view_1789563047595108048.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789563053404375908.png",
@@ -352,12 +475,12 @@
         {
           "file": "cam1/view_1789563073525938979.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789563078526904949.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789563083007326098.png",
@@ -367,7 +490,7 @@
         {
           "file": "cam1/view_1789563086218249952.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam1/view_1789563091108587788.png",
@@ -379,26 +502,30 @@
           "charuco_corners": 35,
           "status": "detected"
         }
-      ]
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
     },
     "2": {
       "serial": "912322060991",
       "is_gripper": false,
       "status": "written",
-      "rms_px": 0.423576247893656,
-      "num_views_used": 17,
-      "num_views_total": 19,
-      "num_dropped": 2,
+      "rms_px": 0.4855971000922631,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
       "K": [
         [
-          917.4376441534797,
+          921.9553228532196,
           0.0,
-          637.2666954167997
+          646.2996278537642
         ],
         [
           0.0,
-          916.6913346126296,
-          367.7679805855832
+          923.8134202342135,
+          363.7163122699323
         ],
         [
           0.0,
@@ -407,11 +534,11 @@
         ]
       ],
       "D": [
-        0.1543040479306574,
-        -0.40145574908096,
-        0.0020577512049994883,
-        -0.0025649764284458496,
-        0.1974639753550966
+        0.16823417811805605,
+        -0.49591551352509966,
+        0.0,
+        0.0,
+        0.37816589516104004
       ],
       "factory_K": [
         [
@@ -437,6 +564,65 @@
         0.0,
         0.0
       ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.6666666373700085,
+          "offset_px": [
+            -1.2289656638131419e-05,
+            3.6469940596361994e-05
+          ]
+        },
+        "rms_px_pooled": 0.4818582003469689,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 2,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.7098483321777433,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 2,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4855971000922631,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 2,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.3106295310593341,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 2,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.2512531753556276,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
       "num_images": 21,
       "image_observations": [
         {
@@ -457,7 +643,7 @@
         {
           "file": "cam2/view_1789563136223721779.png",
           "charuco_corners": 39,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam2/view_1789563137724600901.png",
@@ -544,26 +730,30 @@
           "charuco_corners": 40,
           "status": "detected"
         }
-      ]
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
     },
     "3": {
       "serial": "039422061216",
       "is_gripper": false,
       "status": "written",
-      "rms_px": 0.4719950849698602,
-      "num_views_used": 21,
-      "num_views_total": 25,
-      "num_dropped": 4,
+      "rms_px": 0.579575051211785,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
       "K": [
         [
-          914.211409900428,
+          912.0750750601248,
           0.0,
-          651.6142841175133
+          651.8229637967199
         ],
         [
           0.0,
-          916.8143719529352,
-          366.6844563207385
+          912.8613995921368,
+          368.4117662143963
         ],
         [
           0.0,
@@ -572,11 +762,11 @@
         ]
       ],
       "D": [
-        0.1753985996424456,
-        -0.5825541174938557,
-        -0.00011532598466059538,
-        -0.000253962712458829,
-        0.599401740039915
+        0.16474576594905024,
+        -0.5150635345208313,
+        0.0,
+        0.0,
+        0.4812354612371536
       ],
       "factory_K": [
         [
@@ -602,6 +792,65 @@
         0.0,
         0.0
       ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.666666637038978,
+          "offset_px": [
+            2.8924635103066976e-05,
+            3.6620116134145064e-05
+          ]
+        },
+        "rms_px_pooled": 0.5448320186531614,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 3,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.7438765816098928,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 3,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.579575051211785,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 3,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.3729764829821878,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 3,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.2706436203860152,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
       "num_images": 25,
       "image_observations": [
         {
@@ -632,7 +881,7 @@
         {
           "file": "cam3/view_1789568118798330120.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam3/view_1789568121049380768.png",
@@ -662,12 +911,12 @@
         {
           "file": "cam3/view_1789568134674393904.png",
           "charuco_corners": 39,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam3/view_1789568137694122584.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam3/view_1789568139863257975.png",
@@ -682,7 +931,7 @@
         {
           "file": "cam3/view_1789568142883892468.png",
           "charuco_corners": 34,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam3/view_1789568144784501720.png",
@@ -697,7 +946,7 @@
         {
           "file": "cam3/view_1789568158259459922.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam3/view_1789568161103626415.png",
@@ -707,7 +956,7 @@
         {
           "file": "cam3/view_1789568167256988423.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam3/view_1789568170546195237.png",
@@ -727,28 +976,32 @@
         {
           "file": "cam3/view_1789568186178316259.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         }
-      ]
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
     },
     "4": {
       "serial": "752112070297",
       "is_gripper": false,
       "status": "written",
-      "rms_px": 0.3995383051403015,
-      "num_views_used": 23,
-      "num_views_total": 26,
-      "num_dropped": 3,
+      "rms_px": 0.4609112182579516,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
       "K": [
         [
-          922.5094004453484,
+          922.4971125746722,
           0.0,
-          650.181560888032
+          650.045462934366
         ],
         [
           0.0,
-          923.8767819775159,
-          351.9844427714905
+          922.3297662482121,
+          355.0949403373183
         ],
         [
           0.0,
@@ -757,11 +1010,11 @@
         ]
       ],
       "D": [
-        0.15536857314213687,
-        -0.4955759182353534,
-        -0.0013852776444589763,
-        0.0005549323493783525,
-        0.4903092496847818
+        0.1534157897131835,
+        -0.4565898961407673,
+        0.0,
+        0.0,
+        0.3770119943011149
       ],
       "factory_K": [
         [
@@ -787,6 +1040,65 @@
         0.0,
         0.0
       ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.6666666519647093,
+          "offset_px": [
+            3.466871760338108e-05,
+            1.8021464427420142e-05
+          ]
+        },
+        "rms_px_pooled": 0.5523009169589103,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 4,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.6979436212716529,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 4,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4609112182579516,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 4,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.2946347014283678,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 4,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.38914873999441024,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
       "num_images": 26,
       "image_observations": [
         {
@@ -797,7 +1109,7 @@
         {
           "file": "cam4/view_1789568302453248520.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam4/view_1789568307602318025.png",
@@ -827,12 +1139,12 @@
         {
           "file": "cam4/view_1789568326441239345.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam4/view_1789568329131359415.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam4/view_1789568338672084753.png",
@@ -872,7 +1184,7 @@
         {
           "file": "cam4/view_1789568357846396679.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam4/view_1789568360539817758.png",
@@ -887,7 +1199,7 @@
         {
           "file": "cam4/view_1789568364001522787.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam4/view_1789568371414349882.png",
@@ -907,20 +1219,38 @@
         {
           "file": "cam4/view_1789568380120402807.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam4/view_1789568383801371718.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         },
         {
           "file": "cam4/view_1789568390282235406.png",
           "charuco_corners": 40,
-          "status": "detected"
+          "status": "not_selected_for_balance"
         }
-      ]
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
     }
   },
-  "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720/raw_capture"
+  "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720/raw_capture",
+  "joint_with": [
+    {
+      "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+      "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720/raw_capture"
+    },
+    {
+      "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+      "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720/raw_capture"
+    },
+    {
+      "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+      "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720/raw_capture"
+    }
+  ]
 }

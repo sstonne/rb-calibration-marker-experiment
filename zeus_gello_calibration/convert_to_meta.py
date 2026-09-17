@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """zeus_gello_calibration/convert_to_meta.py -- Zeus legacy 촬영(session1/2/3,
-폴더별 cam_<label>.png + robot.json)을 04_filter_observations -> 05_calibrate ->
-06_make_report 가 읽는 `data/session<NN>_<설명>_<MMDD>/calib_train/meta.json`
+폴더별 cam_<label>.png + robot.json)을 04_filter_observations -> 05_calibrate
+가 읽는 `data/session<NN>_<설명>_<MMDD>/calib_train/meta.json`
 형식으로 변환한다. ur3_calibration/convert_to_meta.py 의 Zeus 판.
 
-앞으로 모든 캘리브레이션은 01~06 파이프라인으로만 돌린다. 새 촬영은
+앞으로 모든 캘리브레이션은 01~05 파이프라인으로만 돌린다. 새 촬영은
 03_capture.py 가 이 형식으로 바로 저장하고, 옛 데이터는 이 변환기를 한 번
 거친다 -- 그래야 옛 결과와 새 결과가 같은 러너(05)로 비교된다.
 

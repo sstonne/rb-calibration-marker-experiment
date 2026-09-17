@@ -1,6 +1,6 @@
 # 다중 고정카메라·로봇 Hand–Eye 캘리브레이션 비교실험
 
-이 문서는 실제 데이터 캡처부터 A0~A5/B1~B3 비교실험, 평가 계약, 결과 파일 생성까지의 메인 설명서다. 구현의 기준은 root의 `01_...py`~`06_...py` 실행 파일과 `calibration_pipeline/`이며, 현재 최종 추정기는 모든 실행 조건에서 동일한 **raw-corner pixel reprojection 최적화**를 사용한다. 단계별 입력·과정·결과와 복사 가능한 전체 명령은 [`RUN_PIPELINE.md`](RUN_PIPELINE.md)를 따른다.
+이 문서는 실제 데이터 캡처부터 A0~A5/B1~B3 비교실험, 평가 계약, 결과 파일 생성까지의 메인 설명서다. 구현의 기준은 root의 `01_...py`~`05_...py` 실행 파일과 `calibration_pipeline/`이며, 현재 최종 추정기는 모든 실행 조건에서 동일한 **raw-corner pixel reprojection 최적화**를 사용한다. 단계별 입력·과정·결과와 복사 가능한 전체 명령은 [`RUN_PIPELINE.md`](RUN_PIPELINE.md)를 따른다.
 
 ## 바로가기
 
@@ -49,10 +49,9 @@ COMMON="--root_folder data/session02_NOUSE_session04_0814/calib_train --include_
   --min_train_eih_cube_events 3 --split_seed 20260731 --observation-filter-policy standard"
 
 python3 05_calibrate.py                 $COMMON --num_inits 3
-python3 06_make_report.py --root_folder data/session02_NOUSE_session04_0814/calib_train
 ```
 
-두 명령으로 calibration과 상세 결과/전체 행렬 출력이 끝난다. Cross-target,
+이 명령으로 calibration이 끝나고 결과와 모든 행렬은 `ABLATION_TEST_table1_methods.json`에 저장된다. ABLATION_TEST 결과 표(Markdown·요약 CSV·fold CSV)는 [zeus_gello_calibration/table1_zeus.py](zeus_gello_calibration/table1_zeus.py) 하나가 계산과 보고서 생성을 모두 맡는다. 저장된 JSON으로 보고서만 다시 만들 때는 `--report-only <JSON>`을 쓴다. Cross-target,
 marker-system, OpenCV baseline은 `tools/`에 있는 선택 평가이며 메인 완료 조건이 아니다.
 
 ```bash
@@ -703,12 +702,12 @@ Markdown/HTML은 새 JSON/CSV만 입력으로 사용해 다시 생성한다. 이
 
 | 코드 | 역할 |
 | --- | --- |
-| `01_...py`~`06_...py` | 사용자가 순서대로 실행하는 calibration 전용 root CLI 진입점 |
+| `01_...py`~`05_...py` | 사용자가 순서대로 실행하는 calibration 전용 root CLI 진입점 |
 | `capture_pipeline/` | intrinsic 내보내기·ChArUco 보정·동기 촬영 구현 |
 | `calibration_pipeline/filter_observations.py` | 촬영 후 전체 재검출, frozen-corner manifest와 재촬영 후보 생성 |
 | `calibration_pipeline/schema.py` | A/B 조건, 자유변수, 공정 비교 계약 |
 | `calibration_pipeline/table1.py` | split, baseline, A/B 실행, raw result 저장 |
-| `calibration_pipeline/report.py` | 05 결과의 수렴·오차·prune 결정과 전체 행렬 보고서 생성 |
+| `zeus_gello_calibration/table1_zeus.py` | Zeus ABLATION_TEST Table 1 계산(ALL·LOPO)과 결과 MD·CSV 생성 |
 | `calibration_pipeline/observations.py` | board/cube raw pixel observation 구성 |
 | `calibration_pipeline/se3.py` | PnP pose의 robust 평균과 meta/FK 로딩 |
 | `calibration_pipeline/fk_alignment.py` | board-free train-only FK–cube alignment |
@@ -750,12 +749,6 @@ python3 05_calibrate.py \
   --split_seed 20260731 \
   --num_inits 3 \
   --observation-manifest data/session<NN>_<설명>_<MMDD>/calib_out/capture_filter/Step2b_observation_manifest.json \
-  --out_dir ABLATION_TEST_result_0909/sessionNN/ABLATION_TEST_table1
-
-# 상세 calibration 결과와 모든 행렬 출력
-python3 06_make_report.py \
-  --root_folder data/session<NN>_<설명>_<MMDD>/calib_train \
-  --table1 ABLATION_TEST_result_0909/sessionNN/ABLATION_TEST_table1/ABLATION_TEST_table1_methods.json \
   --out_dir ABLATION_TEST_result_0909/sessionNN/ABLATION_TEST_table1
 
 # 선택 평가: 저장된 모든 방법의 외부-GT 전 board/cube 내부 평가

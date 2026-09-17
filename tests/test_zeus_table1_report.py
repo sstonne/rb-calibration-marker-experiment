@@ -6,7 +6,7 @@ import math
 
 import pytest
 
-from zeus_gello_calibration import report_table1 as report
+from zeus_gello_calibration import table1_zeus as report
 
 
 def _stats(rmse, count):
@@ -91,11 +91,18 @@ def test_pair_metrics_pool_unequal_corner_support_and_folds_preserve_counts(tmp_
     assert sum(float(row["sum_squared_error_px2"]) for row in selected) == 148
 
 
-def test_cli_regenerates_without_importing_fitting_module(tmp_path):
+def test_report_only_cli_regenerates_without_refit(tmp_path, monkeypatch):
     source = tmp_path / "result.json"
     source.write_text(json.dumps(_result()))
+    original = source.read_bytes()
     out = tmp_path / "output"
-    report.main(["--input", str(source), "--out-dir", str(out)])
+    monkeypatch.setattr(report, "fit_row", lambda *args, **kwargs: pytest.fail("refit"))
+    monkeypatch.setattr("sys.argv", ["table1_zeus.py", "--report-only", str(source),
+                                     "--report-dir", str(out)])
+    report.main()
+    assert source.read_bytes() == original
+    assert (out / "ABLATION_TEST_table1_methods.json").read_bytes() == original
+    assert (out / "ABLATION_TEST_table1_results.csv").exists()
     assert (out / "fold_metrics.csv").exists()
     markdown = (out / "ABLATION_TEST_TABLE1_RESULTS.md").read_text()
     for contract in ("외부 입력: capture_0914", "end-to-end", "A→B", "B→A", "sqrt(mean(dx² + dy²))"):
@@ -106,6 +113,21 @@ def test_cli_regenerates_without_importing_fitting_module(tmp_path):
 def test_rejects_legacy_metrics_instead_of_mislabeling_them(tmp_path):
     with pytest.raises(ValueError, match="Expected"):
         report.write_reports({"schema": "table1_v1", "rows": {}}, tmp_path)
+    source = tmp_path / "legacy.json"
+    source.write_text(json.dumps({"schema": "table1_zeus_future_v5", "rows": {}}))
+    out = tmp_path / "export"
+    with pytest.raises(ValueError, match="Expected"):
+        report.regenerate_reports(source, out)
+    assert not out.exists()
+
+
+def test_report_only_defaults_next_to_input_and_keeps_json(tmp_path):
+    source = tmp_path / "ABLATION_TEST_table1_methods.json"
+    source.write_text(json.dumps({"schema": report.SCHEMA, "rows": {}}))
+    original = source.read_bytes()
+    paths = report.regenerate_reports(source, source.parent)
+    assert all(path.parent == tmp_path and path.exists() for path in paths.values())
+    assert source.read_bytes() == original
 
 
 def test_report_paths_and_structure_are_portable_across_new_datasets(tmp_path):

@@ -1,11 +1,11 @@
 # Calibration → Table 1 실행 순서
 
-메인 실행 파일은 저장소 root의 `01_...py`부터 `06_...py`까지다. 01~05가
-입력 준비와 calibration을 수행하고, 06은 05 결과만 읽어 CSV와 행렬 JSON을 만든다.
+메인 실행 파일은 저장소 root의 `01_...py`부터 `05_...py`까지다. 01~05가
+입력 준비와 calibration을 수행한다. ABLATION_TEST 결과 표(Markdown·요약 CSV·fold CSV)는 [zeus_gello_calibration/table1_zeus.py](zeus_gello_calibration/table1_zeus.py) 하나가 계산과 보고서 생성을 모두 맡는다. 저장된 JSON으로 보고서만 다시 만들 때는 `--report-only <JSON>`을 쓴다.
 Cross-target·marker-system·OpenCV baseline은 calibration 완료에 필요하지 않아
 `tools/`의 선택 평가로 분리했다.
 
-여섯 파일은 모두 얇은 진입점이고 실제 구현은 `capture_pipeline/`·`calibration_pipeline/`
+다섯 파일은 모두 얇은 진입점이고 실제 구현은 `capture_pipeline/`·`calibration_pipeline/`
 안에 있다. 각 단계가 **무슨 식을 푸는지**와 **어느 모듈·함수가 그 일을 하는지**는
 아래 [단계별 원리와 구현 위치](#단계별-원리와-구현-위치)에 정리했고, 같은 내용이
 각 스크립트 상단 docstring에도 들어 있다. 코드를 고칠 때는 그 표에서 대상 모듈을
@@ -51,11 +51,6 @@ python3 05_calibrate.py \
   --observation-manifest data/session02_NOUSE_session04_0814/calib_out/capture_filter/Step2b_observation_manifest.json \
   --out_dir ABLATION_TEST_result_0909/session02_NOUSE_session04_0814/ABLATION_TEST_table1
 
-# 06 — 05 결과만으로 요약 CSV·전체 calibration 행렬 출력
-python3 06_make_report.py \
-  --root_folder data/session02_NOUSE_session04_0814/calib_train \
-  --table1 ABLATION_TEST_result_0909/session02_NOUSE_session04_0814/ABLATION_TEST_table1/ABLATION_TEST_table1_methods.json \
-  --out_dir ABLATION_TEST_result_0909/session02_NOUSE_session04_0814/ABLATION_TEST_table1
 ```
 
 ## 단계별 입력 · 과정 · 결과
@@ -67,11 +62,10 @@ python3 06_make_report.py \
 | 03 `capture` (현재 legacy) | 02 결과, board/cube, 카메라, robot FK | `A_placement/B_eyetohand` block에서 동기화 및 marker quality gate를 통과한 event를 저장한다 | `data/session<NN>_<설명>_<MMDD>/calib_train/meta.json`, RGB/depth 이미지 |
 | 04 `filter_observations` | 03 세션, 고정 K/D | 모든 RGB를 다시 검출하고 관측 정책을 적용해 native-pixel corner와 원본 SHA-256을 고정한다 | `Step2b_observation_manifest.json`, QA CSV, overlay, `CAPTURE_FILTER.md` |
 | 05 `calibrate` | 04 manifest, K/D, `meta.json`, robot FK | event 단위 train/held-out 분리, 공통 초기화, 9개 조건 fit, `frame-prune → refit → rollback`, held-out 평가 | `ABLATION_TEST_table1_methods.json`, 두 shared artifact |
-| 06 `make_report` | 05의 `ABLATION_TEST_table1_methods.json` | 재최적화 없이 수렴·오차·prune 결정과 모든 행렬을 정리한다 | `calibration_summary.csv`, `calibration_matrices.json` |
 
 ## 단계별 원리와 구현 위치
 
-root의 `01_...py` ~ `06_...py`는 얇은 진입점이고 실제 동작은 패키지 모듈에 있다.
+root의 `01_...py` ~ `05_...py`는 얇은 진입점이고 실제 동작은 패키지 모듈에 있다.
 각 파일 상단 docstring에 같은 내용이 더 자세히 적혀 있으므로, 코드를 고칠 때는
 아래 표에서 대상 모듈을 찾고 해당 파일의 docstring부터 읽는다.
 
@@ -220,23 +214,6 @@ A4/B1/B2는 반대로 corrected-FK를 soft factor 잔차 블록으로 추가한�
 | `calibration_pipeline/evaluation.py` | — | 재투영 지표 집계 |
 | `calibration_pipeline/path_evaluation.py` | — | cross-view / cam-common 일관성 |
 
-### 06 — 보고
-
-**아무것도 추정하지 않는다.** 최적화도 재적합도 없고, held-out 점수로 seed를
-고르지도 않는다(성적으로 고르면 그 순간 held-out이 아니게 된다). 대표 seed는
-`--representative_seed` 기본 0으로 고정하고, 수렴·prune 통계만 3 seed 평균과
-표준편차로 보고한다.
-
-| 모듈 | 함수 / 상수 | 역할 |
-| --- | --- | --- |
-| `calibration_pipeline/report.py` | `main()` / `parse_args()` | 경로 기본값 해석 |
-| | `write_report()` | 검증 → 행 요약 → CSV/JSON 기록 |
-| | `_validate()` | 행 집합·대표 seed·필수 행렬 존재 확인 |
-| | `_row_summary()` | 행별 수렴·prune·지표 요약 |
-| | `_matrix_artifact()` | 대표 seed 행렬 + 의미 문자열 |
-| | `MATRIX_SEMANTICS` | 아래 "배포 대상" 구분의 근거 문자열 |
-| `calibration_pipeline/runtime.py` | `session_paths()` | 세션 경로 규칙 |
-
 ## 최종 촬영 흐름
 
 최종 protocol의 P1 15 / P2 20 / P3 10 구성, pose JSON 생성·검증, robot server 실행,
@@ -248,7 +225,7 @@ A4/B1/B2는 반대로 corrected-FK를 soft factor 잔차 블록으로 추가한�
 현재 final protocol은 03 촬영과 04 frozen-observation 생성까지 실행 가능하다. 05에는
 P2 placement-grouped split과 P3 독립 그룹 검사가 들어갔지만, P1에서 함께 움직이는
 board/cube를 하나의 common-rig pose로 푸는 phase-aware residual 모델은 아직 구현 전이다.
-따라서 `composite_rig_45_v2` 데이터의 05/06은 위 문서의 완료 표시 전까지 실행하지 않는다.
+따라서 `composite_rig_45_v2` 데이터의 05는 위 문서의 완료 표시 전까지 실행하지 않는다.
 
 ## 각 calibration 행렬은 언제 나오는가
 
@@ -264,7 +241,6 @@ board/cube를 하나의 common-rig pose로 푸는 phase-aware residual 모델은
 | 05 공통 초기화 | `shared_reference_state`, `row_reference_states` | train 관측만 사용한 PnP/robust pose 초기화 | `shared_train_only_baseline.json`; optimizer 시작점 |
 | 05 FK 정렬 | `T_gripper_cam`, `T_fk_cube_center_to_tag_object`, `raw_fk_pose_by_set`, `aligned_fk_pose_by_set` | train-only board-free FK–cube alignment | `shared_board_free_fk_cube.json`; A4/A5/B1/B2 입력 |
 | 05 각 행·seed 종료 | `T_base_Ci`, `T_gripper_cam`, `T_base_board`, `T_base_cube_by_set` | raw-corner reprojection fit 후 prune/refit 결과가 개선되면 채택, 아니면 첫 fit으로 rollback | `ABLATION_TEST_table1_methods.json → rows.<행>.runs[*].transforms`; **최종값** |
-| 06 | 새 행렬 없음 | 05의 최종값을 CSV와 독립 JSON으로 복사·요약 | `calibration_matrices.json`에 9행×3 seed 전체 보존 |
 
 최종 배포 대상은 `T_base_Ci = T^B_Ci`와 `T_gripper_cam = T^G_C`다.
 `T_base_board`와 `T_base_cube_by_set`은 카메라들을 같은 좌표계로 묶는 target pose라서
@@ -292,7 +268,7 @@ ABLATION_TEST_table1_methods.json
 
 `frame_prune_refit.accepted=true`이면 제거 후 재적합 행렬이 최종값이다.
 `rolled_back=true`이면 전체 train robust objective가 개선되지 않아 제거 전 행렬이 최종값이다.
-둘 다 정상 종료이며, 06 보고서에서 행별 시도/채택/rollback 수를 확인할 수 있다.
+둘 다 정상 종료이며, 행별 시도/채택/rollback 수는 위 JSON의 `frame_prune_refit`에서 확인한다.
 
 ## 선택 평가 — calibration 완료 후 필요할 때만
 

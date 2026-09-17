@@ -90,5 +90,5 @@ fixed↔fixed 전달에는 FK가 필요 없고, fixed↔gripper 전달에는 촬
 같은 JSON을 보고서로 다시 내보내기(재fit 없음):
 
 ```bash
-python 06_make_report.py --table1 <결과폴더>/ABLATION_TEST_table1_methods.json
+python zeus_gello_calibration/table1_zeus.py --report-only <결과폴더>/ABLATION_TEST_table1_methods.json
 ```

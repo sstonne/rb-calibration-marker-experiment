@@ -54,6 +54,6 @@ JSON에는 `T_flange_cube`(4×4, 이동 단위 m), `vision_used: false`, `source
 기존 결과를 재fit하지 않고 같은 형식의 표만 재생성하려면 다음을 실행한다.
 
 ```bash
-python3 06_make_report.py \
-  --table1 ABLATION_TEST_result_0914/zeus_recapture_0914/ABLATION_TEST_table1/ABLATION_TEST_table1_methods.json
+python3 zeus_gello_calibration/table1_zeus.py \
+  --report-only ABLATION_TEST_result_0914/zeus_recapture_0914/ABLATION_TEST_table1/ABLATION_TEST_table1_methods.json
 ```

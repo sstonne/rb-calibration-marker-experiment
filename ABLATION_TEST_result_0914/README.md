@@ -22,7 +22,7 @@
 LOPO 결과로 이름만 바꾸거나, 0909 결과를 0914 재촬영 결과로 복사할 수 없다.
 새 보고서는 사용자가 지정한 **실제 0914 재촬영 데이터**를 다시 계산한 결과다.
 
-현재 `06_make_report.py`는 v4 JSON을 입력받으면 같은 간략 MD·CSV 생성기를 호출한다.
+현재 계산과 MD·CSV 생성은 `zeus_gello_calibration/table1_zeus.py` 하나로 합쳤다(보고서만 재생성: `--report-only <JSON>`). `06_make_report.py`는 2026-09-17에 삭제했다.
 새 데이터도 같은 LOPO 실행기로 계산한 v4 JSON을 사용해야 한다. 기존 event-split JSON의
 점수를 보고서 단계에서 LOPO 점수로 바꾸지는 않는다.
 

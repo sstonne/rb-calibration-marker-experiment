@@ -164,7 +164,6 @@ COMMON="--root_folder data/<새세션>/calib_train --include_sets 0-12 \
   --min_train_eih_cube_events 3 --split_seed 20260731 --observation-filter-policy standard"
 python3 05_calibrate.py $COMMON --num_inits 3 \
   --fk_covariance_json protocol_templates/fk_covariance_<날짜>.json   # Track B 산출물
-python3 06_make_report.py --root_folder data/<새세션>/calib_train
 
 # 선택 평가: calibration 완료에는 필요하지 않음
 python3 tools/evaluate_cross_target.py $COMMON --num_inits 3

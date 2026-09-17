@@ -25,10 +25,12 @@ depth 관련 필드(depth_K, depth_scale, R_depth_to_color 등)와 해상도/시
 --capture_only: 보드 검출 없이 SPACE마다 raw_capture/에 원본 PNG와 카메라 정보를 저장.
 --from_images: 카메라 없이 raw_capture/를 읽고 현재 지정한 보드 정의로 보정.
 --images_dir: 다른 이미지 수집 폴더를 선택 (기본: intr_dir/raw_capture).
---joint_intr_dir: (--from_images) 같은 카메라를 다른 해상도로 찍은 폴더의 사진까지
-  기준 해상도 좌표로 환산해 한 번에 보정한다. 공장 K 가 해상도 비율로 정확히
-  비례할 때만 합치고, 두 폴더에 비율로 환산한 K 와 같은 D 를 쓴다.
+--joint_intr_dir: (--from_images) 같은 카메라를 다른 해상도로 찍은 폴더들(여러 개)의
+  사진까지 공장 K 관계(배율 + 잘림 오프셋)로 기준 좌표에 환산해 한 번에 보정하고,
+  모든 폴더에 환산한 K 와 같은 D 를 쓴다. 공장 K 의 가로/세로 배율이 다른 폴더는 뺀다.
 --zero_tangent: 접선 왜곡 p1, p2 를 0 으로 고정.
+--views_per_folder N: (--from_images) 카메라마다 각 폴더에서 다양성 최대 N장만 골라
+  모든 폴더가 같은 장수로 보정한다.
 
 키 조작 (카메라별 수집 중):
   SPACE : 현재 프레임 그랩
@@ -40,9 +42,9 @@ depth 관련 필드(depth_K, depth_scale, R_depth_to_color 등)와 해상도/시
 명령어 예시:
   python3 02_calibrate_intrinsics.py --list_boards
   python3 02_calibrate_intrinsics.py --intr_dir ./intrinsics --board 9x6_id90
-  python3 02_calibrate_intrinsics.py --intr_dir intrinsics_1280x720 \
-      --joint_intr_dir intrinsics_1920x1080_rgbd720 \
-      --from_images --use_factory_guess --zero_tangent --board 9x6_id90
+  python3 02_calibrate_intrinsics.py --intr_dir intrinsics_1920x1080_rgbd720 \
+      --joint_intr_dir intrinsics_1280x720 intrinsics_848x480_rgbd720 intrinsics_640x360_rgbd720 \
+      --from_images --use_factory_guess --zero_tangent --board 9x6_id90 --views_per_folder 18
 """
 
 import os
@@ -230,10 +232,16 @@ def _run_calib(views, image_size, flags, K0=None, D0=None):
     return float(rms), K, D, per_view
 
 
-def calibrate_intrinsics(board, accepted, image_size, flags, K0=None, D0=None):
+def calibrate_intrinsics(board, accepted, image_size, flags, K0=None, D0=None, groups=None,
+                         reject_outliers=True):
     """2-pass 보정: 1차 보정 -> per-view 이상치 제거 -> 2차 보정.
 
+    reject_outliers=False 면 1차 보정 결과를 그대로 쓴다 (장수를 맞춘 사진을 전부 쓸 때).
+
     accepted: [(ch_corners, ch_ids), ...]
+    groups: accepted 와 같은 길이의 그룹 id (예: 해상도 폴더). 주면 이상치 기준
+      (평균+1σ)을 그룹마다 따로 잡는다. 해상도가 다른 사진은 기준 픽셀로 환산한
+      오차 수준이 달라서, 한 기준을 쓰면 저해상도 사진만 골라 버리게 된다.
     반환: dict 또는 None (뷰 부족). used_index 는 최종 보정에 쓰인 accepted 의
     인덱스이고 per_view / used_points 와 같은 순서다.
     """
@@ -248,10 +256,23 @@ def calibrate_intrinsics(board, accepted, image_size, flags, K0=None, D0=None):
         return None
 
     rms, K, D, per = _run_calib(views, image_size, flags, K0, D0)
+    if not reject_outliers:
+        return {
+            "rms": rms, "K": K, "D": D,
+            "n_used": len(views), "n_total": len(views),
+            "n_dropped": 0, "reject_thr_px": None,
+            "per_view": per, "used_index": index,
+            "used_points": [len(v[0]) for v in views],
+        }
     per_arr = np.asarray(per)
-    thr = float(per_arr.mean() + per_arr.std())
+    labels = [0] * len(views) if groups is None else [groups[i] for i in index]
+    thr_by_group = {}
+    for group in dict.fromkeys(labels):
+        errs = per_arr[[k for k, label in enumerate(labels) if label == group]]
+        thr_by_group[group] = float(errs.mean() + errs.std())
+    thr = thr_by_group[0] if groups is None else thr_by_group
 
-    kept = [k for k, e in enumerate(per) if e <= thr]
+    kept = [k for k, e in enumerate(per) if e <= thr_by_group[labels[k]]]
     dropped = len(views) - len(kept)
 
     if len(kept) >= 4 and dropped > 0:
@@ -409,68 +430,101 @@ def collect_for_camera(cam, target, cam_idx, is_gripper, args, save_dir):
 # ---------------------------------------------------------------------------
 # npz 갱신 / 리포트
 # ---------------------------------------------------------------------------
-# 두 해상도 스트림이 같은 화각인지 판단하는 공장 K 허용오차 (합칠 쪽 픽셀 단위).
-# RealSense 공장 K 는 1280 <-> 1920 이 부동소수 오차 수준으로 정확히 비례한다.
-JOINT_FACTORY_TOL_PX = 0.5
+# 공장 K 의 가로/세로 배율 차이 허용치 (상대값). RealSense 는 한 센서 보정에서
+# 해상도별 공장 K 를 배율/잘림으로 만들기 때문에 1920/1280/848/640 사이의 배율이
+# 부동소수 오차 수준으로 같다.
+JOINT_SCALE_TOL = 1e-4
 
 
-def _joint_scale(size, joint_size):
-    """이 스트림 픽셀 -> 합칠 스트림 픽셀 배율. 가로/세로 배율이 같아야 한다."""
-    sx = joint_size[0] / size[0]
-    sy = joint_size[1] / size[1]
-    if abs(sx - sy) > 1e-9:
-        raise ValueError(
-            f"가로세로 비율이 다름: {size[0]}x{size[1]} vs {joint_size[0]}x{joint_size[1]}")
-    return sx
+def _stream_map(base_factory_K, factory_K):
+    """기준 스트림 픽셀 -> 이 스트림 픽셀 변환 u' = scale*u + offset.
 
-
-def _scale_K(K, scale):
-    """공장 K 와 같은 규약(fx, fy, cx, cy 에 배율을 그대로 곱함)으로 K 환산."""
-    scaled = np.asarray(K, dtype=np.float64).copy()
-    scaled[:2] *= scale
-    return scaled
-
-
-def _rms_by_source(result, n_first):
-    """최종 보정의 뷰별 오차를 accepted[:n_first] 와 나머지로 나눠 코너 수 가중 RMS 로.
-
-    반환: ([rms_first, rms_rest], [뷰 수_first, 뷰 수_rest]). 해당 뷰가 없으면 rms 는 None.
+    두 공장 K 의 관계가 곧 두 픽셀 좌표계의 관계다 (1280 = 1920 ÷1.5,
+    848 = 1920 ÷2.25 에서 가로 양끝 잘림 등). 가로/세로 배율이 다르면 같은 화각이 아니다.
     """
-    sums = [[0.0, 0], [0.0, 0]]
-    views = [0, 0]
-    for i, err, n in zip(result["used_index"], result["per_view"], result["used_points"]):
-        side = 0 if i < n_first else 1
-        sums[side][0] += err * err * n
-        sums[side][1] += n
-        views[side] += 1
-    return [float(np.sqrt(sq / n)) if n else None for sq, n in sums], views
-
-
-def _open_joint_source(joint_intr_dir, joint_images_dir, intr_dir, base_images):
-    """--joint_intr_dir 폴더의 장치 맵과 원본 이미지를 연다. 문제가 있으면 ValueError."""
-    if os.path.abspath(joint_intr_dir) == os.path.abspath(intr_dir):
-        raise ValueError("--joint_intr_dir 가 --intr_dir 와 같습니다")
-    map_path = os.path.join(joint_intr_dir, "device_map.json")
-    if not os.path.exists(map_path):
-        raise ValueError(f"{map_path} 없음")
-    with open(map_path, "r") as f:
-        joint_map = json.load(f)
-    serial_to_idx = {str(k): int(v) for k, v in joint_map.get("serial_to_idx", {}).items()}
-    images = IntrinsicsImages(
-        joint_images_dir or os.path.join(joint_intr_dir, "raw_capture"), serial_to_idx)
-    if images.directory == base_images.directory:
-        raise ValueError("합칠 원본 이미지 폴더가 기준 폴더와 같습니다")
+    scale = factory_K[0, 0] / base_factory_K[0, 0]
+    scale_y = factory_K[1, 1] / base_factory_K[1, 1]
+    if abs(scale - scale_y) > JOINT_SCALE_TOL * scale:
+        raise ValueError(
+            f"공장 K 의 가로/세로 배율이 다름 ({scale:.5f} vs {scale_y:.5f}) - "
+            "같은 화각의 스트림이 아니면 합칠 수 없음")
     return {
-        "intr_dir": joint_intr_dir, "serial_to_idx": serial_to_idx,
-        "gripper_cam_idx": joint_map.get("gripper_cam_idx"), "images": images,
+        "scale": float(scale),
+        "offset": (float(factory_K[0, 2] - scale * base_factory_K[0, 2]),
+                   float(factory_K[1, 2] - scale * base_factory_K[1, 2])),
     }
 
 
-def _load_joint_camera(joint, serial, size, factory_K, target, min_corners):
-    """합칠 폴더에서 같은 시리얼 카메라의 검출 결과를 기준 해상도 좌표로 환산해 읽는다."""
+IDENTITY_MAP = {"scale": 1.0, "offset": (0.0, 0.0)}
+
+
+def _map_K(K, stream_map):
+    """기준 스트림 K -> 이 스트림 K. D 는 정규화 좌표 기준이라 그대로 쓴다."""
+    mapped = np.asarray(K, dtype=np.float64).copy()
+    scale = stream_map["scale"]
+    mapped[0, 0] *= scale
+    mapped[1, 1] *= scale
+    mapped[0, 2] = scale * mapped[0, 2] + stream_map["offset"][0]
+    mapped[1, 2] = scale * mapped[1, 2] + stream_map["offset"][1]
+    return mapped
+
+
+def _to_base_pixels(corners, stream_map):
+    """이 스트림의 코너 좌표 -> 기준 스트림 픽셀 좌표."""
+    base = np.asarray(corners, dtype=np.float64).copy()
+    base[..., 0] = (base[..., 0] - stream_map["offset"][0]) / stream_map["scale"]
+    base[..., 1] = (base[..., 1] - stream_map["offset"][1]) / stream_map["scale"]
+    return base.astype(np.float32)
+
+
+def _rms_by_group(result, groups):
+    """최종 보정의 뷰별 오차를 그룹별 코너 수 가중 RMS 로 (기준 픽셀 단위).
+
+    반환: {group: (rms, 사용 뷰 수)}. 최종 보정에 뷰가 남지 않은 그룹은 빠진다.
+    """
+    sums = {}
+    for i, err, n in zip(result["used_index"], result["per_view"], result["used_points"]):
+        sq, points, views = sums.get(groups[i], (0.0, 0, 0))
+        sums[groups[i]] = (sq + err * err * n, points + n, views + 1)
+    return {g: (float(np.sqrt(sq / points)), views) for g, (sq, points, views) in sums.items()}
+
+
+def _open_joint_sources(joint_dirs, joint_images_dirs, intr_dir, base_images):
+    """--joint_intr_dir 폴더들의 장치 맵과 원본 이미지를 연다. 문제가 있으면 ValueError."""
+    if joint_images_dirs and len(joint_images_dirs) != len(joint_dirs):
+        raise ValueError("--joint_images_dir 개수가 --joint_intr_dir 와 다릅니다")
+    seen_dirs = {os.path.abspath(intr_dir)}
+    seen_images = {base_images.directory}
+    sources = []
+    for k, joint_dir in enumerate(joint_dirs):
+        if os.path.abspath(joint_dir) in seen_dirs:
+            raise ValueError(f"폴더가 --intr_dir 또는 다른 --joint_intr_dir 와 같습니다: {joint_dir}")
+        seen_dirs.add(os.path.abspath(joint_dir))
+        map_path = os.path.join(joint_dir, "device_map.json")
+        if not os.path.exists(map_path):
+            raise ValueError(f"{map_path} 없음")
+        with open(map_path, "r") as f:
+            joint_map = json.load(f)
+        serial_to_idx = {str(s): int(i) for s, i in joint_map.get("serial_to_idx", {}).items()}
+        images_dir = (joint_images_dirs[k] if joint_images_dirs
+                      else os.path.join(joint_dir, "raw_capture"))
+        images = IntrinsicsImages(images_dir, serial_to_idx)
+        if images.directory in seen_images:
+            raise ValueError(f"원본 이미지 폴더가 중복됩니다: {images.directory}")
+        seen_images.add(images.directory)
+        sources.append({
+            "intr_dir": joint_dir, "serial_to_idx": serial_to_idx,
+            "gripper_cam_idx": joint_map.get("gripper_cam_idx"), "images": images,
+            "notes": {},  # serial -> 이 폴더에 쓰지 못한 이유
+        })
+    return sources
+
+
+def _load_joint_camera(joint, serial, base_factory_K, target, min_corners):
+    """합칠 폴더에서 같은 시리얼 카메라의 검출 결과를 기준 스트림 좌표로 환산해 읽는다."""
     idx = joint["serial_to_idx"].get(serial)
     if idx is None:
-        raise ValueError(f"serial {serial} 이 {joint['intr_dir']} 장치 맵에 없음")
+        raise ValueError(f"serial {serial} 이 장치 맵에 없음")
     npz_path = os.path.join(joint["intr_dir"], f"cam{idx}.npz")
     if not os.path.exists(npz_path):
         raise ValueError(f"{npz_path} 없음")
@@ -478,101 +532,87 @@ def _load_joint_camera(joint, serial, size, factory_K, target, min_corners):
         d = dict(archive)
     if str(d["serial"]) != serial:
         raise ValueError(f"{npz_path} serial={d['serial']} 가 장치 맵 serial={serial} 와 다름")
-    joint_size = (int(d["color_w"]), int(d["color_h"]))
-    scale = _joint_scale(size, joint_size)
-    joint_factory_K = np.asarray(d.get("factory_color_K", d["color_K"]), dtype=np.float64)
-    gap = float(np.max(np.abs(joint_factory_K - _scale_K(factory_K, scale))))
-    if gap > JOINT_FACTORY_TOL_PX:
-        raise ValueError(
-            f"공장 K 가 {scale:g}배 관계가 아님 (최대 차이 {gap:.2f}px) - "
-            "같은 화각의 스트림이 아니면 합칠 수 없음")
-    joint["images"].check_camera(idx, serial, *joint_size, int(d["fps"]))
+    size = (int(d["color_w"]), int(d["color_h"]))
+    factory_K = np.asarray(d.get("factory_color_K", d["color_K"]), dtype=np.float64)
+    stream_map = _stream_map(base_factory_K, factory_K)
+    joint["images"].check_camera(idx, serial, *size, int(d["fps"]))
     accepted, details = load_image_views(joint["images"], idx, target, min_corners)
     if not accepted:
         # 자기 사진 없이 다른 해상도 결과로 덮어쓰지 않는다 (촬영 전 폴더 보호).
         raise ValueError(
-            f"합칠 폴더에 이 카메라의 보드 검출 사진이 없음 "
-            f"({joint['images'].count(idx)}장 중 0장)")
+            f"보드 검출 사진이 없음 ({joint['images'].count(idx)}장 중 0장)")
     return {
-        "idx": idx, "npz_path": npz_path, "scale": scale, "size": joint_size,
-        "factory_K": joint_factory_K,
+        "source": joint, "idx": idx, "npz_path": npz_path, "map": stream_map, "size": size,
+        "factory_K": factory_K,
         "factory_D": np.asarray(d.get("factory_color_D", d["color_D"]), dtype=np.float64),
         "is_gripper": idx == joint["gripper_cam_idx"],
-        "accepted": [((corners / scale).astype(np.float32), ids) for corners, ids in accepted],
+        "accepted": [(_to_base_pixels(c, stream_map), ids) for c, ids in accepted],
         "num_images": joint["images"].count(idx), "image_observations": details,
     }
 
 
-def _write_joint_camera(report, joint_report, joint, joint_cam, cam_idx, serial, is_gripper,
-                        npz_path, backup_dir, K, D, result, n_base, factory_K, factory_D,
-                        source_info):
-    """합친 보정 결과를 두 폴더에 쓴다. K 는 해상도 배율로 환산하고 D 는 그대로."""
-    scale = joint_cam["scale"]
-    (rms_base, rms_joint), (used_base, used_joint) = _rms_by_source(result, n_base)
-    if rms_joint is not None:
-        rms_joint *= scale  # 기준 해상도 픽셀 -> 합칠 폴더 픽셀
-    n_joint = len(joint_cam["accepted"])
-    K_joint = _scale_K(K, scale)
-    for rms, label in ((rms_base, "기준"), (rms_joint, "합칠")):
-        if rms is None:
-            print(f"[WARN] cam{cam_idx}: {label} 폴더 사진이 최종 보정에 한 장도 남지 않았습니다. "
-                  "K 는 다른 해상도 사진만으로 정해졌습니다.")
-    def fmt(rms):
-        return "n/a" if rms is None else f"{rms:.4f}px"
-    print(f"[cam{cam_idx}] 합친 RMS {result['rms']:.4f}px (기준 해상도) | "
-          f"기준 {fmt(rms_base)} ({used_base}/{n_base}) | "
-          f"합칠 {fmt(rms_joint)} ({used_joint}/{n_joint}, "
-          f"{joint_cam['size'][0]}x{joint_cam['size'][1]} 픽셀)")
+def _write_joint_camera(base, joint_cams, K, D, result, groups, npz_extra=None):
+    """합친 보정 결과를 참여한 모든 폴더에 쓴다. K 는 폴더마다 공장 K 관계로 환산,
+    D 는 그대로. base: 기준 폴더 쪽 정보 dict (joint_cams 항목과 같은 키)."""
+    per_group = _rms_by_group(result, groups)
+    sides = [base] + joint_cams
+    members = []
+    for g, side in enumerate(sides):
+        rms, used = per_group.get(g, (None, 0))
+        side["K"] = _map_K(K, side["map"])
+        side["rms"] = None if rms is None else rms * side["map"]["scale"]
+        side["used"] = used
+        members.append({
+            "intr_dir": os.path.abspath(side["source"]["intr_dir"]),
+            "cam_idx": int(side["idx"]), "color_size": list(side["size"]),
+            "rms_px": side["rms"], "num_views_used": used,
+            "num_views_total": len(side["accepted"]),
+        })
+        rms_text = "n/a" if side["rms"] is None else f"{side['rms']:.4f}px"
+        print(f"    {side['size'][0]}x{side['size'][1]} cam{side['idx']}: "
+              f"RMS {rms_text} ({used}/{len(side['accepted'])})  {side['source']['intr_dir']}")
+        if side["rms"] is None:
+            print(f"[WARN] {side['source']['intr_dir']} cam{side['idx']}: 이 폴더 사진이 최종 "
+                  "보정에 한 장도 남지 않았습니다. K 는 다른 해상도 사진만으로 정해졌습니다.")
 
-    sides = (
-        dict(report=report, idx=cam_idx, npz=npz_path, backup=backup_dir, K=K,
-             factory_K=factory_K, factory_D=factory_D, rms=rms_base, used=used_base,
-             total=n_base, is_gripper=is_gripper, other_dir=joint["intr_dir"],
-             other_idx=joint_cam["idx"], other_rms=rms_joint, to_other=scale,
-             pooled=result["rms"], info=source_info),
-        dict(report=joint_report, idx=joint_cam["idx"], npz=joint_cam["npz_path"],
-             backup=os.path.join(joint["intr_dir"], "factory_backup"), K=K_joint,
-             factory_K=joint_cam["factory_K"], factory_D=joint_cam["factory_D"],
-             rms=rms_joint, used=used_joint, total=n_joint,
-             is_gripper=joint_cam["is_gripper"],
-             other_dir=joint_report["joint_with"]["intr_dir"], other_idx=cam_idx,
-             other_rms=rms_base, to_other=1.0 / scale, pooled=result["rms"] * scale,
-             info={"num_images": joint_cam["num_images"],
-                   "image_observations": joint_cam["image_observations"]}),
-    )
+    base_dir = os.path.abspath(base["source"]["intr_dir"])
     for side in sides:
+        scale, offset = side["map"]["scale"], side["map"]["offset"]
         extra = {
-            "charuco_joint_intr_dir": os.path.abspath(side["other_dir"]),
-            "charuco_joint_cam_idx": int(side["other_idx"]),
-            "charuco_joint_scale_to_other": float(side["to_other"]),
-            "charuco_joint_rms_px_pooled": float(side["pooled"]),
+            "charuco_joint_base_dir": base_dir,
+            "charuco_joint_dirs": json.dumps([m["intr_dir"] for m in members]),
+            "charuco_joint_map_from_base": np.array([scale, *offset], dtype=np.float64),
+            "charuco_joint_rms_px_pooled": float(result["rms"] * scale),
+            **(npz_extra or {}),
         }
         rms = float("nan") if side["rms"] is None else side["rms"]
         backup_path = overwrite_color_intrinsics(
-            side["npz"], side["backup"], side["K"], D,
-            {"rms": rms, "n_used": side["used"]}, serial, extra=extra)
-        print(f"[SAVE] {side['npz']} (color_K/color_D 교체)  factory backup -> {backup_path}")
-        side["report"]["cameras"][str(side["idx"])] = {
-            "serial": serial, "is_gripper": bool(side["is_gripper"]), "status": "written",
-            "rms_px": side["rms"], "num_views_used": side["used"],
-            "num_views_total": side["total"], "num_dropped": side["total"] - side["used"],
+            side["npz_path"], os.path.join(side["source"]["intr_dir"], "factory_backup"),
+            side["K"], D, {"rms": rms, "n_used": side["used"]}, side["serial"], extra=extra)
+        print(f"[SAVE] {side['npz_path']} (color_K/color_D 교체)  factory backup -> {backup_path}")
+        side["source"]["report"]["cameras"][str(side["idx"])] = {
+            "serial": side["serial"], "is_gripper": bool(side["is_gripper"]),
+            "status": "written", "rms_px": side["rms"], "num_views_used": side["used"],
+            "num_views_total": len(side["accepted"]),
+            "num_dropped": len(side["accepted"]) - side["used"],
             "K": np.asarray(side["K"]).tolist(), "D": np.asarray(D).flatten().tolist(),
             "factory_K": np.asarray(side["factory_K"]).tolist(),
             "factory_D": np.asarray(side["factory_D"]).flatten().tolist(),
             "joint": {
-                "intr_dir": os.path.abspath(side["other_dir"]),
-                "cam_idx": int(side["other_idx"]),
-                "scale_to_other": float(side["to_other"]),
-                "other_rms_px": side["other_rms"],
-                "rms_px_pooled": float(side["pooled"]),
+                "base_intr_dir": base_dir,
+                "map_from_base": {"scale": scale, "offset_px": list(offset)},
+                "rms_px_pooled": float(result["rms"] * scale),
                 "num_views_used_pooled": int(result["n_used"]),
                 "num_views_total_pooled": int(result["n_total"]),
+                "members": members,
             },
-            **side["info"],
+            "num_images": side["num_images"],
+            "image_observations": side["image_observations"],
+            **side.get("extra_info", {}),
         }
 
 
-def _carry_over_joint_entries(joint, joint_report, joint_notes, base_serials):
+def _carry_over_joint_entries(joint, base_serials):
     """합칠 폴더 리포트를 새로 쓸 때, 이번에 쓰지 않은 카메라는 npz 가 그대로이므로
     이전 리포트 항목을 유지하고 합치지 못한 이유만 덧붙인다."""
     previous = {}
@@ -583,27 +623,108 @@ def _carry_over_joint_entries(joint, joint_report, joint_notes, base_serials):
                 previous = json.load(f)
         except (OSError, json.JSONDecodeError):
             previous = {}
+    cameras = joint["report"]["cameras"]
     for serial, idx in joint["serial_to_idx"].items():
         key = str(idx)
-        if key in joint_report["cameras"]:
+        if key in cameras:
             continue
         old = (previous.get("cameras") or {}).get(key)
         if isinstance(old, dict) and old.get("serial") == serial:
             entry = {**old, "previous_calibrated_at": previous.get("calibrated_at")}
+            entry.pop("joint_unavailable", None)
         else:
             entry = {"serial": serial, "status": "not_calibrated"}
-        if serial in joint_notes:
-            entry["joint_unavailable"] = joint_notes[serial]
+        if serial in joint["notes"]:
+            entry["joint_unavailable"] = joint["notes"][serial]
         elif serial not in base_serials:
             entry["joint_unavailable"] = "기준 폴더 실행에 없는 카메라"
-        joint_report["cameras"][key] = entry
+        cameras[key] = entry
+
+
+# 사진 다양성 거리의 축별 스케일: 보드 코너 중심 x, y (화면 비율), sqrt(보드 면적 비율),
+# 기울기 x, y (도). 2026-09-17 5대 x 4해상도 532장의 표준편차로 정했고, 실행마다
+# 고르는 사진이 바뀌지 않도록 고정한다.
+DIVERSITY_SCALE = np.array([0.17, 0.08, 0.045, 35.0, 35.0])
+# 장수 맞춤 전에 빼는 명백한 실패 사진: 예비 보정의 뷰 오차가 폴더 중앙값의 이 배수 초과.
+GROSS_ERROR_RATIO = 3.0
+
+
+def _view_descriptor(obj, img, image_size, K):
+    """사진 한 장의 [코너 중심 x, y, sqrt(면적), 기울기 x, 기울기 y]."""
+    pts = np.asarray(img, dtype=np.float32).reshape(-1, 2)
+    area = cv2.contourArea(cv2.convexHull(pts)) / float(image_size[0] * image_size[1])
+    _, rvec, _ = cv2.solvePnP(obj, img, np.asarray(K, dtype=np.float64), None)
+    normal = cv2.Rodrigues(rvec)[0][:, 2]
+    if normal[2] < 0:
+        normal = -normal
+    return np.array([
+        pts[:, 0].mean() / image_size[0], pts[:, 1].mean() / image_size[1], np.sqrt(area),
+        np.degrees(np.arctan2(normal[1], normal[2])),
+        np.degrees(np.arctan2(normal[0], normal[2])),
+    ])
+
+
+def _farthest_point_order(desc, n):
+    """다양성이 최대가 되는 n개를 결정적으로 고른다 (farthest point sampling).
+    평균에서 가장 먼 사진부터, 이미 고른 사진들과 가장 먼 사진을 차례로 추가."""
+    x = np.asarray(desc, dtype=np.float64) / DIVERSITY_SCALE
+    chosen = [int(np.argmax(np.linalg.norm(x - x.mean(0), axis=1)))]
+    dist = np.linalg.norm(x - x[chosen[0]], axis=1)
+    while len(chosen) < min(n, len(x)):
+        k = int(np.argmax(dist))
+        chosen.append(k)
+        dist = np.minimum(dist, np.linalg.norm(x - x[k], axis=1))
+    return sorted(chosen)
+
+
+def _balance_views(board, accepted, groups, n, image_size, flags, K0, descriptor_K,
+                   group_names):
+    """그룹(폴더)마다 명백한 실패 사진을 뺀 뒤 다양성 최대 n장씩 고른다.
+
+    반환: (고른 accepted 인덱스, {제외 인덱스: 사유}). n장이 안 되는 그룹이 있으면 ValueError.
+    """
+    views, index = [], []
+    excluded = {}
+    for i, (corners, ids) in enumerate(accepted):
+        obj, img = _obj_img_from_charuco(board, corners, ids)
+        if obj is None:
+            excluded[i] = "no_object_points"
+            continue
+        views.append((obj, img))
+        index.append(i)
+    if len(views) < 4:
+        raise ValueError(f"보정 가능한 사진이 {len(views)}장뿐")
+    _, _, _, per = _run_calib(views, image_size, flags, K0)
+    per = np.asarray(per)
+    survivors = {}
+    for g in dict.fromkeys(groups[i] for i in index):
+        members = [k for k, i in enumerate(index) if groups[i] == g]
+        limit = GROSS_ERROR_RATIO * float(np.median(per[members]))
+        for k in members:
+            if per[k] > limit:
+                excluded[index[k]] = "rejected_gross_error"
+            else:
+                survivors.setdefault(g, []).append(k)
+    short = [f"{group_names[g]}: {len(survivors.get(g, []))}장"
+             for g in sorted(set(groups)) if len(survivors.get(g, [])) < n]
+    if short:
+        raise ValueError(f"폴더별 {n}장을 맞출 수 없음 ({', '.join(short)})")
+    chosen = []
+    for g, members in survivors.items():
+        desc = [_view_descriptor(*views[k], image_size, descriptor_K) for k in members]
+        picked = {members[j] for j in _farthest_point_order(desc, n)}
+        chosen += [index[k] for k in picked]
+        for k in members:
+            if k not in picked:
+                excluded[index[k]] = "not_selected_for_balance"
+    return sorted(chosen), excluded
 
 
 def overwrite_color_intrinsics(npz_path, backup_dir, K, D, result, serial, extra=None):
     """cam{idx}.npz 의 color_K/color_D 만 교체하고 나머지 필드는 보존.
     최초 1회에 한해 원본(factory) 전체를 backup_dir 에 복사하고,
-    npz 안에도 factory_color_K/D 를 남긴다. extra 는 charuco_joint_* 같은
-    부가 기록이며, 이전 실행의 charuco_joint_* 는 항상 지운다.
+    npz 안에도 factory_color_K/D 를 남긴다. extra 는 charuco_joint_* /
+    charuco_balance_* 같은 부가 기록이며, 이전 실행의 해당 키는 항상 지운다.
     """
     d = dict(np.load(npz_path, allow_pickle=True))
 
@@ -625,7 +746,7 @@ def overwrite_color_intrinsics(npz_path, backup_dir, K, D, result, serial, extra
     d["charuco_reproj_error_px"] = float(result["rms"])
     d["charuco_num_views"] = int(result["n_used"])
     d["charuco_calibrated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
-    for key in [k for k in d if k.startswith("charuco_joint_")]:
+    for key in [k for k in d if k.startswith(("charuco_joint_", "charuco_balance_"))]:
         del d[key]
     d.update(extra or {})
 
@@ -665,12 +786,17 @@ def main():
     parser.add_argument("--zero_tangent", action="store_true",
                         help="접선 왜곡 p1, p2를 0으로 고정 (CALIB_ZERO_TANGENT_DIST). "
                              "주점과 p1/p2가 서로 보상하며 흔들리는 것을 막는다")
-    parser.add_argument("--joint_intr_dir", type=str, default=None,
-                        help="--from_images 전용. 같은 카메라를 다른 해상도로 찍은 intrinsics 폴더. "
-                             "두 폴더 사진을 합쳐 한 번에 보정하고, K는 해상도 비율로 환산해 "
-                             "두 폴더의 cam*.npz와 리포트에 함께 쓴다 (D는 동일)")
-    parser.add_argument("--joint_images_dir", type=str, default=None,
-                        help="--joint_intr_dir의 원본 이미지 폴더 (기본: joint_intr_dir/raw_capture)")
+    parser.add_argument("--joint_intr_dir", nargs="+", default=None, metavar="DIR",
+                        help="--from_images 전용. 같은 카메라를 다른 해상도로 찍은 intrinsics 폴더(여러 개 가능). "
+                             "모든 폴더 사진을 --intr_dir 픽셀 좌표로 환산해 한 번에 보정하고, "
+                             "K는 공장 K 관계(배율+잘림)로 환산해 모든 폴더의 cam*.npz와 리포트에 "
+                             "함께 쓴다 (D는 동일)")
+    parser.add_argument("--views_per_folder", type=int, default=None, metavar="N",
+                        help="--from_images 전용. 카메라마다 각 폴더에서 명백한 실패 사진을 뺀 뒤 "
+                             "다양성(위치/크기/기울기)이 최대인 N장만 골라, 모든 폴더가 정확히 N장으로 "
+                             "보정한다 (이상치 재제거 없음). N장이 안 되는 폴더가 있으면 그 카메라는 건너뜀")
+    parser.add_argument("--joint_images_dir", nargs="+", default=None, metavar="DIR",
+                        help="--joint_intr_dir와 같은 순서의 원본 이미지 폴더 (기본: 각 폴더/raw_capture)")
     # 어떤 보드를 썼는지는 targets/charuco_boards/*.json 이 단일 소스다.
     parser.add_argument("--board", type=str, default=None,
                         help="사용할 ChArUco 보드 정의. targets/charuco_boards/ 의 이름"
@@ -700,6 +826,10 @@ def main():
         parser.error("--joint_intr_dir requires --from_images")
     if args.joint_images_dir and not args.joint_intr_dir:
         parser.error("--joint_images_dir requires --joint_intr_dir")
+    if args.views_per_folder is not None and not args.from_images:
+        parser.error("--views_per_folder requires --from_images")
+    if args.views_per_folder is not None and args.views_per_folder < 4:
+        parser.error("--views_per_folder must be at least 4")
 
     intr_dir = args.intr_dir
     map_path = os.path.join(intr_dir, "device_map.json")
@@ -799,15 +929,17 @@ def main():
             raise SystemExit(f"[ERROR] {error}") from error
         print(f"[INFO] Raw images: {images.directory}")
 
-    joint = None
+    joints = []
     if args.joint_intr_dir:
         try:
-            joint = _open_joint_source(
+            joints = _open_joint_sources(
                 args.joint_intr_dir, args.joint_images_dir, intr_dir, images)
         except ValueError as error:
             raise SystemExit(f"[ERROR] --joint_intr_dir: {error}") from error
-        print(f"[INFO] Joint images: {joint['images'].directory} "
-              "(두 폴더 사진을 합쳐 보정하고 두 폴더에 함께 기록)")
+        for joint in joints:
+            print(f"[INFO] Joint images: {joint['images'].directory}")
+        print(f"[INFO] 폴더 {len(joints) + 1}개의 사진을 {intr_dir} 픽셀 기준으로 합쳐 보정하고 "
+              "모든 폴더에 함께 기록합니다")
 
     backup_dir = os.path.join(intr_dir, "factory_backup")
     report = {
@@ -817,7 +949,7 @@ def main():
         "dist_model": None if args.capture_only else "rational8" if args.rational else "brown_conrady5",
         "calib_flags": None if args.capture_only else {
             "use_factory_guess": args.use_factory_guess, "fix_aspect": args.fix_aspect,
-            "zero_tangent": args.zero_tangent,
+            "zero_tangent": args.zero_tangent, "views_per_folder": args.views_per_folder,
         },
         "board": None if args.capture_only else _intrinsics_board_config(target),
         "board_source": board_source,
@@ -826,15 +958,16 @@ def main():
     }
     if images is not None:
         report["images_dir"] = str(images.directory)
-    joint_report = None
-    joint_notes = {}  # serial -> 합칠 폴더에 쓰지 못한 이유
-    if joint is not None:
-        joint_report = {**report, "images_dir": str(joint["images"].directory),
-                        "joint_with": {"intr_dir": os.path.abspath(intr_dir),
-                                       "images_dir": str(images.directory)},
-                        "cameras": {}}
-        report["joint_with"] = {"intr_dir": os.path.abspath(joint["intr_dir"]),
-                                "images_dir": str(joint["images"].directory)}
+    base_source = {"intr_dir": intr_dir, "report": report}
+    if joints:
+        members = [{"intr_dir": os.path.abspath(source["intr_dir"]),
+                    "images_dir": str(source_images.directory)}
+                   for source, source_images in
+                   [(base_source, images)] + [(j, j["images"]) for j in joints]]
+        report["joint_with"] = members[1:]
+        for k, joint in enumerate(joints, start=1):
+            joint["report"] = {**report, "images_dir": members[k]["images_dir"],
+                               "joint_with": members[:k] + members[k + 1:], "cameras": {}}
 
     aborted = False
     for cam_idx, serial in idx_pairs:
@@ -866,32 +999,77 @@ def main():
                 raise SystemExit(f"[ERROR] {error}") from error
 
         source_info = {}
-        joint_cam = None
+        joint_cams, groups = [], None
         if args.from_images:
             accepted, details = load_image_views(images, cam_idx, target, args.min_corners)
             image_size, status = (w, h), "done"
             source_info = {"num_images": images.count(cam_idx), "image_observations": details}
             print(f"[cam{cam_idx}] 저장 이미지 {images.count(cam_idx)}장 중 "
                   f"보드 검출 {len(accepted)}장")
-            if joint is not None:
+            for joint in joints:
                 try:
-                    joint_cam = _load_joint_camera(
-                        joint, serial, (w, h), factory_K, target, args.min_corners)
                     if not accepted:
                         raise ValueError("기준 폴더에 이 카메라의 보드 검출 사진이 없음")
+                    joint_cams.append(_load_joint_camera(
+                        joint, serial, factory_K, target, args.min_corners))
                 except ValueError as error:
-                    joint_cam = None
-                    print(f"[WARN] cam{cam_idx} 합친 보정 불가: {error} "
-                          "-> 이 폴더 사진만으로 따로 보정 (합칠 폴더는 그대로)")
-                    source_info["joint_unavailable"] = str(error)
-                    joint_notes[serial] = str(error)
-            if joint_cam is not None:
-                n_base = len(accepted)
-                accepted = accepted + joint_cam["accepted"]
-                print(f"[cam{cam_idx}] + 합칠 폴더 cam{joint_cam['idx']} "
-                      f"{joint_cam['size'][0]}x{joint_cam['size'][1]} "
-                      f"{joint_cam['num_images']}장 중 보드 검출 {len(joint_cam['accepted'])}장 "
-                      f"(좌표 ÷{joint_cam['scale']:g})")
+                    print(f"[WARN] cam{cam_idx} 합치기 제외 ({joint['intr_dir']}): {error} "
+                          "-> 그 폴더는 그대로 둠")
+                    joint["notes"][serial] = str(error)
+                    source_info.setdefault("joint_unavailable", {})[
+                        os.path.abspath(joint["intr_dir"])] = str(error)
+            base_accepted = accepted
+            if joint_cams:
+                groups = [0] * len(accepted)
+                for g, jc in enumerate(joint_cams, start=1):
+                    groups += [g] * len(jc["accepted"])
+                    accepted = accepted + jc["accepted"]
+                    print(f"[cam{cam_idx}] + {jc['source']['intr_dir']} cam{jc['idx']} "
+                          f"{jc['size'][0]}x{jc['size'][1]}: {jc['num_images']}장 중 보드 검출 "
+                          f"{len(jc['accepted'])}장 (배율 {jc['map']['scale']:.4g}, "
+                          f"오프셋 {jc['map']['offset'][0]:+.2f},{jc['map']['offset'][1]:+.2f}px)")
+            elif joints:
+                print(f"[WARN] cam{cam_idx}: 합칠 폴더가 없어 이 폴더 사진만으로 따로 보정")
+            if args.views_per_folder:
+                names = [intr_dir] + [jc["source"]["intr_dir"] for jc in joint_cams]
+                group_ids = groups if groups is not None else [0] * len(accepted)
+                details_by_view = [d for d in source_info["image_observations"]
+                                   if d["status"] == "detected"]
+                for jc in joint_cams:
+                    details_by_view += [d for d in jc["image_observations"]
+                                        if d["status"] == "detected"]
+                try:
+                    keep, dropped = _balance_views(
+                        target.board, accepted, group_ids, args.views_per_folder, (w, h),
+                        flags, factory_K if args.use_factory_guess else None,
+                        factory_K, names)
+                except ValueError as error:
+                    print(f"[WARN] cam{cam_idx} 장수 맞춤 불가: {error} -> 건너뜀 (모든 폴더 기존 값 유지)")
+                    report["cameras"][str(cam_idx)] = {
+                        "serial": serial, "status": "too_few_views_for_balance",
+                        "error": str(error), **source_info}
+                    for jc in joint_cams:
+                        jc["source"]["notes"][serial] = f"장수 맞춤 불가: {error}"
+                    continue
+                for i, reason in dropped.items():
+                    details_by_view[i]["status"] = reason
+                accepted = [accepted[i] for i in keep]
+                kept_groups = [group_ids[i] for i in keep]
+                base_accepted = [v for v, g in zip(accepted, kept_groups) if g == 0]
+                for g, jc in enumerate(joint_cams, start=1):
+                    jc["accepted"] = [v for v, gg in zip(accepted, kept_groups) if gg == g]
+                    jc["extra_info"] = {"balance": {
+                        "views_per_folder": args.views_per_folder,
+                        "gross_rejected": sum(1 for i, r in dropped.items()
+                                              if r == "rejected_gross_error" and group_ids[i] == g)}}
+                groups = kept_groups if joint_cams else None
+                source_info["balance"] = {
+                    "views_per_folder": args.views_per_folder,
+                    "gross_rejected": sum(1 for i, r in dropped.items()
+                                          if r == "rejected_gross_error" and group_ids[i] == 0)}
+                gross = sum(1 for r in dropped.values() if r == "rejected_gross_error")
+                print(f"[cam{cam_idx}] 장수 맞춤: 폴더 {len(names)}개 x {args.views_per_folder}장 "
+                      f"(명백한 실패 사진 {gross}장 제외, 나머지는 다양성 순으로 선택)")
         else:
             cam = RealSenseCamera(serial, width=w, height=h, fps=fps,
                                   use_color=True, use_depth=False)
@@ -937,8 +1115,8 @@ def main():
                   f"-> 보정 생략, factory 유지.")
             report["cameras"][str(cam_idx)] = {
                 "serial": serial, "status": "too_few_views", "num_views": len(accepted), **source_info}
-            if joint_cam is not None:
-                joint_notes[serial] = f"합친 보정 실패: too_few_views ({len(accepted)}장)"
+            for jc in joint_cams:
+                jc["source"]["notes"][serial] = f"합친 보정 실패: too_few_views ({len(accepted)}장)"
             continue
 
         if image_size is None:
@@ -946,7 +1124,9 @@ def main():
 
         K0 = factory_K if args.use_factory_guess else None
         try:
-            result = calibrate_intrinsics(target.board, accepted, image_size, flags, K0=K0)
+            result = calibrate_intrinsics(
+                target.board, accepted, image_size, flags, K0=K0, groups=groups,
+                reject_outliers=not args.views_per_folder)
         except cv2.error as error:
             print(f"[WARN] cam{cam_idx} 보정 오류: {error}")
             source_info["error"] = str(error)
@@ -955,11 +1135,13 @@ def main():
             print(f"[cam{cam_idx}] 보정 실패 (유효 뷰 부족).")
             report["cameras"][str(cam_idx)] = {
                 "serial": serial, "status": "calib_failed", "num_views": len(accepted), **source_info}
-            if joint_cam is not None:
-                joint_notes[serial] = f"합친 보정 실패: calib_failed ({len(accepted)}장)"
+            for jc in joint_cams:
+                jc["source"]["notes"][serial] = f"합친 보정 실패: calib_failed ({len(accepted)}장)"
             continue
 
         K, D = result["K"], result["D"]
+        balance_extra = ({"charuco_balance_views_per_folder": int(args.views_per_folder)}
+                         if args.views_per_folder else None)
         print(f"[cam{cam_idx}] RMS reproj = {result['rms']:.4f} px  "
               f"(used {result['n_used']}/{result['n_total']}, dropped {result['n_dropped']})")
         print(f"           factory fx,fy,cx,cy = "
@@ -968,14 +1150,25 @@ def main():
               f"{K[0,0]:.2f},{K[1,1]:.2f},{K[0,2]:.2f},{K[1,2]:.2f}")
         print(f"           charuco D = {np.asarray(D).flatten()}")
 
-        if joint_cam is not None:
-            _write_joint_camera(
-                report, joint_report, joint, joint_cam, cam_idx, serial, is_gripper,
-                npz_path, backup_dir, K, D, result, n_base, factory_K, factory_D, source_info)
+        if joint_cams:
+            base_side = {
+                "source": base_source, "idx": cam_idx, "npz_path": npz_path,
+                "map": IDENTITY_MAP, "size": (w, h), "factory_K": factory_K,
+                "factory_D": factory_D, "is_gripper": is_gripper, "accepted": base_accepted,
+                "num_images": source_info["num_images"],
+                "image_observations": source_info["image_observations"],
+                "extra_info": {k: v for k, v in source_info.items()
+                               if k not in ("num_images", "image_observations")},
+            }
+            for side in [base_side] + joint_cams:
+                side["serial"] = serial
+            print(f"[cam{cam_idx}] 합친 보정 결과 (폴더별 RMS는 각자 해상도 픽셀):")
+            _write_joint_camera(base_side, joint_cams, K, D, result, groups,
+                                npz_extra=balance_extra)
             continue
 
         backup_path = overwrite_color_intrinsics(
-            npz_path, backup_dir, K, D, result, serial)
+            npz_path, backup_dir, K, D, result, serial, extra=balance_extra)
         print(f"[SAVE] {npz_path} (color_K/color_D 교체)  factory backup -> {backup_path}")
 
         report["cameras"][str(cam_idx)] = {
@@ -1008,10 +1201,9 @@ def main():
 
     if not aborted:
         outputs = [(intr_dir, report)]
-        if joint is not None:
-            _carry_over_joint_entries(joint, joint_report, joint_notes,
-                                      {serial for _, serial in idx_pairs})
-            outputs.append((joint["intr_dir"], joint_report))
+        for joint in joints:
+            _carry_over_joint_entries(joint, {serial for _, serial in idx_pairs})
+            outputs.append((joint["intr_dir"], joint["report"]))
         for out_dir, out_report in outputs:
             report_path = os.path.join(out_dir, "charuco_intrinsics_report.json")
             with open(report_path, "w") as f:
@@ -1024,8 +1216,11 @@ def main():
                 st = v.get("status")
                 tail = (f"  (이전 실행 {v['previous_calibrated_at']} 기록 유지)"
                         if "previous_calibrated_at" in v else "")
-                if v.get("joint_unavailable"):
-                    tail += f"  [합치지 못함: {v['joint_unavailable']}]"
+                note = v.get("joint_unavailable")
+                if isinstance(note, dict):
+                    note = "; ".join(f"{os.path.basename(k)}: {r}" for k, r in note.items())
+                if note:
+                    tail += f"  [합치지 못함: {note}]"
                 if st == "written":
                     rms = v.get("rms_px")
                     rms = "n/a" if rms is None else f"{rms:.3f}px"

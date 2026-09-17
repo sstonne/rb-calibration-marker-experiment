@@ -1,0 +1,1361 @@
+{
+  "calibrated_at": "2026-09-17 15:03:05",
+  "mode": "from_images",
+  "opencv": "4.13.0",
+  "dist_model": "brown_conrady5",
+  "calib_flags": {
+    "use_factory_guess": true,
+    "fix_aspect": false,
+    "zero_tangent": true,
+    "views_per_folder": 18
+  },
+  "board": {
+    "squares_x": 9,
+    "squares_y": 6,
+    "square_length_m": 0.025,
+    "marker_length_m": 0.018,
+    "marker_id_start": 90,
+    "legacy_pattern": true,
+    "dictionary": "DICT_4X4_250"
+  },
+  "board_source": "board_file:targets/charuco_boards/board_9x6_id90.json",
+  "board_topology": {
+    "checker_squares_x": 9,
+    "checker_squares_y": 6,
+    "charuco_corner_columns": 8,
+    "charuco_corner_rows": 5,
+    "maximum_charuco_corners": 40,
+    "checker_width_mm": 225.0,
+    "checker_height_mm": 150.00000000000003,
+    "marker_count": 27,
+    "legacy_pattern": true,
+    "legacy_pattern_matters": true
+  },
+  "cameras": {
+    "0": {
+      "serial": "136622073980",
+      "is_gripper": true,
+      "status": "written",
+      "rms_px": 0.3077473593310758,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
+      "K": [
+        [
+          453.9850607988024,
+          0.0,
+          321.6566757367237
+        ],
+        [
+          0.0,
+          456.1053989259327,
+          191.19561553012232
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.1684429169826601,
+        -0.5306530342541755,
+        0.0,
+        0.0,
+        0.48556307513262936
+      ],
+      "factory_K": [
+        [
+          455.63909912109375,
+          0.0,
+          321.53875732421875
+        ],
+        [
+          0.0,
+          454.8988342285156,
+          191.46376037597656
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.33333331844944003,
+          "offset_px": [
+            -5.987805479890085e-06,
+            3.4629157426024904e-06
+          ]
+        },
+        "rms_px_pooled": 0.2558938184998225,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 0,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.702833329085942,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 0,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4021283989652118,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 0,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.3549028539184313,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 0,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.3077473593310758,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
+      "num_images": 25,
+      "image_observations": [
+        {
+          "file": "cam0/view_1789618339938161276.png",
+          "charuco_corners": 39,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam0/view_1789618342287159263.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618345129595949.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam0/view_1789618353986541987.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618356326523854.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618360326688843.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618396987881946.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618406814647768.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618410254548143.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618415224852746.png",
+          "charuco_corners": 36,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618424374865847.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam0/view_1789618439354019707.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618444435811637.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618445942218097.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618448222891496.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618455702905320.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam0/view_1789618458654927305.png",
+          "charuco_corners": 39,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam0/view_1789618466122631658.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam0/view_1789618467462672599.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam0/view_1789618471411810664.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618476072217518.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618489780488095.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618494321917844.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618496190299473.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789618503150718011.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
+    },
+    "1": {
+      "serial": "319522062138",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.365829031539686,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
+      "K": [
+        [
+          455.3275875656664,
+          0.0,
+          311.61288319346414
+        ],
+        [
+          0.0,
+          456.5053700473036,
+          188.27465247976454
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.13591662759182582,
+        -0.40763076310199553,
+        0.0,
+        0.0,
+        0.36944517547467626
+      ],
+      "factory_K": [
+        [
+          453.9303283691406,
+          0.0,
+          312.54150390625
+        ],
+        [
+          0.0,
+          453.6135559082031,
+          186.02267456054688
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.33333332586337217,
+          "offset_px": [
+            7.00401869835332e-06,
+            -6.003779361662964e-06
+          ]
+        },
+        "rms_px_pooled": 0.291095177955703,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 1,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.8059703370073783,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 1,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4961877537464064,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 1,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.362929908142684,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 1,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.365829031539686,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
+      "num_images": 32,
+      "image_observations": [
+        {
+          "file": "cam1/view_1789618582588833302.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618585360853043.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618588287491162.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618591418062971.png",
+          "charuco_corners": 39,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618596098835031.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618598486700087.png",
+          "charuco_corners": 36,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618600878760340.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618605018993941.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618614477683367.png",
+          "charuco_corners": 28,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618615537615797.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618619317830040.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618622366904637.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618624365208689.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618627526077597.png",
+          "charuco_corners": 38,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618628777102754.png",
+          "charuco_corners": 36,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618631448070421.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618644047056188.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618646016050174.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618649388729067.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618656754377437.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618663095078095.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618667595781440.png",
+          "charuco_corners": 28,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618669635146090.png",
+          "charuco_corners": 25,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618676444381707.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618678916523024.png",
+          "charuco_corners": 37,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618683323868083.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618689075410212.png",
+          "charuco_corners": 34,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618692523889166.png",
+          "charuco_corners": 30,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618696764191736.png",
+          "charuco_corners": 38,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618700764314981.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam1/view_1789618704952783972.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789618712083133158.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        }
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
+    },
+    "2": {
+      "serial": "912322060991",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.2512531753556276,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
+      "K": [
+        [
+          460.9776614266098,
+          0.0,
+          323.1498139268821
+        ],
+        [
+          0.0,
+          461.90671011710674,
+          181.85815613496615
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.16823417811805605,
+        -0.49591551352509966,
+        0.0,
+        0.0,
+        0.37816589516104004
+      ],
+      "factory_K": [
+        [
+          462.96636962890625,
+          0.0,
+          323.1363525390625
+        ],
+        [
+          0.0,
+          462.7625427246094,
+          183.46676635742188
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.33333331868500427,
+          "offset_px": [
+            -6.144828319065709e-06,
+            1.8234970298180997e-05
+          ]
+        },
+        "rms_px_pooled": 0.24092910017348446,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 2,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.7098483321777433,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 2,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4855971000922631,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 2,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.3106295310593341,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 2,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.2512531753556276,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
+      "num_images": 31,
+      "image_observations": [
+        {
+          "file": "cam2/view_1789618736742769481.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618741423015088.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618748932199022.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618756433044184.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618762132024902.png",
+          "charuco_corners": 31,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618764862737248.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618767610991627.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618772992739956.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618778123629289.png",
+          "charuco_corners": 27,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618788343080111.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618795052731816.png",
+          "charuco_corners": 32,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618799300696208.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618808690906893.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618819581967486.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618821952951353.png",
+          "charuco_corners": 38,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618827410040324.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618829491804020.png",
+          "charuco_corners": 38,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618831360109622.png",
+          "charuco_corners": 36,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618833311558946.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618836949703576.png",
+          "charuco_corners": 38,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618847080105394.png",
+          "charuco_corners": 38,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618854089082592.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618857150762594.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618862880174982.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618864510573375.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618866531404803.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618868609427751.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618870831193340.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618875568508970.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789618879098260196.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam2/view_1789618881818613929.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
+    },
+    "3": {
+      "serial": "039422061216",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.2706436203860152,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
+      "K": [
+        [
+          456.0375375300624,
+          0.0,
+          325.91148189835997
+        ],
+        [
+          0.0,
+          456.4306997960684,
+          184.20588310719816
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.16474576594905024,
+        -0.5150635345208313,
+        0.0,
+        0.0,
+        0.4812354612371536
+      ],
+      "factory_K": [
+        [
+          457.79364013671875,
+          0.0,
+          325.4234619140625
+        ],
+        [
+          0.0,
+          456.59832763671875,
+          183.10647583007812
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.333333318519489,
+          "offset_px": [
+            1.4462317551533488e-05,
+            1.8310058067072532e-05
+          ]
+        },
+        "rms_px_pooled": 0.2724160093265807,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 3,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.7438765816098928,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 3,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.579575051211785,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 3,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.3729764829821878,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 3,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.2706436203860152,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
+      "num_images": 25,
+      "image_observations": [
+        {
+          "file": "cam3/view_1789616940468267960.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789616943098668816.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam3/view_1789616945186979946.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789616956626289808.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789616959498733450.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617006499906543.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617009757825250.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617030508959129.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617031997801140.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam3/view_1789617034988542395.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617044008809311.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617049230092764.png",
+          "charuco_corners": 36,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam3/view_1789617057479653910.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617063329895977.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617070488088426.png",
+          "charuco_corners": 36,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617071969279247.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617076889196230.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617079619253915.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam3/view_1789617082608936824.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam3/view_1789617091429539966.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam3/view_1789617103038153789.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617111078987357.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam3/view_1789617112639441067.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617115440309304.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789617122129264088.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
+    },
+    "4": {
+      "serial": "752112070297",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.38914873999441024,
+      "num_views_used": 18,
+      "num_views_total": 18,
+      "num_dropped": 0,
+      "K": [
+        [
+          461.2485562873361,
+          0.0,
+          325.022731467183
+        ],
+        [
+          0.0,
+          461.16488312410604,
+          177.54747016865915
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.1534157897131835,
+        -0.4565898961407673,
+        0.0,
+        0.0,
+        0.3770119943011149
+      ],
+      "factory_K": [
+        [
+          461.2776184082031,
+          0.0,
+          324.7564392089844
+        ],
+        [
+          0.0,
+          461.3940734863281,
+          177.95677185058594
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "joint": {
+        "base_intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+        "map_from_base": {
+          "scale": 0.33333332598235466,
+          "offset_px": [
+            1.733435880169054e-05,
+            9.010732213710071e-06
+          ]
+        },
+        "rms_px_pooled": 0.27615045847945513,
+        "num_views_used_pooled": 72,
+        "num_views_total_pooled": 72,
+        "members": [
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+            "cam_idx": 4,
+            "color_size": [
+              1920,
+              1080
+            ],
+            "rms_px": 0.6979436212716529,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+            "cam_idx": 4,
+            "color_size": [
+              1280,
+              720
+            ],
+            "rms_px": 0.4609112182579516,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+            "cam_idx": 4,
+            "color_size": [
+              848,
+              480
+            ],
+            "rms_px": 0.2946347014283678,
+            "num_views_used": 18,
+            "num_views_total": 18
+          },
+          {
+            "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720",
+            "cam_idx": 4,
+            "color_size": [
+              640,
+              360
+            ],
+            "rms_px": 0.38914873999441024,
+            "num_views_used": 18,
+            "num_views_total": 18
+          }
+        ]
+      },
+      "num_images": 26,
+      "image_observations": [
+        {
+          "file": "cam4/view_1789617190622263134.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617192310686224.png",
+          "charuco_corners": 39,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617202860140092.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617205380675876.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617209052712770.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617215781873651.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617218640608035.png",
+          "charuco_corners": 37,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617224800564289.png",
+          "charuco_corners": 36,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617231462822362.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617234942678553.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617238301927651.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617241411596797.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617244422879337.png",
+          "charuco_corners": 31,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617247821537238.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617253281993530.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617259362014488.png",
+          "charuco_corners": 35,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617283233268773.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617289741653739.png",
+          "charuco_corners": 40,
+          "status": "not_selected_for_balance"
+        },
+        {
+          "file": "cam4/view_1789617291731255357.png",
+          "charuco_corners": 27,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617295391949770.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617300602606300.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617305311993393.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617308384212204.png",
+          "charuco_corners": 26,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617312544862429.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617320732972478.png",
+          "charuco_corners": 35,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789617328373029289.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ],
+      "balance": {
+        "views_per_folder": 18,
+        "gross_rejected": 0
+      }
+    }
+  },
+  "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_640x360_rgbd720/raw_capture",
+  "joint_with": [
+    {
+      "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720",
+      "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720/raw_capture"
+    },
+    {
+      "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720",
+      "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1280x720/raw_capture"
+    },
+    {
+      "intr_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720",
+      "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_848x480_rgbd720/raw_capture"
+    }
+  ]
+}
