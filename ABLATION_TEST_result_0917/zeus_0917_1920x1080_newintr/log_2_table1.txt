@@ -44,7 +44,7 @@ placement 15개 leave-one-out x row 9개
       A1 fold 13/15
       A1 fold 14/15
       A1 fold 15/15
-  A1  +cube, sequential                        [61s]
+  A1  +cube, sequential                        [63s]
       Cube(corrected-FK-ref) ALL=2.845  Train=2.834  Heldout=2.851 px
       Cross-view  ALL=5.513  Train=5.516  Heldout=5.527 px
       A2 fold 1/15
@@ -62,7 +62,7 @@ placement 15개 leave-one-out x row 9개
       A2 fold 13/15
       A2 fold 14/15
       A2 fold 15/15
-  A2  +unified, VISION                         [94s]
+  A2  +unified, VISION                         [96s]
       Cube(corrected-FK-ref) ALL=2.629  Train=2.620  Heldout=2.621 px
       Cross-view  ALL=5.787  Train=5.756  Heldout=5.769 px
       A4 fold 1/15
@@ -80,7 +80,7 @@ placement 15개 leave-one-out x row 9개
       A4 fold 13/15
       A4 fold 14/15
       A4 fold 15/15
-  A4  corrected-FK soft factor                 [91s]
+  A4  FtC FK soft factor                       [91s]
       Cube(corrected-FK-ref) ALL=2.618  Train=2.610  Heldout=2.611 px
       Cross-view  ALL=5.781  Train=5.750  Heldout=5.764 px
       A5 fold 1/15
@@ -98,7 +98,7 @@ placement 15개 leave-one-out x row 9개
       A5 fold 13/15
       A5 fold 14/15
       A5 fold 15/15
-  A5  corrected-FK hard fixed (P1 VISION-aligned) [63s]
+  A5  FtC FK fixed (P1 VISION flange-to-cube)  [62s]
       Cube(corrected-FK-ref) ALL=1.613  Train=1.617  Heldout=1.767 px
       Cross-view  ALL=4.903  Train=4.912  Heldout=4.897 px
       B1 fold 1/15
@@ -116,9 +116,9 @@ placement 15개 leave-one-out x row 9개
       B1 fold 13/15
       B1 fold 14/15
       B1 fold 15/15
-  B1  -Unified (corrected-FK soft factor, sequential) [64s]
-      Cube(corrected-FK-ref) ALL=2.848  Train=2.838  Heldout=2.852 px
-      Cross-view  ALL=5.660  Train=5.654  Heldout=5.662 px
+  B1  -Unified (FtC FK fixed, sequential)      [36s]
+      Cube(corrected-FK-ref) ALL=1.614  Train=1.634  Heldout=1.777 px
+      Cross-view  ALL=4.884  Train=4.915  Heldout=4.890 px
       B2 fold 1/15
       B2 fold 2/15
       B2 fold 3/15
@@ -134,9 +134,9 @@ placement 15개 leave-one-out x row 9개
       B2 fold 13/15
       B2 fold 14/15
       B2 fold 15/15
-  B2  -board (cube only, corrected-FK soft factor) [57s]
-      Cube(corrected-FK-ref) ALL=2.799  Train=2.774  Heldout=2.788 px
-      Cross-view  ALL=5.288  Train=5.263  Heldout=5.369 px
+  B2  -board (cube only, FtC FK fixed)         [21s]
+      Cube(corrected-FK-ref) ALL=1.624  Train=1.618  Heldout=1.792 px
+      Cross-view  ALL=5.242  Train=5.250  Heldout=5.267 px
       B3 fold 1/15
       B3 fold 2/15
       B3 fold 3/15
@@ -152,7 +152,7 @@ placement 15개 leave-one-out x row 9개
       B3 fold 13/15
       B3 fold 14/15
       B3 fold 15/15
-  B3  -cube (board only, unified)              [26s]
+  B3  -cube (board only, unified)              [27s]
       Cube(corrected-FK-ref) ALL=3.977  Train=3.933  Heldout=3.928 px
       Cross-view  ALL=9.523  Train=9.515  Heldout=9.515 px
 

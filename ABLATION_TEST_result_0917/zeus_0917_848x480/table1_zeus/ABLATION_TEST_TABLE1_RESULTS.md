@@ -14,10 +14,10 @@
 | A1<br>(board+cube+Seq+VISION) | 1.2200 | 1.2217 | 1.2330 | 4.4561 | 4.4327 | 4.5338 | Pending | Pending | Pending | Pending |
 | A2<br>(board+cube+Unified+VISION) | 1.3407 | 1.3413 | 1.3449 | 4.4760 | 4.4562 | 4.4854 | Pending | Pending | Pending | Pending |
 | A3<br>(board+cube+Unified+raw-FK hard fixed) | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| A4<br>(board+cube+Unified+corrected-FK soft factor) | 1.3016 | 1.3042 | 1.3110 | 4.4720 | 4.4526 | 4.4833 | Pending | Pending | Pending | Pending |
-| A5<br>(board+cube+Unified+corrected-FK hard fixed) | **0.9014** | **0.9081** | **0.9539** | 3.9685 | 3.9686 | 4.0145 | Pending | Pending | Pending | Pending |
-| B1<br>(board+cube+Seq+corrected-FK soft factor) | 1.2023 | 1.2015 | 1.2375 | 4.7414 | 4.7053 | 4.7522 | Pending | Pending | Pending | Pending |
-| B2<br>(cube+Unified+corrected-FK soft factor) | 1.1960 | 1.1986 | 1.2285 | **3.5841** | **3.5797** | **3.6356** | Pending | Pending | Pending | Pending |
+| A4<br>(board+cube+Unified+FtC FK soft factor) | 1.3016 | 1.3042 | 1.3110 | 4.4720 | 4.4526 | 4.4833 | Pending | Pending | Pending | Pending |
+| A5<br>(board+cube+Unified+FtC FK fixed) | 0.9014 | 0.9081 | 0.9539 | 3.9685 | 3.9686 | 4.0145 | Pending | Pending | Pending | Pending |
+| B1<br>(board+cube+Seq+FtC FK fixed) | 0.9971 | 0.9971 | 1.0498 | 4.3347 | 4.3228 | 4.3611 | Pending | Pending | Pending | Pending |
+| B2<br>(cube+Unified+FtC FK fixed) | **0.7790** | **0.7815** | **0.8462** | **3.6619** | **3.6547** | **3.7218** | Pending | Pending | Pending | Pending |
 | B3<br>(board+Unified+VISION) | 1.8267 | 1.8119 | 1.8180 | 5.1844 | 5.1918 | 5.1752 | Pending | Pending | Pending | Pending |
 
 TRE·Rotation Error는 평균, P95 TRE는 95백분위수다. Failure Rate는 전체 GT pose 중 예측 실패·누락 비율(0–1)이며 solver 수렴률과 다르다.
@@ -30,10 +30,10 @@ TRE·Rotation Error는 평균, P95 TRE는 95백분위수다. Failure Rate는 전
 | A1 | board + cube | Sequential | VISION | complete |
 | A2 | board + cube | Unified | VISION | complete |
 | A3 | board + cube | Unified | raw-FK hard fixed | pending |
-| A4 | board + cube | Unified | corrected-FK soft factor | complete |
-| A5 | board + cube | Unified | corrected-FK hard fixed | complete |
-| B1 | board + cube | Sequential | corrected-FK soft factor | complete |
-| B2 | cube | Unified | corrected-FK soft factor | complete |
+| A4 | board + cube | Unified | FtC FK soft factor | complete |
+| A5 | board + cube | Unified | FtC FK fixed | complete |
+| B1 | board + cube | Sequential | FtC FK fixed | complete |
+| B2 | cube | Unified | FtC FK fixed | complete |
 | B3 | board | Unified | VISION | complete |
 
 | 미산출 행 | 사유 |
@@ -64,8 +64,8 @@ fixed↔fixed 전달에는 FK가 필요 없고, fixed↔gripper 전달에는 촬
 | A3 | Pending | Pending | Pending | Pending | Pending | Pending |
 | A4 | 5.1786 | 5.1476 | 5.1786 | 3.7709 | 3.7643 | 3.7955 |
 | A5 | 4.4991 | 4.4939 | 4.5393 | 3.4556 | 3.4615 | 3.5087 |
-| B1 | 5.5230 | 5.4752 | 5.5172 | 3.9598 | 3.9365 | 3.9906 |
-| B2 | 3.9817 | 3.9753 | 4.0365 | 3.2088 | 3.2065 | 3.2573 |
+| B1 | 4.9814 | 4.9636 | 4.9999 | 3.6990 | 3.6937 | 3.7352 |
+| B2 | 4.1239 | 4.1108 | 4.1774 | 3.2188 | 3.2178 | 3.2866 |
 | B3 | 5.8817 | 5.8945 | 5.8521 | 4.5096 | 4.5113 | 4.5227 |
 
 전체 카메라 쌍을 합친 값은 1절 Cross-view 열이다. 쌍·방향·코너 수와 fold별 수렴 상태는 [fold_metrics.csv](fold_metrics.csv)에 있다.

@@ -22,7 +22,7 @@ placement 11개 leave-one-out x row 9개
       A0 fold 9/11
       A0 fold 10/11
       A0 fold 11/11
-  A0  board-only, sequential VISION            [7s]
+  A0  board-only, sequential VISION            [8s]
       Cube(corrected-FK-ref) ALL=1.827  Train=1.812  Heldout=1.818 px
       Cross-view  ALL=5.185  Train=5.192  Heldout=5.175 px
       A1 fold 1/11
@@ -36,7 +36,7 @@ placement 11개 leave-one-out x row 9개
       A1 fold 9/11
       A1 fold 10/11
       A1 fold 11/11
-  A1  +cube, sequential                        [21s]
+  A1  +cube, sequential                        [23s]
       Cube(corrected-FK-ref) ALL=1.220  Train=1.222  Heldout=1.233 px
       Cross-view  ALL=4.456  Train=4.433  Heldout=4.534 px
       A2 fold 1/11
@@ -50,7 +50,7 @@ placement 11개 leave-one-out x row 9개
       A2 fold 9/11
       A2 fold 10/11
       A2 fold 11/11
-  A2  +unified, VISION                         [29s]
+  A2  +unified, VISION                         [32s]
       Cube(corrected-FK-ref) ALL=1.341  Train=1.341  Heldout=1.345 px
       Cross-view  ALL=4.476  Train=4.456  Heldout=4.485 px
       A4 fold 1/11
@@ -64,7 +64,7 @@ placement 11개 leave-one-out x row 9개
       A4 fold 9/11
       A4 fold 10/11
       A4 fold 11/11
-  A4  corrected-FK soft factor                 [29s]
+  A4  FtC FK soft factor                       [31s]
       Cube(corrected-FK-ref) ALL=1.302  Train=1.304  Heldout=1.311 px
       Cross-view  ALL=4.472  Train=4.453  Heldout=4.483 px
       A5 fold 1/11
@@ -78,7 +78,7 @@ placement 11개 leave-one-out x row 9개
       A5 fold 9/11
       A5 fold 10/11
       A5 fold 11/11
-  A5  corrected-FK hard fixed (P1 VISION-aligned) [23s]
+  A5  FtC FK fixed (P1 VISION flange-to-cube)  [23s]
       Cube(corrected-FK-ref) ALL=0.901  Train=0.908  Heldout=0.954 px
       Cross-view  ALL=3.969  Train=3.969  Heldout=4.014 px
       B1 fold 1/11
@@ -92,9 +92,9 @@ placement 11개 leave-one-out x row 9개
       B1 fold 9/11
       B1 fold 10/11
       B1 fold 11/11
-  B1  -Unified (corrected-FK soft factor, sequential) [23s]
-      Cube(corrected-FK-ref) ALL=1.202  Train=1.202  Heldout=1.237 px
-      Cross-view  ALL=4.741  Train=4.705  Heldout=4.752 px
+  B1  -Unified (FtC FK fixed, sequential)      [15s]
+      Cube(corrected-FK-ref) ALL=0.997  Train=0.997  Heldout=1.050 px
+      Cross-view  ALL=4.335  Train=4.323  Heldout=4.361 px
       B2 fold 1/11
       B2 fold 2/11
       B2 fold 3/11
@@ -106,9 +106,9 @@ placement 11개 leave-one-out x row 9개
       B2 fold 9/11
       B2 fold 10/11
       B2 fold 11/11
-  B2  -board (cube only, corrected-FK soft factor) [20s]
-      Cube(corrected-FK-ref) ALL=1.196  Train=1.199  Heldout=1.228 px
-      Cross-view  ALL=3.584  Train=3.580  Heldout=3.636 px
+  B2  -board (cube only, FtC FK fixed)         [7s]
+      Cube(corrected-FK-ref) ALL=0.779  Train=0.782  Heldout=0.846 px
+      Cross-view  ALL=3.662  Train=3.655  Heldout=3.722 px
       B3 fold 1/11
       B3 fold 2/11
       B3 fold 3/11
@@ -120,7 +120,7 @@ placement 11개 leave-one-out x row 9개
       B3 fold 9/11
       B3 fold 10/11
       B3 fold 11/11
-  B3  -cube (board only, unified)              [9s]
+  B3  -cube (board only, unified)              [10s]
       Cube(corrected-FK-ref) ALL=1.827  Train=1.812  Heldout=1.818 px
       Cross-view  ALL=5.184  Train=5.192  Heldout=5.175 px
 
