@@ -178,6 +178,38 @@ class CharucoTarget:
 
         return kept_corners, kept_ids_phys, kept_ids_for_board
 
+    def _ransac_inlier_marker_indices(self, marker_corners, marker_ids_for_board):
+        """Indices of markers whose center is a RANSAC inlier of the
+        image-to-board-plane homography, or None if it can't be estimated.
+
+        A single marker with slightly warped corners (e.g. one edge clipped
+        by an object partially occluding it) can carry a corner position
+        just far enough off the board plane that OpenCV's ChArUco corner
+        interpolation rejects the *entire* frame's consistency check, even
+        though every other marker -- and this one's id/rough position -- is
+        perfectly fine. Re-detecting after dropping the geometric outlier(s)
+        recovers the frame instead of discarding it outright.
+        """
+        board_ids = self.board.getIds().reshape(-1)
+        board_obj_points = self.board.getObjPoints()
+        board_by_id = {int(i): pts for i, pts in zip(board_ids, board_obj_points)}
+        ids_flat = np.asarray(marker_ids_for_board).reshape(-1)
+        img_centers, obj_centers = [], []
+        for corners, mid in zip(marker_corners, ids_flat):
+            pts = board_by_id.get(int(mid))
+            if pts is None:
+                return None
+            img_centers.append(np.asarray(corners, dtype=np.float64).reshape(4, 2).mean(axis=0))
+            obj_centers.append(np.asarray(pts, dtype=np.float64)[:, :2].mean(axis=0))
+        if len(img_centers) < 8:
+            return None
+        img_centers = np.asarray(img_centers, dtype=np.float64)
+        obj_centers = np.asarray(obj_centers, dtype=np.float64)
+        H, inlier_mask = cv2.findHomography(obj_centers, img_centers, cv2.RANSAC, 5.0)
+        if H is None or inlier_mask is None:
+            return None
+        return [i for i, keep in enumerate(inlier_mask.reshape(-1)) if keep]
+
     def detect(self, bgr: np.ndarray):
         """
         Returns:
@@ -218,6 +250,22 @@ class CharucoTarget:
                 self.board,
             )
             n_corners = int(ret) if ret is not None else 0
+
+        if (charuco_ids is None or n_corners < 4) and len(marker_ids_for_board) >= 8:
+            # A single geometrically-off marker (e.g. one edge clipped by
+            # something occluding it) can make OpenCV's interpolation reject
+            # the whole frame even though the rest of the markers are fine.
+            # Retry once after dropping RANSAC outliers.
+            keep_idx = self._ransac_inlier_marker_indices(marker_corners, marker_ids_for_board)
+            if keep_idx is not None and 4 <= len(keep_idx) < len(marker_ids_for_board):
+                sub_corners = [marker_corners[i] for i in keep_idx]
+                sub_ids = marker_ids_for_board[keep_idx]
+                ret2, cc2, ci2 = cv2.aruco.interpolateCornersCharuco(
+                    sub_corners, sub_ids, gray, self.board,
+                )
+                n2 = int(ret2) if ret2 is not None else 0
+                if n2 > n_corners:
+                    charuco_corners, charuco_ids, n_corners = cc2, ci2, n2
 
         if charuco_ids is None or n_corners < 4:
             return None, None, 0, marker_corners, marker_ids_phys
