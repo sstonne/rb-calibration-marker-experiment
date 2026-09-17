@@ -174,6 +174,9 @@ class CharucoBoardConfig:
     marker_length_m: float = 0.018
     dictionary_name: str = "DICT_4X4_250"
     marker_id_start: int = 5  # 인쇄된 보드의 ArUco ID 시작값. 큐브(DICT_APRILTAG_36h11)와 다른 딕셔너리(DICT_4X4_250)라 ID 겹쳐도 무방
+    # OpenCV 4.6 이전 ChArUco 인쇄 배치. squares_y 가 짝수인 보드에서만 신규 배치와
+    # 달라지며, 틀리면 마커는 전부 검출되는데 코너 보간만 0개로 조용히 실패한다.
+    legacy_pattern: bool = False
 
 
 def get_default_charuco_board_config() -> CharucoBoardConfig:

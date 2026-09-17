@@ -48,6 +48,7 @@ sequential_frozen_stage(A1) 알고리즘 자체는 더 이상 여기 없다 -- �
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -238,6 +239,60 @@ def load_all_data(args):
              + len(obs_s3_fixed) + len(obs_s3_gripper))
     print(f"총 관측치: {total}개 (통합/독립 공통, 같은 양)\n")
 
+    observation_groups = {
+        "session1_cube": obs_s1,
+        "session2_fixed_cube": obs_s2_fixed,
+        "session2_gripper_cube": obs_s2_gripper,
+        "session2_board": obs_s2_board,
+        "session3_board": obs_s3_all,
+    }
+
+    def file_source(path):
+        source = Path(path).resolve()
+        return {"path": str(source),
+                "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
+
+    # Capture-directory names alone are insufficient: 0909 and 0914 share
+    # parent session directories but use different images, rigs and geometry.
+    # Preserve the exact selected roots and numerical intrinsics for callers
+    # producing a result artifact, without changing the loaded observations.
+    source_data_provenance = {
+        "schema": "zeus_calibration_loader_provenance_v1",
+        "capture_sources": {
+            name: {"root": str(root.resolve()), "capture_indices": indices}
+            for name, root, indices in (
+                ("session1", s1_root, s1_idx),
+                ("session2", s2_root, s2_idx),
+                ("session3", s3_root, s3_idx),
+            )
+        },
+        "cube_config": (file_source(cube_config_path) if cube_config_path else {
+            "path": None, "source": "calibration_pipeline.config.get_default_cube_config"}),
+        "initial_grasp_fit": file_source(args.fit_json),
+        "device_map": file_source(args.device_map),
+        "intrinsics": {
+            str(camera): {
+                "K": np.asarray(K_map[camera]).tolist(),
+                "D": np.asarray(D_map[camera]).tolist(),
+                "values_sha256": hashlib.sha256(
+                    np.asarray(K_map[camera], dtype="<f8").tobytes()
+                    + np.asarray(D_map[camera], dtype="<f8").tobytes()).hexdigest(),
+            }
+            for camera in sorted(K_map)
+        },
+        "cube_observation_policy": str(args.cube_observation_policy),
+        "fixed_min_corners": int(args.fixed_min_corners),
+        "s3_gripper_only": bool(getattr(args, "s3_gripper_only", False)),
+        "observation_counts": {name: len(group) for name, group in observation_groups.items()},
+        "session2_event_identity": {
+            str(SESSION2_EVENT_OFFSET + index): {
+                "placement_id": index,
+                "capture_directory": str((s2_root / f"{index:03d}").resolve()),
+            }
+            for index in s2_idx
+        },
+    }
+
     return dict(
         cam_init=cam_init, grasp_init=grasp_init, K_map=K_map, D_map=D_map,
         obs_s1=obs_s1, robot_T_s1=robot_T_s1,
@@ -245,6 +300,7 @@ def load_all_data(args):
         obs_s2_board=obs_s2_board, obs_s2_board_fixed=obs_s2_board_fixed, obs_s2_board_gripper=obs_s2_board_gripper,
         obs_s3=obs_s3_all, obs_s3_fixed=obs_s3_fixed, obs_s3_gripper=obs_s3_gripper, robot_T_s3=robot_T_s3,
         items_by_index=items_by_index,
+        source_data_provenance=source_data_provenance,
     )
 
 

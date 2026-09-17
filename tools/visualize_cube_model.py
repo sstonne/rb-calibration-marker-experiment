@@ -11,7 +11,7 @@ sticker.
 The marker model only knows marker planes, so the surrounding solid is supplied
 separately: by default the body + ``+Z`` protrusion implied by config.py, or an
 explicit ``--solid`` JSON for a cube of a different shape (see
-gt_cube/cube_solid.json).
+targets/gt_cube/cube_solid.json).
 
 Outputs
   cube_model_geometry.png  3D views + dimensioned front/right/top elevations

@@ -64,18 +64,19 @@ from robot.backends.zeus_client import ZeusClient  # noqa: E402
 from capture_pipeline.robot import euler_deg_to_matrix  # noqa: E402
 from capture_pipeline.session import allocate_next_capture_session  # noqa: E402
 from capture_pipeline.waypoint_safety import PROTOCOL_SAVED_POSE_REPLAY  # noqa: E402
-from calibration_pipeline.board_config import charuco_config_to_dict  # noqa: E402
-from calibration_pipeline.config import (  # noqa: E402
-    get_default_charuco_board_config,
-    get_default_charuco_board_config_source,
-    get_default_cube_config,
+from calibration_pipeline.board_config import (  # noqa: E402
+    charuco_config_to_dict, describe_charuco_config, list_charuco_boards,
+    resolve_charuco_config,
 )
+from calibration_pipeline.config import get_default_cube_config  # noqa: E402
 from calibration_pipeline.cube_config import cube_config_to_dict  # noqa: E402
 
 from zeus_gello_calibration.capture_session import (  # noqa: E402
     SESSIONS, load_camera_labels, connect_cameras, stop_cameras, LiveView,
     grab_frames, write_capture, read_robot_state,
     ROBOT_IP_DEFAULT, ROBOT_PORT_DEFAULT, DEVICE_MAP_DEFAULT,
+    CAM_WIDTH, CAM_HEIGHT, CAM_FPS,
+    validate_intrinsics_stream,
 )
 from zeus_gello_calibration.paths import (  # noqa: E402
     ZEUS_DATA_ROOT,
@@ -274,9 +275,13 @@ def _camera_mapping(device_map_path: Path, labels: dict) -> tuple[dict, int]:
 
 def _initial_combined_meta(capture_root: Path, events: list[dict],
                            label_to_idx: dict, gripper_cam_idx: int,
-                           source_dirs: dict) -> dict:
+                           source_dirs: dict, camera_stream: dict,
+                           board: str | None = None) -> dict:
     cube_config = cube_config_to_dict(get_default_cube_config())
-    board_config = charuco_config_to_dict(get_default_charuco_board_config())
+    # 촬영 중 검출은 하지 않지만 후단(04/05)이 이 값으로 이미지를 해석하므로
+    # 실제로 찍은 보드를 기록해야 한다.
+    board_cfg, board_source = resolve_charuco_config(board)
+    board_config = charuco_config_to_dict(board_cfg)
     return {
         "root_folder": str(capture_root.resolve()),
         "capture_protocol": COMBINED_REPLAY_PROTOCOL,
@@ -286,11 +291,12 @@ def _initial_combined_meta(capture_root: Path, events: list[dict],
         "n_fixed_cams": max(0, len(label_to_idx) - 1),
         "cube_config_source": "code_default:get_default_cube_config",
         "cube_config": cube_config,
-        "charuco_board_config_source": get_default_charuco_board_config_source(),
+        "charuco_board_config_source": board_source,
         "charuco_board_config": board_config,
         "capture_config": {
             "schema_version": "saved_pose_replay_capture_config_v1",
             "capture_protocol": COMBINED_REPLAY_PROTOCOL,
+            "camera_stream": dict(camera_stream),
             "event_count_policy": "all_saved_source_poses",
             "expected_event_count": len(events),
             "expected_phase_counts": _phase_counts(events),
@@ -546,7 +552,19 @@ def run_combined_replay(rb, cams, labels, view, data_root: Path,
         allocated = allocate_next_capture_session(str(data_root), label=session_label)
         capture_root = Path(allocated.capture_root)
         meta = _initial_combined_meta(
-            capture_root, events, label_to_idx, gripper_cam_idx, sources
+            capture_root, events, label_to_idx, gripper_cam_idx, sources,
+            {
+                "color_w": int(args.width),
+                "color_h": int(args.height),
+                "depth_w": int(
+                    args.depth_width if args.depth_width is not None else args.width
+                ),
+                "depth_h": int(
+                    args.depth_height if args.depth_height is not None else args.height
+                ),
+                "fps": int(args.fps),
+            },
+            board=getattr(args, "board", None),
         )
         _write_combined_progress(capture_root, meta, events, "in_progress")
         _update_allocated_session_manifest(
@@ -736,6 +754,15 @@ def main():
     )
     ap.add_argument("--jnt-speed", type=float, default=JNT_SPEED_DEFAULT)
     ap.add_argument("--overlap", type=float, default=OVERLAP_DEFAULT)
+    ap.add_argument("--width", type=int, default=CAM_WIDTH, help="RealSense color/depth width")
+    ap.add_argument("--height", type=int, default=CAM_HEIGHT, help="RealSense color/depth height")
+    ap.add_argument("--depth-width", type=int, default=None, help="RealSense depth width")
+    ap.add_argument("--depth-height", type=int, default=None, help="RealSense depth height")
+    ap.add_argument("--fps", type=int, default=CAM_FPS, help="RealSense stream FPS")
+    ap.add_argument("--board", default=None,
+                    help="장면에 둔 ChArUco 보드 정의. targets/charuco_boards/ 의 이름"
+                         f" ({', '.join(list_charuco_boards()) or '없음'}) 또는 JSON 경로."
+                         " 생략하면 config.py 기본 보드. meta.json 에 그대로 기록된다")
     ap.add_argument("--p2-approach-mm", type=float, default=P2_APPROACH_MM_DEFAULT)
     ap.add_argument("--p2-move-speed", type=float, default=P2_MOVE_SPEED_DEFAULT)
     ap.add_argument("--p2-descend-speed", type=float, default=P2_DESCEND_SPEED_DEFAULT)
@@ -743,7 +770,17 @@ def main():
                     help="원래 capture/<idx>/ 폴더를 덮어씀. 원본 보존을 위해 사용 비권장")
     ap.add_argument("--execute", action="store_true", help="실제로 이동/촬영 (없으면 dry-run)")
     ap.add_argument("--no-step", action="store_true", help="스텝마다 Enter로 확인하지 않고 연속 실행")
-    ap.add_argument("--no-cam-reset", action="store_true")
+    camera_reset = ap.add_mutually_exclusive_group()
+    camera_reset.add_argument(
+        "--no-cam-reset",
+        action="store_true",
+        help="카메라 시작 전 hardware reset 생략",
+    )
+    camera_reset.add_argument(
+        "--cam-reset",
+        action="store_true",
+        help="카메라를 순차 hardware reset. --all-phases는 기본적으로 reset을 생략함",
+    )
     ap.add_argument("--no-preview", action="store_true")
     ap.add_argument("--motion-only", action="store_true",
                     help="카메라/저장 없이 robot 동작만 수행. --all-phases에서는 P2 gripper 동작도 포함")
@@ -754,6 +791,11 @@ def main():
                          "값 6개를 직접 주거나(J1..J6), 값 없이 --regrasp-joints만 주면 "
                          "REGRASP_JOINTS_DEFAULT[세션번호]를 씀")
     args = ap.parse_args()
+    try:
+        board_cfg, board_source = resolve_charuco_config(args.board)
+    except (FileNotFoundError, ValueError) as error:
+        ap.error(str(error))
+    print(f"[BOARD] {board_source}: {describe_charuco_config(board_cfg)}")
 
     if args.session == 2 and args.execute:
         ap.error(
@@ -780,6 +822,18 @@ def main():
         data_root = require_zeus_data_path(args.data_root, label="--data-root")
     except ValueError as exc:
         ap.error(str(exc))
+    if (args.depth_width is None) != (args.depth_height is None):
+        ap.error("--depth-width와 --depth-height는 함께 지정해야 합니다.")
+    if (
+        args.width <= 0 or args.height <= 0 or args.fps <= 0
+        or (args.depth_width is not None and args.depth_width <= 0)
+        or (args.depth_height is not None and args.depth_height <= 0)
+    ):
+        ap.error("--width, --height, --depth-width, --depth-height, --fps 값은 모두 양수여야 합니다.")
+    depth_width = int(args.depth_width) if args.depth_width is not None else int(args.width)
+    depth_height = int(args.depth_height) if args.depth_height is not None else int(args.height)
+    args.depth_width = depth_width
+    args.depth_height = depth_height
 
     if args.all_phases:
         if args.session_dir is not None:
@@ -820,7 +874,22 @@ def main():
             )
         else:
             labels = load_camera_labels(Path(args.device_map))
-            cams, used_labels = connect_cameras(labels, no_reset=args.no_cam_reset)
+            validate_intrinsics_stream(
+                Path(args.device_map), args.width, args.height, args.fps,
+                depth_width=depth_width, depth_height=depth_height,
+            )
+            skip_camera_reset = args.no_cam_reset or not args.cam_reset
+            if skip_camera_reset:
+                print("[INFO] P1/P2/P3 통합 촬영: 카메라 전체 hardware reset을 생략합니다.")
+            cams, used_labels = connect_cameras(
+                labels,
+                no_reset=skip_camera_reset,
+                width=args.width,
+                height=args.height,
+                fps=args.fps,
+                depth_width=depth_width,
+                depth_height=depth_height,
+            )
             if not args.no_preview:
                 view = LiveView(
                     cams, used_labels,
@@ -933,7 +1002,19 @@ def main():
         print("--motion-only: 카메라를 연결하지 않고 movej 이동만 수행합니다 (촬영/저장 없음).\n")
     else:
         labels = load_camera_labels(Path(args.device_map))
-        cams, used_labels = connect_cameras(labels, no_reset=args.no_cam_reset)
+        validate_intrinsics_stream(
+            Path(args.device_map), args.width, args.height, args.fps,
+            depth_width=depth_width, depth_height=depth_height,
+        )
+        cams, used_labels = connect_cameras(
+            labels,
+            no_reset=args.no_cam_reset and not args.cam_reset,
+            width=args.width,
+            height=args.height,
+            fps=args.fps,
+            depth_width=depth_width,
+            depth_height=depth_height,
+        )
         if not args.no_preview:
             view = LiveView(cams, used_labels, window_name="replay_and_recapture (q/ESC=닫기)")
             view.start()

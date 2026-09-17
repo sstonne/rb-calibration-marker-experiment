@@ -39,7 +39,8 @@ Held-out Test를 같은 수식으로 비교할 수 있지만, FK를 사용하는
 Cross-view는 source camera 한 대의 PnP pose만 destination camera로 전달한다.
 Destination 관측은 오직 재투영 오차 계산에만 사용한다. ALL은 full-data fit 진단,
 Train은 fold별 in-sample 진단, Held-out Test는 leave-one-placement-out 내부 일반화
-지표다. 모든 pixel 값은 scalar component-wise RMSE로 통일한다.
+지표다. 모든 pixel 값은 코너별 sqrt(mean(dx² + dy²))로 통일하며,
+placement와 fold를 합칠 때도 평가한 코너 수로 가중한다.
 
 최종 순위는 calibration/FK와 독립적으로 측정한 External GT의 TRE(mm), rotation
 error(deg), P95 TRE와 failure rate로 결정한다.
@@ -55,6 +56,7 @@ import argparse
 import json
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor
 from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
@@ -75,6 +77,7 @@ from calibration_pipeline.reprojection import (  # noqa: E402
     solve_corner_reprojection, variable_keys,
 )
 from calibration_pipeline.apriltag_cube import inv_T  # noqa: E402
+from calibration_pipeline.evaluation import serialize_state  # noqa: E402
 from calibration_pipeline.config import TOP_MARKER_PLANE_Z_M  # noqa: E402
 from calibration_pipeline.table1 import estimate_board_handeye_initial  # noqa: E402
 
@@ -113,6 +116,20 @@ def mechanical_flange_cube_transform():
     transform[:3, :3] = np.diag([-1.0, 1.0, -1.0])
     transform[:3, 3] = [0.0, 0.0, MECHANICAL_FLANGE_CUBE_DISTANCE_MM / 1000.0]
     return transform
+
+
+def load_mechanical_transform(path):
+    """Load a separately specified, vision-free flange-to-object transform."""
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if payload.get("vision_used") is not False or not payload.get("source"):
+        raise ValueError("mechanical transform requires vision_used=false and source")
+    transform = np.asarray(payload["T_flange_cube"], dtype=np.float64)
+    if (transform.shape != (4, 4) or not np.all(np.isfinite(transform))
+            or not np.allclose(transform[3], [0, 0, 0, 1])
+            or not np.allclose(transform[:3, :3].T @ transform[:3, :3], np.eye(3), atol=1e-6)
+            or not np.isclose(np.linalg.det(transform[:3, :3]), 1.0)):
+        raise ValueError("mechanical T_flange_cube must be SE(3), translation in metres")
+    return transform, payload
 
 
 # ---------------------------------------------------------------- row 정의
@@ -156,6 +173,12 @@ def split_observations(data, targets, drop_set=None):
             cube_obs.append(o)
     if "board" in targets:
         board_obs = list(data["obs_s3"])
+        if data.get("include_session2_board", False):
+            board_obs.extend(
+                observation for observation in data.get("obs_s2_board", [])
+                if drop_set is None
+                or int(observation.event) != fcm.SESSION2_EVENT_OFFSET + int(drop_set)
+            )
     return cube_obs, board_obs
 
 
@@ -185,7 +208,7 @@ def fit_row(row, data, drop_set, robot_T, board_init, gtc_init):
         raise ValueError(f"{row} is pending: {spec['pending_reason']}")
     corrected_grasp = data["grasp_init"]
     grasp_init = (
-        mechanical_flange_cube_transform()
+        data.get("mechanical_grasp", mechanical_flange_cube_transform())
         if spec["fk"] == "mechanical_fixed"
         else corrected_grasp
     )
@@ -265,7 +288,11 @@ def fit_row(row, data, drop_set, robot_T, board_init, gtc_init):
         ok = bool(d1.get("success", False) and d2.get("success", False))
 
     errs = fcm.per_corner_errors(final, observations, robot_T, K_map, D_map, GRIPPER)
-    return final, fcm.rmse_px(errs), len(observations), ok
+    # Keep the optimizer unchanged; report its residuals with the same
+    # two-dimensional corner-distance convention as the evaluation metrics.
+    residuals = np.asarray(errs, dtype=np.float64).reshape(-1, 2)
+    train_px = float(np.sqrt(np.mean(np.sum(residuals ** 2, axis=1)))) if residuals.size else float("nan")
+    return final, train_px, len(observations), ok
 
 
 # ------------------------------------------------------------- 공통 평가
@@ -302,8 +329,8 @@ def _support_bucket():
     }
 
 
-def _component_error_stats(squared_by_set, support_by_set):
-    """Component-wise RMSE with equal final weight for every placement."""
+def _pixel_error_stats(squared_by_set, support_by_set):
+    """Pool squared 2-D corner distances, retaining per-placement diagnostics."""
     per_set = []
     for set_index in sorted(squared_by_set):
         squared = np.asarray(squared_by_set[set_index], dtype=np.float64)
@@ -315,6 +342,7 @@ def _component_error_stats(squared_by_set, support_by_set):
             "set": int(set_index),
             "mse_px2": mse,
             "rmse_px": float(np.sqrt(mse)),
+            "sum_squared_error_px2": float(np.sum(squared)),
             "n_events": len(support["events"]),
             "n_observations": len(support["observation_ids"]),
             **{key: int(support[key]) for key in (
@@ -323,11 +351,15 @@ def _component_error_stats(squared_by_set, support_by_set):
             )},
         })
 
-    mse = float(np.mean([row["mse_px2"] for row in per_set])) if per_set else float("nan")
+    n_corners = sum(row["n_corners"] for row in per_set)
+    squared_sum = float(sum(row["sum_squared_error_px2"] for row in per_set))
+    mse = squared_sum / n_corners if n_corners else float("nan")
     return {
         "rmse_px": float(np.sqrt(mse)),
         "mse_px2": mse,
-        "aggregation": "component_MSE_within_set_then_equal_set_mean_then_sqrt",
+        "sum_squared_error_px2": squared_sum,
+        "aggregation": "pooled_corner_squared_distance_mean_then_sqrt",
+        "pixel_rmse_definition": "sqrt(mean(dx^2 + dy^2))",
         "n_sets": len(per_set),
         "n_events": sum(row["n_events"] for row in per_set),
         **{key: sum(row[key] for row in per_set) for key in (
@@ -361,15 +393,15 @@ def cube_reprojection_stats(obs_list, cube_poses, state, robot_T, K_map, D_map):
         measured = np.asarray(observation.image_points, dtype=np.float64).reshape(-1, 2)
         if prediction.shape != measured.shape or not np.all(np.isfinite(prediction)):
             continue
-        squared = np.square(prediction - measured).reshape(-1)
+        squared = np.sum(np.square(prediction - measured), axis=1)
         squared_by_set[set_index].extend(squared.tolist())
         support = support_by_set[set_index]
         support["events"].add(int(observation.event))
         support["observation_ids"].add(
             (int(observation.event), int(observation.cam)))
         support["n_corners"] += len(measured)
-        support["n_residual_components"] += len(squared)
-    return _component_error_stats(squared_by_set, support_by_set)
+        support["n_residual_components"] += 2 * len(squared)
+    return _pixel_error_stats(squared_by_set, support_by_set)
 
 
 def cross_view_transfer_stats(obs_list, state, robot_T, K_map, D_map):
@@ -425,7 +457,7 @@ def cross_view_transfer_stats(obs_list, state, robot_T, K_map, D_map):
                 if prediction.shape != measured.shape or not np.all(np.isfinite(prediction)):
                     valid = False
                     break
-                pair_squared.extend(np.square(prediction - measured).reshape(-1).tolist())
+                pair_squared.extend(np.sum(np.square(prediction - measured), axis=1).tolist())
                 n_corners += len(measured)
             if not valid:
                 continue
@@ -438,12 +470,12 @@ def cross_view_transfer_stats(obs_list, state, robot_T, K_map, D_map):
                 support["n_pairs"] += 1
                 support["n_directions"] += 2
                 support["n_corners"] += n_corners
-                support["n_residual_components"] += len(pair_squared)
+                support["n_residual_components"] += 2 * len(pair_squared)
 
-    overall = _component_error_stats(
+    overall = _pixel_error_stats(
         squared_by_type["overall"], support_by_type["overall"])
     overall["by_pair_type"] = {
-        pair_type: _component_error_stats(
+        pair_type: _pixel_error_stats(
             squared_by_type[pair_type], support_by_type[pair_type])
         for pair_type in ("fixed_fixed", "fixed_gripper")
     }
@@ -468,6 +500,10 @@ def evaluate_fold(row, data, held_set, robot_T, board_init, gtc_init):
     return {
         "set": int(held_set),
         "converged": ok,
+        "transforms": serialize_state(final),
+        "training_placement_ids": sorted(
+            int(s) for s in data["items_by_index"] if int(s) != int(held_set)),
+        "heldout_placement_ids": [int(held_set)],
         "n_solver_train_observations": n_obs,
         "solver_train_rmse_px": solver_train_px,
         "train": {
@@ -485,33 +521,41 @@ def evaluate_fold(row, data, held_set, robot_T, board_init, gtc_init):
     }
 
 
+def _fold_job(arguments):
+    return evaluate_fold(*arguments)
+
+
 def aggregate_fold_metric(folds, split, metric):
     valid = [
         fold[split][metric]
         for fold in folds if fold is not None
         and np.isfinite(fold[split][metric]["mse_px2"])
     ]
-    mse = float(np.mean([item["mse_px2"] for item in valid])) if valid else float("nan")
-    result = {
-        "rmse_px": float(np.sqrt(mse)),
-        "mse_px2": mse,
-        "aggregation": "fold_MSE_mean_then_sqrt",
-        "n_fold_evaluations": len(valid),
-    }
+    def pooled_summary(items):
+        n_corners = sum(item["n_corners"] for item in items)
+        squared_sum = float(sum(item["sum_squared_error_px2"] for item in items))
+        mse = squared_sum / n_corners if n_corners else float("nan")
+        return {
+            "rmse_px": float(np.sqrt(mse)),
+            "mse_px2": mse,
+            "sum_squared_error_px2": squared_sum,
+            "n_corners": n_corners,
+            "n_residual_components": 2 * n_corners,
+            "aggregation": "pooled_fold_corner_squared_distance_mean_then_sqrt",
+            "pixel_rmse_definition": "sqrt(mean(dx^2 + dy^2))",
+            "n_fold_evaluations": len(items),
+        }
+
+    result = pooled_summary(valid)
     if metric == "cross_view":
         result["by_pair_type"] = {}
         for pair_type in ("fixed_fixed", "fixed_gripper"):
             values = [
-                item["by_pair_type"][pair_type]["mse_px2"]
+                item["by_pair_type"][pair_type]
                 for item in valid
                 if np.isfinite(item["by_pair_type"][pair_type]["mse_px2"])
             ]
-            pair_mse = float(np.mean(values)) if values else float("nan")
-            result["by_pair_type"][pair_type] = {
-                "rmse_px": float(np.sqrt(pair_mse)),
-                "mse_px2": pair_mse,
-                "n_fold_evaluations": len(values),
-            }
+            result["by_pair_type"][pair_type] = pooled_summary(values)
     return result
 
 
@@ -534,6 +578,8 @@ def aggregate_folds(folds):
 def external_gt_pending():
     return {
         "status": "pending",
+        "reason": "독립 6-DoF T_base_cube_GT와 각 방법의 frozen prediction 미확보; 기존 flange/yaw 진단은 대체 불가",
+        "failure_definition": "missing_or_failed_predictions_over_all_independent_GT_poses",
         "mean_tre_mm": None,
         "median_tre_mm": None,
         "p95_tre_mm": None,
@@ -541,6 +587,25 @@ def external_gt_pending():
         "p95_rotation_error_deg": None,
         "failure_rate": None,
     }
+
+
+def save_result(result, path):
+    """Keep JSON portable: missing metrics are null, never nonstandard NaN."""
+    def clean(value):
+        if isinstance(value, dict):
+            return {key: clean(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [clean(item) for item in value]
+        if isinstance(value, (float, np.floating)) and not np.isfinite(value):
+            return None
+        return value
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(clean(result), indent=2, ensure_ascii=False,
+                                    allow_nan=False) + "\n", encoding="utf-8")
+    temporary.replace(path)
 
 
 def empty_metric_summary():
@@ -577,7 +642,7 @@ def corrected_fk_training_contract(fit_json_path):
     dispersion = fit.get("grasp_init_dispersion_across_cams", {})
     solve = fit.get("solve_diagnostics", {})
     return {
-        "role": "A5 corrected-FK training only; forbidden as A3 mechanical FK",
+        "role": "P1 training artifact for initialization, A4/A5/B1/B2 corrected-FK and common Cube reference; forbidden as A3 mechanical FK",
         "source": str(fit_path.resolve()),
         "collection": "one rigid Cube grasp, multiple airborne positions and rotations",
         "robot_pose_frame": "T_base_flange from tool1=0",
@@ -589,7 +654,12 @@ def corrected_fk_training_contract(fit_json_path):
         "pnp_accepted_per_camera": fit.get("pnp_accepted_per_camera", {}),
         "cross_camera_initial_translation_std_mm": dispersion.get("translation_std_mm"),
         "cross_camera_initial_rotation_std_deg": dispersion.get("rotation_std_deg"),
-        "train_reprojection_rmse_px": solve.get("train_reprojection_rmse_px"),
+        "train_reprojection_rmse_px": (
+            float(solve["train_reprojection_rmse_px"]) * np.sqrt(2.0)
+            if solve.get("train_reprojection_rmse_px") is not None else None
+        ),
+        "train_reprojection_rmse_definition": "sqrt(mean(dx^2 + dy^2))",
+        "train_reprojection_source_conversion": "component-wise solver RMSE multiplied by sqrt(2)",
         "jacobian_rank_deficient": solve.get("jacobian_rank_deficient"),
     }
 
@@ -610,273 +680,13 @@ def mechanical_fk_contract():
     }
 
 
-def _format_metric(value):
-    if value is None or not np.isfinite(value):
-        return "Pending"
-    return f"{float(value):.4f}"
-
-
-def _format_best_metric(value, best_value):
-    formatted = _format_metric(value)
-    if formatted == "Pending" or best_value is None:
-        return formatted
-    if np.isclose(float(value), best_value, rtol=0.0, atol=5e-5):
-        return f"**{formatted}**"
-    return formatted
-
-
 def write_markdown_report(result, output_path):
-    rows = result["rows"]
-    mechanical_fk = result["mechanical_fk"]
-    corrected_fk = result["corrected_fk_training"]
-    completed = [
-        (row, body["summary"]["heldout_test_cross_view_cube_rmse_px"])
-        for row, body in rows.items()
-        if body.get("status") == "complete"
-        and body["summary"]["heldout_test_cross_view_cube_rmse_px"] is not None
-    ]
-    ranking = sorted(completed, key=lambda item: item[1])
-    metric_keys = (
-        "all_cube_rmse_px",
-        "train_cube_rmse_px",
-        "heldout_test_cube_rmse_px",
-        "all_cross_view_cube_rmse_px",
-        "train_cross_view_cube_rmse_px",
-        "heldout_test_cross_view_cube_rmse_px",
-    )
-    best_metrics = {
-        key: min(
-            float(body["summary"][key])
-            for body in rows.values()
-            if body.get("status") == "complete"
-            and body["summary"].get(key) is not None
-            and np.isfinite(body["summary"][key])
-        )
-        for key in metric_keys
-    }
-
-    def paired_cross_view_delta(left, right):
-        left_folds = {int(fold["set"]): fold for fold in rows[left]["folds"]}
-        right_folds = {int(fold["set"]): fold for fold in rows[right]["folds"]}
-        shared = sorted(set(left_folds) & set(right_folds))
-        deltas = [
-            left_folds[set_index]["heldout_test"]["cross_view"]["rmse_px"]
-            - right_folds[set_index]["heldout_test"]["cross_view"]["rmse_px"]
-            for set_index in shared
-        ]
-        return {
-            "mean": float(np.mean(deltas)),
-            "wins": sum(delta < 0.0 for delta in deltas),
-            "n": len(deltas),
-        }
-
-    contrast_specs = (
-        ("A2", "A1"), ("A3", "A2"), ("A4", "A2"),
-        ("A4", "A3"), ("A5", "A3"), ("A5", "A4"),
-    )
-    contrasts = [
-        (f"{left} - {right}", paired_cross_view_delta(left, right))
-        for left, right in contrast_specs
-        if left in rows and right in rows
-        and rows[left].get("status") == "complete"
-        and rows[right].get("status") == "complete"
-    ]
-    lines = [
-        "# Zeus Ablation Test Table 1",
-        "",
-        "> 생성 코드: `zeus_gello_calibration/table1_zeus.py`",
-        ">",
-        f"> 촬영 데이터 루트: `{result['source_data']['root']}`",
-        ">",
-        "> External GT: `Pending`",
-        "",
-        "## 1. 비교실험 구성",
-        "",
-        "| Row | Calibration target | Optimization | FK 사용 방식 | 실행 상태 |",
-        "| --- | --- | --- | --- | --- |",
-    ]
-    fk_labels = {
-        "none": "VISION",
-        "mechanical_fixed": "FK hard fixed (mechanical)",
-        "corrected_factor": "corrected-FK soft factor",
-        "corrected_fixed": "corrected-FK hard fixed",
-    }
-    compact_fk_labels = {
-        "none": "VISION",
-        "mechanical_fixed": "FK hard fixed",
-        "corrected_factor": "corrected-FK soft factor",
-        "corrected_fixed": "corrected-FK hard fixed",
-    }
-
-    def compact_row_label(row, condition):
-        targets = "+".join(name.capitalize() for name in condition["targets"])
-        optimization = "Unified" if condition["opt"] == "uni" else "Seq"
-        return f"{row}({targets}+{optimization}+{compact_fk_labels[condition['fk']]})"
-
-    for row in ROW_ORDER:
-        if row not in rows:
-            continue
-        body = rows[row]
-        condition = body["condition"]
-        targets = " + ".join(name.capitalize() for name in condition["targets"])
-        optimization = "Unified" if condition["opt"] == "uni" else "Sequential"
-        status = "완료" if body.get("status") == "complete" else "Pending"
-        lines.append(
-            f"| {row} | {targets} | {optimization} | "
-            f"{fk_labels[condition['fk']]} | {status} |"
-        )
-
-    lines.extend([
-        "",
-        "### A3 FK nominal 기하",
-        "",
-        "A3는 Robot flange pose에 중앙 파지 nominal 기계 변환을 곱한다. "
-        "Cube VISION은 이 변환 생성에 사용하지 않는다.",
-        "",
-        "| 항목 | 값 |",
-        "| --- | --- |",
-        f"| flange-to-Cube top datum | {mechanical_fk['flange_to_cube_top_datum_mm']:.3f} mm |",
-        f"| Cube origin-to-top plane | {mechanical_fk['cube_origin_to_top_plane_mm']:.3f} mm |",
-        f"| nominal `T_flange_cube` translation | "
-        f"`{[round(value, 3) for value in mechanical_fk['translation_mm']]}` mm |",
-        f"| nominal rotation | `{mechanical_fk['rotation']}` |",
-        "| VISION 사용 | False |",
-        "| 물리 실측 완료 | False (nominal 조립 가정) |",
-        "",
-        "### A5 corrected-FK 학습 근거",
-        "",
-        "P1에서 Cube를 한 번 강체 파지한 채 공중에서 위치와 회전을 바꿔 "
-        "하나의 `T_flange_cube`를 추정했다. 이 값은 Cube VISION을 사용했으므로 "
-        "A5 학습에만 사용하며 A3의 기계적 FK로 재사용하지 않는다.",
-        "",
-        "| 항목 | 결과 |",
-        "| --- | --- |",
-        f"| P1 pose 수 | {corrected_fk['n_captures']} |",
-        f"| Robot pose frame | `{corrected_fk['robot_pose_frame']}` |",
-        f"| `T_flange_cube` translation mm | "
-        f"`{[round(value, 3) for value in corrected_fk['translation_mm']]}` |",
-        f"| 축 관계 | `{corrected_fk['nominal_axis_map']}` |",
-        f"| nominal 축 대비 회전 편차 | "
-        f"{corrected_fk['rotation_deviation_from_nominal_deg']:.3f} deg |",
-        f"| 카메라별 초기값 분산 | "
-        f"{corrected_fk['cross_camera_initial_translation_std_mm']:.3f} mm / "
-        f"{corrected_fk['cross_camera_initial_rotation_std_deg']:.3f} deg |",
-        f"| P1 train reprojection | {corrected_fk['train_reprojection_rmse_px']:.3f} px |",
-        f"| Jacobian rank deficient | {corrected_fk['jacobian_rank_deficient']} |",
-        "",
-        "이 촬영은 고정 장착 변환의 거리, 축 방향과 장착 오차를 식별한다. "
-        "다만 모든 pose가 `grasp_id=0`인 동일 파지이므로 재파지 반복성은 측정하지 않는다.",
-        "",
-        "## 2. 최종 내부 결과",
-        "",
-        "모든 pixel 값은 작을수록 좋으며, 각 RMSE 열의 최솟값을 굵게 표시한다. "
-        "이 표시는 External GT 최종 순위가 아니라 내부 지표별 순위에 해당한다.",
-        "",
-        "| Row | ALL Cube px | Train Cube px | Held-out Test Cube px | ALL Cross-view px | Train Cross-view px | Held-out Test Cross-view px | External GT | Convergence |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: |",
-    ])
-    for row in ROW_ORDER:
-        if row not in rows:
-            continue
-        body = rows[row]
-        summary = body["summary"]
-        convergence = (
-            f"{summary['n_converged']}/{summary['n_folds']}"
-            if body.get("status") == "complete" else "Pending"
-        )
-        row_label = compact_row_label(row, body["condition"])
-        lines.append(
-            f"| {row_label} | {_format_best_metric(summary['all_cube_rmse_px'], best_metrics['all_cube_rmse_px'])} | "
-            f"{_format_best_metric(summary['train_cube_rmse_px'], best_metrics['train_cube_rmse_px'])} | "
-            f"{_format_best_metric(summary['heldout_test_cube_rmse_px'], best_metrics['heldout_test_cube_rmse_px'])} | "
-            f"{_format_best_metric(summary['all_cross_view_cube_rmse_px'], best_metrics['all_cross_view_cube_rmse_px'])} | "
-            f"{_format_best_metric(summary['train_cross_view_cube_rmse_px'], best_metrics['train_cross_view_cube_rmse_px'])} | "
-            f"{_format_best_metric(summary['heldout_test_cross_view_cube_rmse_px'], best_metrics['heldout_test_cross_view_cube_rmse_px'])} | "
-            f"Pending | {convergence} |"
-        )
-
-    lines.extend([
-        "",
-        "## 3. 평가지표 계산 방법",
-        "",
-        "| 지표 | 계산 | 판정 역할 |",
-        "| --- | --- | --- |",
-        "| ALL Cube RMSE px | 전체 placement로 별도 fit 후, P1 VISION corrected-FK Cube pose를 전체 관측에 재투영 | full-data 적합 진단 |",
-        "| Train Cube RMSE px | leave-one-placement-out 각 fold의 train placement 재투영 | 학습 적합 진단 |",
-        "| Held-out Test Cube RMSE px | 해당 fold에서 제외한 placement를 frozen calibration으로 재투영 | 내부 보조 지표 |",
-        "| ALL Cross-view Cube RMSE px | 전체 데이터 fit에서 source-camera PnP를 destination으로 양방향 전달 | full-data camera 일관성 |",
-        "| Train Cross-view Cube RMSE px | 각 fold의 train placement에서 같은 양방향 전달 | 학습 camera 일관성 |",
-        "| Held-out Test Cross-view Cube RMSE px | calibration에서 제외한 placement에서 destination 관측을 scoring에만 사용 | 내부 주 비교 지표 |",
-        "| External GT | 독립 `T_base_cube_GT`와 frozen prediction의 TRE/rotation/P95/failure | 최종 물리 순위, 현재 Pending |",
-        "",
-        "Pixel RMSE는 `sqrt(mean(dx^2, dy^2))`이며 placement를 동일 가중한다. "
-        "`ALL`은 Train과 Held-out Test의 산술평균이 아니라 전체 데이터로 다시 fit한 결과다.",
-        "",
-        "## 4. 현재 해석",
-        "",
-    ])
-    if ranking:
-        second = ranking[1] if len(ranking) > 1 else None
-        comparison = (
-            f", 2위 {second[0]}보다 {second[1] - ranking[0][1]:.4f} px 낮다"
-            if second is not None else ""
-        )
-        lines.append(
-            f"- 내부 주 지표의 최저값은 **{ranking[0][0]} "
-            f"({ranking[0][1]:.4f} px)**이며{comparison}."
-        )
-        lines.append(
-            "- 내부 Cross-view 최저값은 카메라 간 일관성을 뜻하며 실제 3D 절대 정확도 "
-            "최고를 뜻하지 않는다."
-        )
-    lines.extend([
-        "- Cube RMSE는 모든 row에 같은 P1 VISION corrected-FK reference를 사용하므로 "
-        "corrected-FK 계열에 구조적으로 유리할 수 있다.",
-        "- A3는 `[0, 0, 160.0] mm + Ry(180 deg)` nominal 기하를 사용하는 FK다. "
-        "97.5 mm datum은 아직 물리 실측되지 않았으므로 nominal baseline으로 해석한다.",
-        "- P1의 단일 파지 다중 회전 fit은 A5 전용이며 A3에 재사용하지 않는다.",
-        "- A4/B1/B2의 2.0 mm, 0.30 deg covariance는 실측값이 아니므로 preflight 결과다.",
-        "- A0와 B3는 stationary board에서 최적화 블록이 사실상 분리되어 수치가 "
-        "거의 같다. 현재 데이터로는 board-only Unified 이점을 검증할 수 없다.",
-        "- 현재 데이터에는 계획한 gripper-mounted board 촬영이 없으므로 A0/B3 결과는 "
-        "새 45-event 프로토콜의 최종 결과가 아니다.",
-        "- 최종 방법 채택은 External GT 열이 채워진 뒤 결정한다.",
-        "",
-        "### 주요 paired contrast",
-        "",
-        "`Δ`는 왼쪽 방법에서 오른쪽 방법을 뺀 Held-out Test Cross-view RMSE다. "
-        "음수이면 왼쪽 방법이 낮다.",
-        "",
-        "| Contrast | Mean Δ px | 왼쪽 방법이 낮은 placement | 해석 |",
-        "| --- | ---: | ---: | --- |",
-    ])
-    contrast_notes = {
-        "A2 - A1": "Unified VISION이 Sequential VISION보다 낮음",
-        "A3 - A2": "nominal FK hard fixed와 Unified VISION 비교",
-        "A4 - A2": "corrected-FK soft factor와 VISION이 사실상 동률",
-        "A4 - A3": "corrected-FK soft factor와 nominal FK hard fixed 비교",
-        "A5 - A3": "corrected-FK hard fixed와 nominal FK hard fixed 비교",
-        "A5 - A4": "corrected-FK hard fixed가 soft factor보다 높음",
-    }
-    for label, contrast in contrasts:
-        lines.append(
-            f"| {label} | {contrast['mean']:+.4f} | "
-            f"{contrast['wins']}/{contrast['n']} | {contrast_notes[label]} |"
-        )
-    lines.extend([
-        "",
-        "## 5. 사용 데이터",
-        "",
-        "| 구분 | Observation 수 |",
-        "| --- | ---: |",
-        f"| P1 gripped Cube | {result['source_data']['observations']['p1_cube']} |",
-        f"| P2 fixed-camera Cube | {result['source_data']['observations']['p2_fixed_cube']} |",
-        f"| P2 gripper-camera Cube | {result['source_data']['observations']['p2_gripper_cube']} |",
-        f"| P3 Board | {result['source_data']['observations']['p3_board']} |",
-        f"| 전체 | {result['source_data']['observations']['total']} |",
-        "",
-    ])
-    Path(output_path).write_text("\n".join(lines), encoding="utf-8")
+    """Compatibility entry point using the same renderer for every dataset."""
+    from zeus_gello_calibration.report_table1 import write_reports
+    output_path = Path(output_path)
+    paths = write_reports(result, output_path.parent)
+    if output_path.resolve() != paths["markdown"].resolve():
+        output_path.write_text(paths["markdown"].read_text(encoding="utf-8"), encoding="utf-8")
 
 
 def main():
@@ -899,17 +709,31 @@ def main():
     for key, value in fcm_parser_defaults.items():
         parser.add_argument(f"--{key.replace('_', '-')}", default=value,
                             type=type(value) if not isinstance(value, bool) else str)
+    parser.add_argument("--cube-config", default=None,
+                        help="Cube geometry JSON for the captured target")
+    parser.add_argument("--s3-gripper-only", action="store_true",
+                        help="Use only gripper-camera board observations from session3")
+    parser.add_argument("--include-session2-board", action="store_true",
+                        help="Include session2 board observations and exclude the held-out placement's board event")
     parser.add_argument("--rows", default=",".join(r for r in ROW_ORDER if r in ROWS))
     parser.add_argument("--folds", type=int, default=0, help="0 = 모든 placement")
+    parser.add_argument("--workers", type=int, default=1,
+                        help="Parallel LOPO fit processes; full-data fit remains separate")
+    parser.add_argument("--mechanical-transform-json",
+                        help="Vision-free T_flange_cube for custom cubes; translation in metres")
+    parser.add_argument("--report-dir",
+                        help="Write detailed Markdown, summary CSV and per-fold CSV here")
     parser.add_argument(
         "--out",
         default=str(Path(__file__).resolve().parent / "ABLATION_TEST_table1_zeus.json"),
     )
     parser.add_argument(
         "--md-out",
-        default=str(Path(__file__).resolve().parent / "ABLATION_RESULTS.md"),
+        default=None, help="Optional additional Markdown copy; standard report names are always generated",
     )
     args = parser.parse_args()
+    if args.workers < 1 or args.folds < 0:
+        parser.error("--workers must be positive; --folds must be nonnegative")
 
     for attribute in ("session1_dir", "session2_dir", "session3_dir"):
         value = require_zeus_data_path(
@@ -918,8 +742,27 @@ def main():
         setattr(args, attribute, str(value))
 
     data = fcm.load_all_data(args)
+    data["include_session2_board"] = bool(args.include_session2_board)
     mechanical_fk = mechanical_fk_contract()
+    mechanical_pending = None
+    if args.mechanical_transform_json:
+        data["mechanical_grasp"], mechanical_fk = load_mechanical_transform(
+            args.mechanical_transform_json)
+    elif args.cube_config:
+        mechanical_pending = (
+            "선택한 Cube의 비전 미사용 T_flange_cube 입력이 없음. "
+            "robot.json pose는 T_base_flange이며 flange-to-Cube 장착 변환이 아님. "
+            "다른 Cube의 nominal 기계 변환은 재사용하지 않음."
+        )
+        mechanical_fk = {"status": "pending", "reason": mechanical_pending,
+                         "vision_used": False, "T_flange_cube": None}
     corrected_fk = corrected_fk_training_contract(args.fit_json)
+    if args.cube_config:
+        corrected_fk["nominal_axis_map"] = None
+        corrected_fk["rotation_deviation_from_nominal_deg"] = None
+        corrected_fk["rotation_matrix"] = np.asarray(data["grasp_init"])[:3, :3].tolist()
+        corrected_fk["nominal_rotation_status"] = (
+            "선택한 Cube에 다른 Cube의 nominal 회전을 적용하지 않음")
     robot_T = {**data["robot_T_s1"], **data["robot_T_s2_gripper"], **data["robot_T_s3"]}
     # fit_calibration_methods.main() 과 동일한 초기화: session3 보드만으로 hand-eye 초기값
     gtc_init, board_init, eih_diag = estimate_board_handeye_initial(
@@ -929,11 +772,14 @@ def main():
     set_ids = sorted(int(s) for s in data["items_by_index"])
     if args.folds:
         set_ids = set_ids[:args.folds]
-    rows = [r.strip() for r in args.rows.split(",") if r.strip() in ROWS]
+    rows = [r.strip() for r in args.rows.split(",") if r.strip()]
+    if not rows or set(rows) - set(ROWS):
+        parser.error("--rows must contain known Table 1 row IDs")
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
 
     print(f"\nplacement {len(set_ids)}개 leave-one-out x row {len(rows)}개\n")
     result = {
-        "schema": "table1_zeus_cube_and_cross_view_v3",
+        "schema": "table1_zeus_cube_and_cross_view_v4",
         "source_data": {
             "root": str(ZEUS_DATA_ROOT.resolve()),
             "session_directories": {
@@ -941,16 +787,44 @@ def main():
                 "p2": args.session2_dir,
                 "p3": args.session3_dir,
             },
+            "capture_subdirectories": {
+                "p1": args.session1_capture_subdir,
+                "p2": args.session2_capture_subdir,
+                "p3": args.session3_capture_subdir,
+            },
+            "cube_config": str(Path(args.cube_config).resolve()) if args.cube_config else "default CubeConfig",
+            "s3_gripper_only": bool(args.s3_gripper_only),
+            "include_session2_board": bool(args.include_session2_board),
+            "cube_observation_policy": args.cube_observation_policy,
+            "fixed_min_corners": int(args.fixed_min_corners),
             "observations": {
                 "p1_cube": len(data["obs_s1"]),
                 "p2_fixed_cube": len(data["obs_s2_fixed"]),
                 "p2_gripper_cube": len(data["obs_s2_gripper"]),
                 "p3_board": len(data["obs_s3"]),
+                "p2_board": len(data.get("obs_s2_board", [])) if args.include_session2_board else 0,
                 "total": (
                     len(data["obs_s1"]) + len(data["obs_s2_fixed"])
                     + len(data["obs_s2_gripper"]) + len(data["obs_s3"])
+                    + (len(data.get("obs_s2_board", [])) if args.include_session2_board else 0)
                 ),
             },
+        },
+        "loader_provenance": data.get("source_data_provenance", {}),
+        "initialization_contract": {
+            "fixed_cameras_and_corrected_grasp": "P1-only fit, shared across rows/folds",
+            "handeye": "P3 board observations only, shared across rows/folds",
+            "cube_pose_initialization": "current fold's train Cube observations only",
+            "B2_scope": "board residual ablation; P3 board-derived initialization retained",
+            "n_initializations_per_fit": 1,
+        },
+        "split": {
+            "strategy": "leave_one_placement_out",
+            "placement_ids": sorted(int(s) for s in data["items_by_index"]),
+            "evaluated_fold_ids": set_ids,
+            "same_split_for_all_rows_and_pixel_metrics": True,
+            "heldout_session2_board_observations_excluded": True,
+            "all_is_separate_full_data_refit": True,
         },
         "corrected_fk_definition": (
             "T_base_cube[s] = T_base_flange(place_s) @ "
@@ -966,18 +840,20 @@ def main():
                 "all placements를 한 번에 fit한 calibration으로 전체 session2 cube를 평가; "
                 "train+test 평균이 아니라 full-data descriptive fit"
             ),
-            "train": "각 leave-one-placement-out fold의 calibration-train placements 평가",
+            "train": "각 leave-one-placement-out fold의 calibration-train placements 평가; 모든 fold의 평가 corner를 합쳐 RMSE 계산",
             "heldout_test": (
-                "각 fold에서 calibration에 넣지 않은 한 placement만 평가; test-time calibration refit 없음"
+                "각 fold에서 calibration에 넣지 않은 한 placement만 평가; "
+                "해당 P2 Cube와 Board 관측을 모두 fit에서 제외; test-time calibration refit 없음"
             ),
             "cube_reprojection": (
                 "모든 row가 같은 P1 train-VISION corrected-FK reference T_base_cube를 "
-                "사용한 component-wise pixel RMSE; corrected-FK 방법에 구조적으로 "
+                "사용한 sqrt(mean(dx^2 + dy^2)), pooled-corner pixel RMSE; corrected-FK 방법에 구조적으로 "
                 "유리하므로 내부 보조 지표"
             ),
             "cross_view": (
                 "source camera PnP만 destination으로 양방향 전달; destination corner는 scoring에만 사용; "
-                "component-wise pixel RMSE"
+                "sqrt(mean(dx^2 + dy^2)), pooled-corner pixel RMSE; "
+                "fixed-fixed uses no Robot FK, fixed-gripper includes Robot FK"
             ),
             "external_gt": (
                 "별도 blind pose에서 frozen prediction과 독립 T_base_cube_GT를 비교한 "
@@ -992,6 +868,14 @@ def main():
     all_observations = session2_observations(data)
     for row in rows:
         t0 = time.time()
+        if row == "A3" and mechanical_pending:
+            result["rows"][row] = {
+                "condition": {**ROWS[row], "label": "FK hard fixed (custom Cube mechanical transform pending)"},
+                "status": "pending",
+                "pending_reason": mechanical_pending, "folds": [],
+                "summary": empty_metric_summary(), "external_gt": external_gt_pending(),
+            }
+            continue
         if not ROWS[row].get("available", True):
             result["rows"][row] = {
                 "condition": ROWS[row],
@@ -1007,6 +891,12 @@ def main():
             row, data, None, robot_T, board_init, gtc_init)
         if full_state is None:
             print(f"  {row:<3} full-data fit failed")
+            result["rows"][row] = {
+                "condition": ROWS[row], "status": "failed",
+                "pending_reason": "full-data calibration fit failed",
+                "folds": [], "summary": empty_metric_summary(),
+                "external_gt": external_gt_pending(),
+            }
             continue
         all_cube = cube_reprojection_stats(
             all_observations, cube_reference, full_state, robot_T,
@@ -1014,7 +904,17 @@ def main():
         all_cross = cross_view_transfer_stats(
             all_observations, full_state, robot_T,
             data["K_map"], data["D_map"])
-        folds = [evaluate_fold(row, data, s, robot_T, board_init, gtc_init) for s in set_ids]
+        jobs = [(row, data, s, robot_T, board_init, gtc_init) for s in set_ids]
+        folds = []
+        if args.workers > 1:
+            with ProcessPoolExecutor(max_workers=args.workers) as executor:
+                for fold in executor.map(_fold_job, jobs):
+                    folds.append(fold)
+                    print(f"      {row} fold {len(folds)}/{len(set_ids)}", flush=True)
+        else:
+            for job in jobs:
+                folds.append(_fold_job(job))
+                print(f"      {row} fold {len(folds)}/{len(set_ids)}", flush=True)
         fold_summary = aggregate_folds(folds)
         summary = {
             "all_cube_rmse_px": all_cube["rmse_px"],
@@ -1029,8 +929,13 @@ def main():
         }
         result["rows"][row] = {
             "condition": ROWS[row],
-            "status": "complete",
+            "status": "complete" if (
+                full_ok and fold_summary["n_converged"] == len(data["items_by_index"])
+                and fold_summary["n_folds"] == len(data["items_by_index"])
+            ) else "incomplete",
             "all": {
+                "transforms": serialize_state(full_state),
+                "training_placement_ids": sorted(int(s) for s in data["items_by_index"]),
                 "solver_train_rmse_px_all_targets": full_solver_px,
                 "n_solver_observations": full_n_obs,
                 "cube_reprojection": all_cube,
@@ -1041,6 +946,7 @@ def main():
             "summary": summary,
             "external_gt": external_gt_pending(),
         }
+        save_result(result, args.out)
         print(f"  {row:<3} {ROWS[row]['label']:<40} [{time.time()-t0:.0f}s]")
         print(
             "      Cube(corrected-FK-ref) "
@@ -1055,10 +961,19 @@ def main():
             f"Heldout={summary['heldout_test_cross_view_cube_rmse_px']:.3f} px"
         )
 
-    Path(args.out).write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
-    write_markdown_report(result, args.md_out)
-    print(f"\n[SAVE] {args.out}")
-    print(f"[SAVE] {args.md_out}")
+    save_result(result, args.out)
+    from zeus_gello_calibration.report_table1 import write_reports, _display
+    report_dir = Path(args.report_dir) if args.report_dir else Path(args.out).parent
+    save_result(result, report_dir / "ABLATION_TEST_table1_methods.json")
+    reports = write_reports(result, report_dir)
+    if args.md_out:
+        destination = Path(args.md_out)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.resolve() != reports["markdown"].resolve():
+            destination.write_text(reports["markdown"].read_text(encoding="utf-8"), encoding="utf-8")
+    print(f"\n[SAVE] {_display(str(report_dir / 'ABLATION_TEST_table1_methods.json'))}")
+    print(f"[SAVE] {_display(str(reports['markdown']))}")
+
 
 
 if __name__ == "__main__":

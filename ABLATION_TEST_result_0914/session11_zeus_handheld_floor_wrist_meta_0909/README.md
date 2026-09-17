@@ -1,5 +1,9 @@
 # session11 (Zeus 0909, legacy 변환) — 01~06 파이프라인 실행 기록
 
+> 실제 0914 재촬영의 ALL/Train/Held-out Test Cube·Cross-view 결과는
+> [별도 상세 보고서](../zeus_recapture_0914/ABLATION_TEST_table1/ABLATION_TEST_TABLE1_RESULTS.md)에 있다.
+> 아래는 0909 촬영의 legacy event-split 실행 기록이다.
+
 데이터: `data/session11_zeus_handheld_floor_wrist_meta_0909/` (Zeus session1/2/3 0909
 재촬영을 `zeus_gello_calibration/convert_to_meta.py`로 변환, 61 events).
 

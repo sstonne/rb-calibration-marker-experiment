@@ -1,0 +1,19 @@
+{
+  "_comment": [
+    "2026-09-15 intrinsics 촬영에 쓴 보드. 인쇄물 하단 캡션은",
+    "'6x9 | Checker Size: 25 mm | Marker Size: 18 mm | Dictionary: ArUco DICT_4X4 | Id: 90'",
+    "이지만 캡션의 6x9 는 행x열 표기다. OpenCV 의 squares_x/squares_y 는 열x행이므로",
+    "여기서는 9x6 이 맞다 (가로 9칸, 세로 6칸, 마커 27장, ID 90..116).",
+    "squares_y=6 (짝수) 이고 좌상단 칸이 검정으로 시작하는 OpenCV 4.6 이전 배치라",
+    "legacy_pattern=true 가 필수. false 로 두면 마커 27/27 이 다 검출되는데도",
+    "charuco 코너가 0 개로 나온다 (intrinsics_1280x720/charuco_capture 진단 91 장 기준)."
+  ],
+  "name": "9x6_id90",
+  "squares_x": 9,
+  "squares_y": 6,
+  "square_length_m": 0.025,
+  "marker_length_m": 0.018,
+  "dictionary_name": "DICT_4X4_250",
+  "marker_id_start": 90,
+  "legacy_pattern": true
+}

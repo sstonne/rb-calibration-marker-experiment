@@ -1,0 +1,1071 @@
+{
+  "calibrated_at": "2026-09-16 23:31:21",
+  "mode": "from_images",
+  "opencv": "4.13.0",
+  "dist_model": "brown_conrady5",
+  "calib_flags": {
+    "use_factory_guess": true,
+    "fix_aspect": false,
+    "zero_tangent": false
+  },
+  "board": {
+    "squares_x": 9,
+    "squares_y": 6,
+    "square_length_m": 0.025,
+    "marker_length_m": 0.018,
+    "marker_id_start": 90,
+    "legacy_pattern": true,
+    "dictionary": "DICT_4X4_250"
+  },
+  "board_source": "board_file:targets/charuco_boards/board_9x6_id90.json",
+  "board_topology": {
+    "checker_squares_x": 9,
+    "checker_squares_y": 6,
+    "charuco_corner_columns": 8,
+    "charuco_corner_rows": 5,
+    "maximum_charuco_corners": 40,
+    "checker_width_mm": 225.0,
+    "checker_height_mm": 150.00000000000003,
+    "marker_count": 27,
+    "legacy_pattern": true,
+    "legacy_pattern_matters": true
+  },
+  "cameras": {
+    "0": {
+      "serial": "136622073980",
+      "is_gripper": true,
+      "status": "written",
+      "rms_px": 0.6402273221095393,
+      "num_views_used": 27,
+      "num_views_total": 32,
+      "num_dropped": 5,
+      "K": [
+        [
+          1359.9729713665952,
+          0.0,
+          961.0324298120928
+        ],
+        [
+          0.0,
+          1365.388377729476,
+          580.8103287211106
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.14301840296108143,
+        -0.43949270110126676,
+        0.0016851630570700635,
+        -0.0004997772566476761,
+        0.37197041983770945
+      ],
+      "factory_K": [
+        [
+          1366.9173583984375,
+          0.0,
+          964.6163330078125
+        ],
+        [
+          0.0,
+          1364.696533203125,
+          574.3912963867188
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "num_images": 32,
+      "image_observations": [
+        {
+          "file": "cam0/view_1789563437062177588.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563442551437555.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563585611994275.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563587973847565.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563590202909171.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563593203946343.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563596974827195.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563601295623192.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563605322796267.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563614854999891.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563616785945653.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563618385546818.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563619546592325.png",
+          "charuco_corners": 38,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563645785879305.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563648588430649.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563653076115893.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563654897849404.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563656258640938.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563658467060350.png",
+          "charuco_corners": 37,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563660056325620.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563662059186113.png",
+          "charuco_corners": 27,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563664176383828.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563667089237677.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563668737877462.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563671651636338.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563674437237395.png",
+          "charuco_corners": 35,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563682510339205.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563688981203305.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563697270450330.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563703732325878.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563710290043385.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam0/view_1789563729663703810.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ]
+    },
+    "1": {
+      "serial": "319522062138",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.6666418541706749,
+      "num_views_used": 25,
+      "num_views_total": 29,
+      "num_dropped": 4,
+      "K": [
+        [
+          1363.2057963361838,
+          0.0,
+          942.8079534781236
+        ],
+        [
+          0.0,
+          1364.3643814900827,
+          564.5770784732593
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.13480289879947885,
+        -0.3614168640777286,
+        -0.00019014668973745826,
+        0.0010882931980927444,
+        0.23163120368025444
+      ],
+      "factory_K": [
+        [
+          1361.791015625,
+          0.0,
+          937.62451171875
+        ],
+        [
+          0.0,
+          1360.8406982421875,
+          558.0680541992188
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "num_images": 30,
+      "image_observations": [
+        {
+          "file": "cam1/view_1789563770193203685.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563771693141518.png",
+          "charuco_corners": 5,
+          "status": "too_few_corners"
+        },
+        {
+          "file": "cam1/view_1789563774723296817.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563781915912682.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563785854756096.png",
+          "charuco_corners": 36,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563815206657976.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563819658251795.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563862088564723.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563870202468777.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563876370658117.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563879360668503.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563882953267497.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563889432762851.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563895140502757.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563902141268519.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563912161204867.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563937882984865.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563944204092140.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563952353617464.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563959444572344.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563972186824505.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563975816725397.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789563980756078251.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789564010046820456.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789564023087027528.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789564028848417542.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789564037518639265.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789564041469392025.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789564047058463900.png",
+          "charuco_corners": 39,
+          "status": "detected"
+        },
+        {
+          "file": "cam1/view_1789564051781389308.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ]
+    },
+    "2": {
+      "serial": "912322060991",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.6670273845086883,
+      "num_views_used": 25,
+      "num_views_total": 27,
+      "num_dropped": 2,
+      "K": [
+        [
+          1379.1912421040884,
+          0.0,
+          967.526587830267
+        ],
+        [
+          0.0,
+          1390.8121188298364,
+          543.4166488341175
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.17256259511778033,
+        -0.5262811761038919,
+        -0.0008734501447392766,
+        -0.0005796282416844908,
+        0.41657250223072845
+      ],
+      "factory_K": [
+        [
+          1388.899169921875,
+          0.0,
+          969.4091186523438
+        ],
+        [
+          0.0,
+          1388.28759765625,
+          550.4002685546875
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "num_images": 27,
+      "image_observations": [
+        {
+          "file": "cam2/view_1789564096671199030.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564102132099308.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564103673333809.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564107272291669.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564112113635646.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564113881848261.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564118826187339.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564129182887798.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564133483397958.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564140913661756.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564143686196507.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564147896910824.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564149673617174.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564154293944557.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564159517115250.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564160987429749.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564163886859627.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564168465151580.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564170986365166.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564174934399106.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564178887465193.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564183808496067.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564190157397192.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564194138058319.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564199899186911.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564212199492681.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam2/view_1789564215597148931.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ]
+    },
+    "3": {
+      "serial": "039422061216",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.6644447685644745,
+      "num_views_used": 19,
+      "num_views_total": 22,
+      "num_dropped": 3,
+      "K": [
+        [
+          1383.2500407532966,
+          0.0,
+          977.0547776686054
+        ],
+        [
+          0.0,
+          1382.4851470927795,
+          541.3752444805567
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.1608412012215637,
+        -0.41422339235424105,
+        -0.0035142396267888545,
+        -0.0009282912481045986,
+        0.23303557465428096
+      ],
+      "factory_K": [
+        [
+          1373.3809814453125,
+          0.0,
+          976.2703857421875
+        ],
+        [
+          0.0,
+          1369.794921875,
+          549.3193969726562
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "num_images": 24,
+      "image_observations": [
+        {
+          "file": "cam3/view_1789568614753964411.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568622522019057.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568638233636461.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568640505913285.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568642756200437.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568646565134679.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568648464498672.png",
+          "charuco_corners": 36,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568651853292347.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568656024513467.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568659975206259.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568663676558311.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568666695682947.png",
+          "charuco_corners": 0,
+          "status": "too_few_corners"
+        },
+        {
+          "file": "cam3/view_1789568669713108668.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568675355360091.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568680945055684.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568683137163616.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568691047140318.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568693106025140.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568696335661354.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568705655323673.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568709958320502.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568712378043008.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam3/view_1789568739637533983.png",
+          "charuco_corners": 0,
+          "status": "too_few_corners"
+        },
+        {
+          "file": "cam3/view_1789568745639277373.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ]
+    },
+    "4": {
+      "serial": "752112070297",
+      "is_gripper": false,
+      "status": "written",
+      "rms_px": 0.6352032617703781,
+      "num_views_used": 30,
+      "num_views_total": 34,
+      "num_dropped": 4,
+      "K": [
+        [
+          1393.9326182268965,
+          0.0,
+          982.9768370940454
+        ],
+        [
+          0.0,
+          1392.3407619454022,
+          510.30480496416516
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "D": [
+        0.14948274205171463,
+        -0.421098940326138,
+        -0.006254882890301248,
+        0.0007064356496220712,
+        0.3219137227593005
+      ],
+      "factory_K": [
+        [
+          1383.8328857421875,
+          0.0,
+          974.269287109375
+        ],
+        [
+          0.0,
+          1384.1822509765625,
+          533.8703002929688
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "factory_D": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "num_images": 34,
+      "image_observations": [
+        {
+          "file": "cam4/view_1789568800349238022.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568803002822521.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568805200474389.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568808129086561.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568810031186638.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568812269964900.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568815670625522.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568824412358916.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568829781893639.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568833082166145.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568837622985693.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568842833298191.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568847613412428.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568850530414094.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568853702878802.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568856872724386.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568859463131509.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568861601821315.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568864432396860.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568867212890477.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568870365404807.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568874213677263.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568878084733298.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568882142650236.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568887003561888.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568891843274372.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568894803754090.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568898202326537.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568900463153517.png",
+          "charuco_corners": 25,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568904205260534.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568909563322553.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568911363994302.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568916173884305.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        },
+        {
+          "file": "cam4/view_1789568918635167991.png",
+          "charuco_corners": 40,
+          "status": "detected"
+        }
+      ]
+    }
+  },
+  "images_dir": "/home/jysim/*jiwoo/rb-calibration-marker-experiment/intrinsics_1920x1080_rgbd720/raw_capture"
+}

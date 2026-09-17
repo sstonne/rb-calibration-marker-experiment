@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """02. ChArUco 보드 관측으로 각 카메라의 color intrinsics (K, D)를 직접 보정한다.
 
+--capture_only: 보드 검출 조건 없이 원본 RGB를 먼저 저장한다.
+--from_images: 카메라 없이 저장 이미지에 보드 정의를 적용해 보정한다.
+  --joint_intr_dir: 같은 카메라의 다른 해상도 폴더 사진까지 합쳐 한 번에 보정하고
+  두 폴더에 해상도 비율로 환산한 K와 같은 D를 쓴다 (1280/1920 주점 불일치 해결).
+두 옵션을 생략하면 기존 실시간 검출/보정 방식으로 실행한다.
+
 왜 필요한가
 -----------
 01단계가 덤프하는 D415/D435의 color 왜곡계수 D는 전부 0으로 보고된다. 그 상태로
@@ -28,14 +34,16 @@ OpenCV가 돌려주는 RMS는 위 합을 corner 수로 나눈 뒤 제곱근을 �
 
 이 문제가 잘 풀리려면 뷰가 **화각을 고르게 덮고 기울기가 다양해야** 한다. 정면에서만
 찍으면 fx/fy와 t_z가 서로를 상쇄해(scale-depth ambiguity) K가 제대로 분리되지 않고,
-화면 가장자리를 안 덮으면 반경 왜곡 k1, k2가 관측되지 않는다. 그래서 수집 루프가
-커버리지와 선명도(라플라시안 분산)를 화면에 띄우고 프레임을 골라 받는다.
+화면 가장자리를 안 덮으면 반경 왜곡 k1, k2가 관측되지 않는다. 실시간 보정 모드는
+커버리지와 선명도를 표시한다. 원본 촬영 모드는 이 조건을 적용하지 않고 모두 저장한다.
 
 입력 / 처리 / 출력
 ------------------
-입력: 01단계의 intrinsics/, 연결된 카메라, config.py의 CharucoBoardConfig
-      (기본 11x7, square 25mm, marker 18mm, DICT_4X4_250).
-처리: 카메라를 하나씩 열어 대화형으로 뷰를 모으고 cv2.calibrateCamera를 돌린다.
+입력: 01단계의 intrinsics/, 연결된 카메라, --board 로 고른 보드 정의
+      (targets/charuco_boards/*.json, --list_boards 로 확인).
+      생략하면 config.py 의 CharucoBoardConfig 기본 보드(11x7, id 5..42).
+처리: 카메라를 하나씩 열어 뷰를 모으거나 저장 이미지를 읽고 cv2.calibrateCamera를 돌린다.
+      --capture_only는 raw_capture/에 원본과 manifest만 저장하며 보정하지 않는다.
 출력: cam{idx}.npz의 color_K/color_D만 교체. 원본은 factory_backup/에 보관.
       depth_K, depth_scale, R_depth_to_color, 해상도, 시리얼은 그대로 둔다.
 
@@ -52,7 +60,7 @@ OpenCV가 돌려주는 RMS는 위 합을 corner 수로 나눈 뒤 제곱근을 �
       _draw_overlay()               - 커버리지/선명도/수락 개수 화면 피드백
       overwrite_color_intrinsics()  - npz의 color_K/color_D만 교체하고 나머지 보존
 
-import를 main() 안에 두는 이유: pyrealsense2 의존성을 실행 시점까지 미루기 위해서다.
+RealSense는 실시간 모드에서만 import하므로 --from_images는 SDK 없이 실행할 수 있다.
 
 선행 조건
 ---------

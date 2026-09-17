@@ -2,7 +2,8 @@
 ChArUco 보드 검출 및 포즈 추정 유틸리티.
 Eye-in-hand (그리퍼 카메라) 캘리브레이션에 사용.
 
-보드 사양: 11x7 squares, 체커 25mm, 마커 18mm, DICT_4X4_250
+보드 사양은 CharucoBoardConfig 가 정한다. 물리 보드별 정의는
+targets/charuco_boards/*.json 에 두고 board_config.resolve_charuco_config() 로 읽는다.
 """
 
 import cv2
@@ -30,6 +31,7 @@ class CharucoTarget:
         self.board_ids = self._make_board_ids()  # physical marker ids on the printed board
         self.custom_ids_supported = False
         self.board = self._create_charuco_board()
+        self._apply_legacy_pattern()
         self.board_id_set = set(int(x) for x in self.board_ids.tolist())
         self.default_board_id_set = set(range(len(self.board_ids)))
         self._using_id_remap = (not self.custom_ids_supported) and int(self.cfg.marker_id_start) != 0
@@ -138,6 +140,23 @@ class CharucoTarget:
 
         self.custom_ids_supported = False
         return board
+
+    def _apply_legacy_pattern(self):
+        """Honour cfg.legacy_pattern so the printed layout travels with the board
+        definition instead of being a per-script flag.
+
+        Only boards with an even ``squares_y`` differ between the legacy and the
+        post-4.6 layout, and the failure is silent: every marker still decodes
+        while ChArUco corner interpolation returns nothing.
+        """
+        if not bool(getattr(self.cfg, "legacy_pattern", False)):
+            return
+        if not hasattr(self.board, "setLegacyPattern"):
+            raise RuntimeError(
+                "legacy_pattern=True needs OpenCV with "
+                "CharucoBoard.setLegacyPattern (>= 4.6); "
+                f"this build is {cv2.__version__}")
+        self.board.setLegacyPattern(True)
 
     def _filter_board_markers(self, marker_corners, marker_ids):
         if marker_ids is None or len(marker_ids) == 0:

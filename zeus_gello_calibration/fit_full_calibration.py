@@ -46,7 +46,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from calibration_pipeline.apriltag_cube import AprilTagCubeTarget  # noqa: E402
-from calibration_pipeline.board_config import charuco_config_from_dict  # noqa: E402
+from calibration_pipeline.board_config import (  # noqa: E402
+    charuco_config_to_dict, resolve_charuco_config,
+)
 from calibration_pipeline.charuco import CharucoTarget  # noqa: E402
 from calibration_pipeline.config import get_default_cube_config  # noqa: E402
 from calibration_pipeline.observations import (  # noqa: E402
@@ -74,16 +76,11 @@ FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "pass1_grasp_offset_re
 GRIPPER_LOCAL_ID = LOCAL_CAM_IDS["gripper"]  # 3
 SESSION3_EVENT_OFFSET = 2000  # session1(0..15)/session2(1000..1014)와 안 겹치게
 
-# UR3 쪽 물리 보드 정의 재사용 (ur3_calibration/convert_to_meta.py) -- 실측으로
-# session3 그리퍼캠 이미지에서 그대로 검출됨을 확인함 (같은 물리 보드).
-CHARUCO_BOARD_CONFIG = {
-    "squares_x": 11,
-    "squares_y": 7,
-    "square_length_m": 0.025,
-    "marker_length_m": 0.018,
-    "dictionary_name": "DICT_4X4_250",
-    "marker_id_start": 5,
-}
+# UR3 세션과 같은 물리 보드 (targets/charuco_boards/board_11x7_id5.json) -- 실측으로
+# session3 그리퍼캠 이미지에서 그대로 검출됨을 확인함.
+CHARUCO_BOARD_NAME = "11x7_id5"
+CHARUCO_BOARD_CFG, CHARUCO_BOARD_SOURCE = resolve_charuco_config(CHARUCO_BOARD_NAME)
+CHARUCO_BOARD_CONFIG = charuco_config_to_dict(CHARUCO_BOARD_CFG)
 
 
 def build_synthetic_meta_board(session3_dir: Path, capture_subdir: str, capture_indices,
@@ -216,7 +213,7 @@ def main():
     ]
 
     # --- session3: 그리퍼캠 eye-in-hand 보드 ---
-    charuco_cfg = charuco_config_from_dict(CHARUCO_BOARD_CONFIG)
+    charuco_cfg = CHARUCO_BOARD_CFG
     charuco_target = CharucoTarget(charuco_cfg)
     meta_s3 = build_synthetic_meta_board(session3_dir, args.session3_capture_subdir, s3_indices, charuco_target)
     robot_T_s3 = {SESSION3_EVENT_OFFSET + k: v

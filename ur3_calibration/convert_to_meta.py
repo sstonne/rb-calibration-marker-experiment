@@ -75,7 +75,9 @@ from scipy.spatial.transform import Rotation
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from calibration_pipeline.board_config import charuco_config_from_dict  # noqa: E402
+from calibration_pipeline.board_config import (  # noqa: E402
+    charuco_config_to_dict, resolve_charuco_config,
+)
 from calibration_pipeline.charuco import CharucoTarget  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -85,14 +87,12 @@ UR3_DATA_ROOT = Path(__file__).resolve().parent / "data"
 CAM_LABELS = {0: "fixed1", 1: "gripper", 2: "fixed2", 3: "fixed3"}
 GRIPPER_CAM_IDX = 1
 
-CHARUCO_BOARD_CONFIG = {
-    "squares_x": 11,
-    "squares_y": 7,
-    "square_length_m": 0.025,
-    "marker_length_m": 0.018,
-    "dictionary_name": "DICT_4X4_250",
-    "marker_id_start": 5,
-}
+# 이 세션들이 촬영한 물리 보드. 정의는 targets/charuco_boards/ 의 JSON 한 곳에만
+# 있고, 여기서는 이름으로 불러온다 (보드가 바뀌면 JSON 을 추가하고 이름만 교체).
+# session09/10 의 meta.json 이 이 값으로 frozen 되어 있으므로 이름 변경 시 주의.
+CHARUCO_BOARD_NAME = "11x7_id5"
+CHARUCO_BOARD_CFG, CHARUCO_BOARD_SOURCE = resolve_charuco_config(CHARUCO_BOARD_NAME)
+CHARUCO_BOARD_CONFIG = charuco_config_to_dict(CHARUCO_BOARD_CFG)
 
 # Descriptive only (calibration_pipeline.runtime.resolve_cube_config_for_run
 # always uses config.py's get_default_cube_config() unless an explicit JSON
@@ -105,7 +105,7 @@ CUBE_CONFIG_SOURCE = "config_py:CubeConfig"
 # a board in the image -- unlike the cube path, this one precomputed field is
 # NOT optional. It is computed here for real with the same CharucoTarget the
 # pipeline itself uses, not guessed or left at a placeholder.
-_CHARUCO_TARGET = CharucoTarget(charuco_config_from_dict(CHARUCO_BOARD_CONFIG))
+_CHARUCO_TARGET = CharucoTarget(CHARUCO_BOARD_CFG)
 
 
 def compute_charuco_detect_n(image_path: Path) -> int:
@@ -217,7 +217,7 @@ def meta_header(calib_train_dir: Path) -> dict:
         "n_fixed_cams": 3,
         "n_gripper_cams": 1,
         "cam_indices": [0, 1, 2, 3],
-        "charuco_board_config_source": "config_py:CharucoBoardConfig",
+        "charuco_board_config_source": CHARUCO_BOARD_SOURCE,
         "charuco_board_config": dict(CHARUCO_BOARD_CONFIG),
         "cube_config_source": CUBE_CONFIG_SOURCE,
         "capture_config": {

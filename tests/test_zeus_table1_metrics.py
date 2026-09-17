@@ -72,7 +72,7 @@ def test_cross_view_uses_bidirectional_source_only_transfer(monkeypatch) -> None
     assert result["by_pair_type"]["fixed_gripper"]["n_pairs"] == 0
 
 
-def test_cube_reprojection_uses_component_wise_rmse() -> None:
+def test_cube_reprojection_uses_two_dimensional_corner_rmse() -> None:
     observations, _camera_cube_poses, state, cube, K_map, D_map = _two_camera_fixture()
     shifted = [
         PixelObs(
@@ -81,7 +81,7 @@ def test_cube_reprojection_uses_component_wise_rmse() -> None:
             event=observation.event,
             set_idx=observation.set_idx,
             object_points=observation.object_points,
-            image_points=observation.image_points + np.array([2.0, 0.0]),
+            image_points=observation.image_points + np.array([3.0, 4.0]),
         )
         for observation in observations
     ]
@@ -89,9 +89,158 @@ def test_cube_reprojection_uses_component_wise_rmse() -> None:
     result = table1.cube_reprojection_stats(
         shifted, {0: cube}, state, {}, K_map, D_map)
 
-    assert result["rmse_px"] == pytest.approx(np.sqrt(2.0))
+    assert result["rmse_px"] == pytest.approx(5.0)
+    assert result["sum_squared_error_px2"] == pytest.approx(400.0)
     assert result["n_corners"] == 16
     assert result["n_residual_components"] == 32
+
+
+def test_cube_reprojection_pools_corners_across_unequal_placements() -> None:
+    observations, _poses, state, cube, K_map, D_map = _two_camera_fixture()
+    observation = observations[0]
+    unequal = [
+        PixelObs(
+            marker="cube", cam=0, event=set_index, set_idx=set_index,
+            object_points=observation.object_points[:count],
+            image_points=observation.image_points[:count] + shift,
+        )
+        for set_index, count, shift in ((0, 2, [3.0, 4.0]), (1, 8, [0.0, 0.0]))
+    ]
+
+    result = table1.cube_reprojection_stats(
+        unequal, {0: cube, 1: cube}, state, {}, K_map, D_map)
+
+    assert result["n_corners"] == 10
+    assert result["sum_squared_error_px2"] == pytest.approx(50.0)
+    assert result["rmse_px"] == pytest.approx(np.sqrt(50.0 / 10.0))
+    assert [item["rmse_px"] for item in result["per_set"]] == pytest.approx([5.0, 0.0])
+
+
+def test_cross_view_pools_destination_corners_across_both_directions(monkeypatch) -> None:
+    observations, poses, state, _cube, K_map, D_map = _two_camera_fixture()
+    second = observations[1]
+    observations[1] = PixelObs(
+        marker="cube", cam=1, event=1000, set_idx=0,
+        object_points=second.object_points[:4],
+        image_points=second.image_points[:4] + [3.0, 4.0],
+    )
+    monkeypatch.setattr(
+        table1, "solve_observed_pose",
+        lambda observation, _K, _D: poses[int(observation.cam)],
+    )
+
+    result = table1.cross_view_transfer_stats(observations, state, {}, K_map, D_map)
+
+    assert result["n_pairs"] == 1
+    assert result["n_directions"] == 2
+    assert result["n_corners"] == 12
+    assert result["n_residual_components"] == 24
+    assert result["sum_squared_error_px2"] == pytest.approx(100.0)
+    assert result["rmse_px"] == pytest.approx(np.sqrt(100.0 / 12.0))
+
+
+def test_cross_view_destination_pnp_does_not_change_forward_prediction(monkeypatch) -> None:
+    observations, poses, state, _cube, K_map, D_map = _two_camera_fixture()
+    predicted_poses = []
+
+    def record_projection(pose, object_points, K, D):
+        predicted_poses.append(np.asarray(pose).copy())
+        return project_points(pose, object_points, K, D)
+
+    monkeypatch.setattr(table1, "project_points", record_projection)
+    monkeypatch.setattr(
+        table1, "solve_observed_pose",
+        lambda observation, _K, _D: poses[int(observation.cam)],
+    )
+    baseline = table1.cross_view_transfer_stats(observations, state, {}, K_map, D_map)
+    assert baseline["rmse_px"] == pytest.approx(0.0, abs=1e-10)
+    baseline_predictions = list(predicted_poses)
+    predicted_poses.clear()
+
+    # Changing camera B's PnP affects B -> A only. A -> B must continue to use
+    # A's measured pose, even though both PnP poses are solved for the pair.
+    poses[1] = _transform(x=0.10) @ poses[1]
+    shifted = table1.cross_view_transfer_stats(observations, state, {}, K_map, D_map)
+
+    assert len(predicted_poses) == 2
+    assert predicted_poses[0] == pytest.approx(baseline_predictions[0])
+    assert not np.allclose(predicted_poses[1], baseline_predictions[1])
+    assert shifted["rmse_px"] > 0.0
+    assert shifted["n_directions"] == 2
+
+
+def test_fold_aggregation_pools_corners_instead_of_averaging_fold_means() -> None:
+    def metric(count, squared_sum):
+        return {
+            "mse_px2": squared_sum / count,
+            "sum_squared_error_px2": squared_sum,
+            "n_corners": count,
+        }
+
+    folds = [
+        {"heldout_test": {"cube_reprojection": metric(2, 50.0)}},
+        {"heldout_test": {"cube_reprojection": metric(8, 0.0)}},
+    ]
+
+    result = table1.aggregate_fold_metric(folds, "heldout_test", "cube_reprojection")
+
+    assert result["n_fold_evaluations"] == 2
+    assert result["n_corners"] == 10
+    assert result["sum_squared_error_px2"] == pytest.approx(50.0)
+    assert result["rmse_px"] == pytest.approx(np.sqrt(5.0))
+
+
+def test_cross_view_fold_aggregation_pools_pair_type_corners() -> None:
+    def metric(count, squared_sum):
+        return {
+            "mse_px2": squared_sum / count if count else float("nan"),
+            "sum_squared_error_px2": squared_sum,
+            "n_corners": count,
+        }
+
+    folds = []
+    for count, squared_sum in ((2, 50.0), (8, 0.0)):
+        cross_view = metric(count, squared_sum)
+        cross_view["by_pair_type"] = {
+            "fixed_fixed": metric(count, squared_sum),
+            "fixed_gripper": metric(0, 0.0),
+        }
+        folds.append({"train": {"cross_view": cross_view}})
+
+    result = table1.aggregate_fold_metric(folds, "train", "cross_view")
+
+    assert result["rmse_px"] == pytest.approx(np.sqrt(5.0))
+    assert result["by_pair_type"]["fixed_fixed"]["rmse_px"] == pytest.approx(np.sqrt(5.0))
+    assert result["by_pair_type"]["fixed_fixed"]["n_corners"] == 10
+    assert result["by_pair_type"]["fixed_gripper"]["n_corners"] == 0
+    assert np.isnan(result["by_pair_type"]["fixed_gripper"]["rmse_px"])
+
+
+def test_lopo_excludes_all_cube_and_board_observations_of_heldout_placement() -> None:
+    def observation(marker, event, set_index=None):
+        return PixelObs(
+            marker=marker, cam=0, event=event, set_idx=set_index,
+            object_points=np.zeros((4, 3)), image_points=np.zeros((4, 2)),
+        )
+
+    heldout_event = table1.fcm.SESSION2_EVENT_OFFSET + 1
+    train_event = table1.fcm.SESSION2_EVENT_OFFSET + 2
+    data = {
+        "obs_s1": [observation("cube", 0)],
+        "obs_s2_fixed": [observation("cube", heldout_event, 1), observation("cube", train_event, 2)],
+        "obs_s2_gripper": [observation("cube", heldout_event, 1)],
+        "obs_s2_board": [observation("board", heldout_event), observation("board", train_event)],
+        "obs_s3": [observation("board", 2000)],
+        "include_session2_board": True,
+    }
+
+    cubes, boards = table1.split_observations(data, ("cube", "board"), drop_set=1)
+
+    assert [item.event for item in cubes] == [0, train_event]
+    assert [item.event for item in boards] == [2000, train_event]
+    all_cubes, all_boards = table1.split_observations(data, ("cube", "board"))
+    assert len(all_cubes) == 4
+    assert len(all_boards) == 3
 
 
 def test_current_zeus_data_contract_separates_a3_nominal_from_a5_corrected() -> None:
@@ -113,7 +262,7 @@ def test_current_zeus_data_contract_separates_a3_nominal_from_a5_corrected() -> 
     assert contract["measured"] is False
 
 
-def test_corrected_fk_training_is_a5_only_and_reports_nominal_axis_delta(tmp_path) -> None:
+def test_corrected_fk_training_is_not_a3_and_reports_nominal_axis_delta(tmp_path) -> None:
     fit_path = tmp_path / "fit.json"
     fit_path.write_text(json.dumps({
         "T_gripper_cube": np.array([
@@ -136,7 +285,8 @@ def test_corrected_fk_training_is_a5_only_and_reports_nominal_axis_delta(tmp_pat
 
     contract = table1.corrected_fk_training_contract(fit_path)
 
-    assert contract["role"].startswith("A5 corrected-FK training only")
+    assert "A4/A5/B1/B2 corrected-FK" in contract["role"]
+    assert "forbidden as A3 mechanical FK" in contract["role"]
     assert contract["robot_pose_frame"] == "T_base_flange from tool1=0"
     assert contract["n_captures"] == 16
     assert contract["translation_mm"] == pytest.approx([0.0, 0.0, 162.0])
@@ -148,4 +298,9 @@ def test_external_gt_placeholder_is_empty_not_zero() -> None:
     pending = table1.external_gt_pending()
 
     assert pending["status"] == "pending"
-    assert all(value is None for key, value in pending.items() if key != "status")
+    assert all(pending[key] is None for key in (
+        "mean_tre_mm", "median_tre_mm", "p95_tre_mm",
+        "mean_rotation_error_deg", "p95_rotation_error_deg", "failure_rate",
+    ))
+    assert pending["reason"]
+    assert pending["failure_definition"] == "missing_or_failed_predictions_over_all_independent_GT_poses"

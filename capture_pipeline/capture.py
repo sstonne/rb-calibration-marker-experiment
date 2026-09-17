@@ -54,16 +54,15 @@ import numpy as np
 
 from calibration_pipeline.apriltag_cube import AprilTagCubeTarget, depth_metrics_to_fields, rodrigues_to_Rt
 from calibration_pipeline.charuco import CharucoTarget
-from calibration_pipeline.config import (
-    get_default_charuco_board_config,
-    get_default_charuco_board_config_source,
-    get_default_cube_config,
-)
+from calibration_pipeline.config import get_default_cube_config
 from calibration_pipeline.board_config import (
     charuco_config_mismatch_keys,
     charuco_config_to_dict,
     charuco_configs_equivalent,
+    describe_charuco_config,
+    list_charuco_boards,
     load_charuco_config_from_meta,
+    resolve_charuco_config,
 )
 from calibration_pipeline.runtime import resolve_cube_config_for_run
 from capture_pipeline.detection import detect_cube_markers_in_frame, marker_roi_quality
@@ -794,6 +793,11 @@ def main():
     parser.add_argument("--intrinsics_dir", required=True)
     parser.add_argument("--cube_config_json", type=str, default=None,
                         help="Optional cube config JSON override. Leave unset to use the project's canonical cube definition.")
+    parser.add_argument("--board", type=str, default=None,
+                        help="ChArUco board definition: a name from targets/charuco_boards/ "
+                             f"({', '.join(list_charuco_boards()) or 'none'}) or a JSON path. "
+                             "Leave unset for config.py's default board. A resumed session "
+                             "must use the board frozen in its meta.json.")
 
     # 스트림 설정
     # 해상도 기본값 1280x720 — 프로젝트 표준 촬영 해상도(color/depth 동일).
@@ -1225,10 +1229,10 @@ def main():
     print(f"[INFO] Cube id_to_face: {cfg.id_to_face}")
 
     # ChArUco board target — 그리퍼캠 + 고정캠 모두 검출 (보드-전용 비교실험)
-    charuco_cfg = get_default_charuco_board_config()
+    charuco_cfg, charuco_cfg_source = resolve_charuco_config(args.board)
     charuco = CharucoTarget(charuco_cfg)
-    print(f"[INFO] ChArUco board: {charuco_cfg.squares_x}x{charuco_cfg.squares_y}, "
-          f"marker_id_start={charuco_cfg.marker_id_start}")
+    print(f"[INFO] ChArUco board source: {charuco_cfg_source}")
+    print(f"[INFO] ChArUco board: {describe_charuco_config(charuco_cfg)}")
 
     if not args.save_depth and args.require_gripper_depth_valid:
         print("[WARN] Depth capture is disabled; gripper depth-valid gate will be ignored.")
@@ -1351,6 +1355,8 @@ def main():
                     charuco_cfg, meta_board_cfg)
                 raise RuntimeError(
                     "Existing meta.json uses a different ChArUco definition.\n"
+                    f"Resolved board: {charuco_cfg_source}\n"
+                    f"Session board: {meta.get('charuco_board_config_source', 'unknown')}\n"
                     f"Differing fields: {', '.join(mismatch_keys)}\n"
                     "Use a new session folder; existing images must never be "
                     "reinterpreted with a different board geometry."
@@ -1380,8 +1386,7 @@ def main():
             "cam_indices": [ci for ci, _ in idx_serial_pairs],
             "cube_config_source": cube_cfg_source,
             "cube_config": cube_config_to_dict(cfg),
-            "charuco_board_config_source": (
-                get_default_charuco_board_config_source()),
+            "charuco_board_config_source": charuco_cfg_source,
             "charuco_board_config": charuco_config_to_dict(charuco_cfg),
             "capture_config": capture_config,
             "capture_config_sha256": capture_config_sha256,
@@ -1405,8 +1410,7 @@ def main():
             _s = int(_cap["set_index"])
             fixed_cam_stored[_s] = fixed_cam_stored.get(_s, 0) + 1
     meta["cube_config_source"] = cube_cfg_source
-    meta["charuco_board_config_source"] = (
-        get_default_charuco_board_config_source())
+    meta["charuco_board_config_source"] = charuco_cfg_source
     meta["charuco_board_config"] = charuco_config_to_dict(charuco_cfg)
     meta["capture_config"] = capture_config
     meta["capture_config_sha256"] = capture_config_sha256

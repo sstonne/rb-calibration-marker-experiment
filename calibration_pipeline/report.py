@@ -1,4 +1,4 @@
-"""Generate a calibration-only report from the canonical Table 1 JSON."""
+"""Render saved Table 1 results using their schema, without rerunning calibration."""
 
 from __future__ import annotations
 
@@ -188,7 +188,27 @@ def _matrix_artifact(payload: dict, source: Path,
 
 def write_report(table1_path: Path, out_dir: Path,
                  representative_seed: int = 0) -> dict:
-    payload = json.loads(table1_path.read_text(encoding="utf-8"))
+    source_bytes = table1_path.read_bytes()
+    payload = json.loads(source_bytes)
+    schema = payload.get("schema")
+    if schema is not None:
+        from zeus_gello_calibration.report_table1 import SCHEMA, write_reports
+
+        if schema != SCHEMA:
+            raise ValueError(f"Unsupported Table 1 schema: {schema!r}")
+        paths = write_reports(payload, out_dir)
+        raw_json = out_dir / "ABLATION_TEST_table1_methods.json"
+        if table1_path.resolve() != raw_json.resolve():
+            raw_json.write_bytes(source_bytes)
+        return {
+            "source": str(table1_path),
+            "schema": schema,
+            "raw_json": str(raw_json),
+            **{name: str(path) for name, path in paths.items()},
+        }
+
+    # Legacy JSON contains seed runs under protocol/rows. Its held-out split
+    # keeps its original meaning; exporting it cannot turn it into LOPO data.
     _validate(payload, representative_seed)
     summaries = [
         _row_summary(method, payload["rows"][method], representative_seed)
@@ -222,10 +242,10 @@ def parse_args(argv=None) -> argparse.Namespace:
     parser.add_argument(
         "--table1", help="Default: ABLATION_TEST_result_<MMDD>/<session>/ABLATION_TEST_table1/ABLATION_TEST_table1_methods.json")
     parser.add_argument(
-        "--out_dir", help="Default: ABLATION_TEST_result_<MMDD>/<session>/ABLATION_TEST_table1")
+        "--out_dir", help="Default: input Table 1 JSON directory")
     parser.add_argument(
         "--representative_seed", type=int, default=0,
-        help="Fixed seed to print as representative; never selected by held-out score")
+        help="Legacy JSON only: fixed representative seed, never selected by held-out score")
     return parser.parse_args(argv)
 
 
@@ -233,7 +253,7 @@ def main(argv=None) -> None:
     args = parse_args(argv)
     paths = session_paths(args.root_folder)
     table1_path = Path(args.table1 or paths["table1_result"])
-    out_dir = Path(args.out_dir or paths["table1_dir"])
+    out_dir = Path(args.out_dir) if args.out_dir else table1_path.parent
     result = write_report(
         table1_path, out_dir, representative_seed=args.representative_seed)
     print(json.dumps(result, indent=2, ensure_ascii=False))

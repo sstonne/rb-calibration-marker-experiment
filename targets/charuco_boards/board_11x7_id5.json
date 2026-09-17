@@ -1,0 +1,16 @@
+{
+  "_comment": [
+    "메인 ChArUco 보드. calibration_pipeline/config.py 의 CharucoBoardConfig",
+    "기본값과 반드시 같아야 하며, tests/test_charuco_board_targets.py 가 이를 강제한다.",
+    "session09/10/11 의 frozen meta.json 이 이 값으로 굳어 있으므로 수정 금지.",
+    "squares_y=7 (홀수) 이라 legacy_pattern 은 검출에 영향이 없다."
+  ],
+  "name": "11x7_id5",
+  "squares_x": 11,
+  "squares_y": 7,
+  "square_length_m": 0.025,
+  "marker_length_m": 0.018,
+  "dictionary_name": "DICT_4X4_250",
+  "marker_id_start": 5,
+  "legacy_pattern": false
+}

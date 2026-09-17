@@ -4,9 +4,11 @@
     "Same six AprilTag 36h11 markers and sizes as the main cube; only the body",
     "shape and the two top-marker centers differ.",
     "Object frame: origin at the center of the 59 x 59 x 59 mm body, +Z up.",
+    "  overall 59 x 87 x 94 mm = body 59 + top protrusion 35 (riser 25 + I-plate 10)",
     "  side markers 2..5 : body face centers, z = 0",
     "  top markers 0,1   : centered on the two 31 x 31 I-plate blocks,",
-    "                      y = -/+28, on the top surface z = +74.5",
+    "                      y = -/+28, on the top surface z = +64.5",
+    "face_roll_deg is COPIED from the main cube and is NOT yet verified for this",
     "physical cube -- re-run the face-roll self-calibration before trusting it.",
     "marker_pose_4x4 (side markers 2..5) self-calibrated on 2026-09-15 by",
     "zeus_gello_calibration/calibrate_gt_cube_geometry.py from 0914 captures:",
@@ -44,12 +46,12 @@
     "0": [
       0.0,
       -0.02772,
-      0.073755
+      0.063855
     ],
     "1": [
       0.0,
       0.02772,
-      0.073755
+      0.063855
     ],
     "2": [
       0.029205,

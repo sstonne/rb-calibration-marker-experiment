@@ -1,0 +1,645 @@
+{
+  "version": 1,
+  "mode": "raw_intrinsics",
+  "created_at_epoch": 1789562457.3456345,
+  "serial_to_idx": {
+    "136622073980": 0,
+    "319522062138": 1,
+    "912322060991": 2,
+    "039422061216": 3,
+    "752112070297": 4
+  },
+  "cameras": {
+    "0": {
+      "serial": "136622073980",
+      "color_w": 1280,
+      "color_h": 720,
+      "fps": 15,
+      "frames": [
+        {
+          "file": "cam0/view_1789562869269952143.png",
+          "captured_at_epoch": 1789562869.3143902,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562872927232186.png",
+          "captured_at_epoch": 1789562872.958608,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562884430277152.png",
+          "captured_at_epoch": 1789562884.4547145,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562886890060258.png",
+          "captured_at_epoch": 1789562886.914915,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562889979860595.png",
+          "captured_at_epoch": 1789562890.012319,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562891850472676.png",
+          "captured_at_epoch": 1789562891.875241,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562900413641829.png",
+          "captured_at_epoch": 1789562900.4461381,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562908684073952.png",
+          "captured_at_epoch": 1789562908.7164214,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562913613393125.png",
+          "captured_at_epoch": 1789562913.6375248,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562920468308643.png",
+          "captured_at_epoch": 1789562920.492367,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562924045387375.png",
+          "captured_at_epoch": 1789562924.0699606,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562926015979977.png",
+          "captured_at_epoch": 1789562926.0402257,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562927447340760.png",
+          "captured_at_epoch": 1789562927.4783075,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562931348605377.png",
+          "captured_at_epoch": 1789562931.3729498,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562933698444190.png",
+          "captured_at_epoch": 1789562933.7227175,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562936210905784.png",
+          "captured_at_epoch": 1789562936.2358677,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562938267774828.png",
+          "captured_at_epoch": 1789562938.3004367,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562942281000093.png",
+          "captured_at_epoch": 1789562942.3052065,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562944701933606.png",
+          "captured_at_epoch": 1789562944.734069,
+          "enabled": true
+        },
+        {
+          "file": "cam0/view_1789562946318793134.png",
+          "captured_at_epoch": 1789562946.3431842,
+          "enabled": true
+        }
+      ]
+    },
+    "1": {
+      "serial": "319522062138",
+      "color_w": 1280,
+      "color_h": 720,
+      "fps": 15,
+      "frames": [
+        {
+          "file": "cam1/view_1789562989466271515.png",
+          "captured_at_epoch": 1789562989.4931188,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789562991276666306.png",
+          "captured_at_epoch": 1789562991.3034773,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789562996636183266.png",
+          "captured_at_epoch": 1789562996.6630228,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789562998978143871.png",
+          "captured_at_epoch": 1789562999.0134833,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563001641024882.png",
+          "captured_at_epoch": 1789563001.675667,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563004387607875.png",
+          "captured_at_epoch": 1789563004.4140007,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563006277030199.png",
+          "captured_at_epoch": 1789563006.31137,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563008287744035.png",
+          "captured_at_epoch": 1789563008.3142302,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563012578726710.png",
+          "captured_at_epoch": 1789563012.6142228,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563018168112689.png",
+          "captured_at_epoch": 1789563018.203642,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563021231447140.png",
+          "captured_at_epoch": 1789563021.2571647,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563023842144896.png",
+          "captured_at_epoch": 1789563023.889459,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563025480444868.png",
+          "captured_at_epoch": 1789563025.506127,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563043622371732.png",
+          "captured_at_epoch": 1789563043.649009,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563047595108048.png",
+          "captured_at_epoch": 1789563047.6217258,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563053404375908.png",
+          "captured_at_epoch": 1789563053.438811,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563055283259620.png",
+          "captured_at_epoch": 1789563055.309505,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563060506262991.png",
+          "captured_at_epoch": 1789563060.5408034,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563063605166035.png",
+          "captured_at_epoch": 1789563063.6311824,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563068186519318.png",
+          "captured_at_epoch": 1789563068.219926,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563073525938979.png",
+          "captured_at_epoch": 1789563073.5527656,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563078526904949.png",
+          "captured_at_epoch": 1789563078.5529077,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563083007326098.png",
+          "captured_at_epoch": 1789563083.042513,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563086218249952.png",
+          "captured_at_epoch": 1789563086.2444034,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563091108587788.png",
+          "captured_at_epoch": 1789563091.1433456,
+          "enabled": true
+        },
+        {
+          "file": "cam1/view_1789563093199037183.png",
+          "captured_at_epoch": 1789563093.225536,
+          "enabled": true
+        }
+      ]
+    },
+    "2": {
+      "serial": "912322060991",
+      "color_w": 1280,
+      "color_h": 720,
+      "fps": 15,
+      "frames": [
+        {
+          "file": "cam2/view_1789563124473304678.png",
+          "captured_at_epoch": 1789563124.5112956,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563129953646721.png",
+          "captured_at_epoch": 1789563129.988573,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563131743284887.png",
+          "captured_at_epoch": 1789563131.7802472,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563136223721779.png",
+          "captured_at_epoch": 1789563136.260942,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563137724600901.png",
+          "captured_at_epoch": 1789563137.7609,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563141453349461.png",
+          "captured_at_epoch": 1789563141.4796755,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563143184072070.png",
+          "captured_at_epoch": 1789563143.2104948,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563147654405321.png",
+          "captured_at_epoch": 1789563147.6914256,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563154866945322.png",
+          "captured_at_epoch": 1789563154.8934135,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563163685216301.png",
+          "captured_at_epoch": 1789563163.712048,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563173078640908.png",
+          "captured_at_epoch": 1789563173.1053545,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563175266093084.png",
+          "captured_at_epoch": 1789563175.292598,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563182759263668.png",
+          "captured_at_epoch": 1789563182.7947233,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563184198186994.png",
+          "captured_at_epoch": 1789563184.223665,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563193989356890.png",
+          "captured_at_epoch": 1789563194.0152922,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563200322230981.png",
+          "captured_at_epoch": 1789563200.358217,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563202201669688.png",
+          "captured_at_epoch": 1789563202.2381225,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563204219947353.png",
+          "captured_at_epoch": 1789563204.256941,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563205609919879.png",
+          "captured_at_epoch": 1789563205.6363254,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563208540376991.png",
+          "captured_at_epoch": 1789563208.5777946,
+          "enabled": true
+        },
+        {
+          "file": "cam2/view_1789563217272890465.png",
+          "captured_at_epoch": 1789563217.3205366,
+          "enabled": true
+        }
+      ]
+    },
+    "3": {
+      "serial": "039422061216",
+      "color_w": 1280,
+      "color_h": 720,
+      "fps": 15,
+      "frames": [
+        {
+          "file": "cam3/view_1789568101169629182.png",
+          "captured_at_epoch": 1789568101.2291133,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568103314209607.png",
+          "captured_at_epoch": 1789568103.3961334,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568108848058038.png",
+          "captured_at_epoch": 1789568108.9021287,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568111954493671.png",
+          "captured_at_epoch": 1789568112.0059552,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568114318929040.png",
+          "captured_at_epoch": 1789568114.4021344,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568118798330120.png",
+          "captured_at_epoch": 1789568118.8529973,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568121049380768.png",
+          "captured_at_epoch": 1789568121.1029017,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568123376449599.png",
+          "captured_at_epoch": 1789568123.4280596,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568125584483365.png",
+          "captured_at_epoch": 1789568125.6435826,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568130137782141.png",
+          "captured_at_epoch": 1789568130.2142777,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568132135439725.png",
+          "captured_at_epoch": 1789568132.1894274,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568134674393904.png",
+          "captured_at_epoch": 1789568134.7589343,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568137694122584.png",
+          "captured_at_epoch": 1789568137.7519474,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568139863257975.png",
+          "captured_at_epoch": 1789568139.9102817,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568141205995452.png",
+          "captured_at_epoch": 1789568141.2638373,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568142883892468.png",
+          "captured_at_epoch": 1789568142.9415603,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568144784501720.png",
+          "captured_at_epoch": 1789568144.8435493,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568149809427930.png",
+          "captured_at_epoch": 1789568149.8658288,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568158259459922.png",
+          "captured_at_epoch": 1789568158.3128083,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568161103626415.png",
+          "captured_at_epoch": 1789568161.1581523,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568167256988423.png",
+          "captured_at_epoch": 1789568167.3349333,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568170546195237.png",
+          "captured_at_epoch": 1789568170.6296728,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568181219022218.png",
+          "captured_at_epoch": 1789568181.295889,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568183695538925.png",
+          "captured_at_epoch": 1789568183.7523277,
+          "enabled": true
+        },
+        {
+          "file": "cam3/view_1789568186178316259.png",
+          "captured_at_epoch": 1789568186.260377,
+          "enabled": true
+        }
+      ]
+    },
+    "4": {
+      "serial": "752112070297",
+      "color_w": 1280,
+      "color_h": 720,
+      "fps": 15,
+      "frames": [
+        {
+          "file": "cam4/view_1789568296440873517.png",
+          "captured_at_epoch": 1789568296.4915447,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568302453248520.png",
+          "captured_at_epoch": 1789568302.4921541,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568307602318025.png",
+          "captured_at_epoch": 1789568307.6553903,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568311252552013.png",
+          "captured_at_epoch": 1789568311.3098032,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568313485018330.png",
+          "captured_at_epoch": 1789568313.5390599,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568322172858809.png",
+          "captured_at_epoch": 1789568322.2323284,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568324151902439.png",
+          "captured_at_epoch": 1789568324.228661,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568326441239345.png",
+          "captured_at_epoch": 1789568326.496481,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568329131359415.png",
+          "captured_at_epoch": 1789568329.1887136,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568338672084753.png",
+          "captured_at_epoch": 1789568338.7328093,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568342752829659.png",
+          "captured_at_epoch": 1789568342.8217282,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568344932358441.png",
+          "captured_at_epoch": 1789568344.9813135,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568347592614837.png",
+          "captured_at_epoch": 1789568347.6414697,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568350997250471.png",
+          "captured_at_epoch": 1789568351.0928645,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568353991361701.png",
+          "captured_at_epoch": 1789568354.047308,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568355861937099.png",
+          "captured_at_epoch": 1789568355.9164157,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568357846396679.png",
+          "captured_at_epoch": 1789568357.881187,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568360539817758.png",
+          "captured_at_epoch": 1789568360.6137087,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568362523562561.png",
+          "captured_at_epoch": 1789568362.5841808,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568364001522787.png",
+          "captured_at_epoch": 1789568364.0793703,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568371414349882.png",
+          "captured_at_epoch": 1789568371.481566,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568375205432755.png",
+          "captured_at_epoch": 1789568375.2621944,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568378121292301.png",
+          "captured_at_epoch": 1789568378.159881,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568380120402807.png",
+          "captured_at_epoch": 1789568380.175065,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568383801371718.png",
+          "captured_at_epoch": 1789568383.8541336,
+          "enabled": true
+        },
+        {
+          "file": "cam4/view_1789568390282235406.png",
+          "captured_at_epoch": 1789568390.3132722,
+          "enabled": true
+        }
+      ]
+    }
+  },
+  "updated_at_epoch": 1789568390.3132737
+}
