@@ -52,7 +52,7 @@ sys.path.insert(0, str(REPO_ROOT / "zeus_gello_calibration"))
 from calibration_pipeline.board_config import charuco_config_from_dict  # noqa: E402
 from calibration_pipeline.charuco import CharucoTarget  # noqa: E402
 from calibration_pipeline.config import get_default_cube_config, get_default_cube_config_source  # noqa: E402
-from calibration_pipeline.cube_config import cube_config_to_dict  # noqa: E402
+from calibration_pipeline.cube_config import cube_config_to_dict, load_cube_config_from_json_file  # noqa: E402
 from robot.backends.zeus_client import T_to_pose6, pose6_to_T  # noqa: E402
 
 from fit_full_calibration import CHARUCO_BOARD_CONFIG  # noqa: E402
@@ -63,6 +63,10 @@ from session2_pick_and_place import compute_ordered_targets  # noqa: E402
 GRIPPER_CAM_IDX = LOCAL_CAM_IDS["gripper"]
 NOMINAL_FLANGE_TO_CUBE_CENTER_MM = 160.0
 OUT_ROOT_DEFAULT = REPO_ROOT / "data" / "session11_zeus_handheld_floor_wrist_meta_0909"
+# GT 큐브(실측 보정된 기하)가 있으면 그걸 기본으로 쓴다 -- get_default_cube_config()는
+# 도면 nominal 값이라, 특히 그리퍼캠처럼 큐브를 가까이서 보는 관측에서 재투영 오차가
+# 크게 튄다(작은 기하 오차가 화면에서 차지하는 픽셀 오차로 그대로 증폭됨).
+GT_CUBE_CONFIG_DEFAULT = REPO_ROOT / "targets" / "gt_cube" / "cube_config.json"
 
 
 def link_or_copy(src: Path, dst: Path):
@@ -155,6 +159,17 @@ def detect_capture_resolution(session1_dir: Path, capture_subdir: str) -> tuple[
     raise RuntimeError(f"{root}에서 해상도를 잴 사진을 하나도 못 찾았습니다.")
 
 
+def resolve_cube_config(cube_config_arg: str | None):
+    """--cube-config 우선, 없으면 GT_CUBE_CONFIG_DEFAULT(있으면), 그것도 없으면 도면 nominal."""
+    if cube_config_arg:
+        cfg, _ = load_cube_config_from_json_file(cube_config_arg)
+        return cfg, str(cube_config_arg)
+    if GT_CUBE_CONFIG_DEFAULT.is_file():
+        cfg, _ = load_cube_config_from_json_file(str(GT_CUBE_CONFIG_DEFAULT))
+        return cfg, str(GT_CUBE_CONFIG_DEFAULT)
+    return get_default_cube_config(), get_default_cube_config_source()
+
+
 def convert(args):
     session_root = Path(args.out_root)
     calib_train_dir = session_root / "calib_train"
@@ -164,6 +179,8 @@ def convert(args):
     print(f"[해상도] 실제 촬영 사진 기준: {color_w}x{color_h}")
     intrinsics_dir = write_intrinsics(session_root, Path(args.zeus_intrinsics_dir), Path(args.ur3_intrinsics_dir),
                                       Path(args.device_map), color_w, color_h)
+    cube_cfg, cube_cfg_source = resolve_cube_config(args.cube_config)
+    print(f"[큐브] 지오메트리 출처: {cube_cfg_source}")
 
     meta = {
         "root_folder": str(calib_train_dir.resolve()),
@@ -174,9 +191,9 @@ def convert(args):
         "cam_labels": {str(v): k for k, v in LOCAL_CAM_IDS.items()},
         "charuco_board_config_source": "zeus_gello_calibration.fit_full_calibration.CHARUCO_BOARD_CONFIG",
         "charuco_board_config": dict(CHARUCO_BOARD_CONFIG),
-        "cube_config_source": get_default_cube_config_source(),
+        "cube_config_source": cube_cfg_source,
         # 05가 manifest(04)의 동결 cube config와 여기 값을 비교한다 -- 없으면 실패
-        "cube_config": cube_config_to_dict(get_default_cube_config()),
+        "cube_config": cube_config_to_dict(cube_cfg),
         "pose_convention_note": "robot_pose_6dof = Zeus i611 [x,y,z mm, rz,ry,rx deg] extrinsic ZYX; matrix in metres",
         "set_cube_center_source": (
             f"place command flange pose @ nominal +z {args.nominal_flange_to_cube_center_mm} mm "
@@ -259,6 +276,9 @@ def main():
     ap.add_argument("--zeus-intrinsics-dir", default=str(REPO_ROOT / "intrinsics"))
     ap.add_argument("--ur3-intrinsics-dir", default=str(REPO_ROOT / "ur3_calibration" / "intrinsics"))
     ap.add_argument("--device-map", default=str(REPO_ROOT / "intrinsics" / "device_map.json"))
+    ap.add_argument("--cube-config", default=None,
+                    help=f"큐브 기하 JSON 경로. 생략하면 {GT_CUBE_CONFIG_DEFAULT}가 있으면 그걸, "
+                         "없으면 도면 nominal(get_default_cube_config)을 씀")
     ap.add_argument("--nominal-flange-to-cube-center-mm", type=float, default=NOMINAL_FLANGE_TO_CUBE_CENTER_MM)
     ap.add_argument("--placement-event-mode", choices=("fixed_gripper_split", "single"), default="fixed_gripper_split",
                     help="session2 placement 한 촬영을 고정캠 이벤트 + 그리퍼캠 이벤트 둘로 나눔(기본; 05 split 요건) / single = 이벤트 1개")
