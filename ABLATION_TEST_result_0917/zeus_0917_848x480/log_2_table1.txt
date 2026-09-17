@@ -1,0 +1,128 @@
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+session2 그리퍼캠 큐브 관측치: 10개 (신규 -- 예전엔 빠뜨렸음)
+[s3-gripper-only] session3 고정캠 보드 관측 30개 제외
+session3 고정캠 보드 관측치: 0개 (신규 -- 예전엔 빠뜨렸음)
+[session3 큐브] session2 세트 자리에 없음(최근접 16.5mm) -> 큐브 관측 미사용
+session2 보드 관측치: 고정캠 21개 / 그리퍼캠 10개 (신규 -- 예전엔 빠뜨렸음)
+session1 41개 / session2-고정캠 26개 / session2-그리퍼캠 10개 / session2-보드 31개 / session3-고정캠 0개 / session3-그리퍼캠 14개
+총 관측치: 122개 (통합/독립 공통, 같은 양)
+
+T_gripper_cam 초기값 t_mm=[37.75, 35.46, 36.28] ({'method': 'PARK', 'score_mm_equivalent': 8.049779461085572, 'n_poses': 14})
+
+placement 11개 leave-one-out x row 9개
+
+      A0 fold 1/11
+      A0 fold 2/11
+      A0 fold 3/11
+      A0 fold 4/11
+      A0 fold 5/11
+      A0 fold 6/11
+      A0 fold 7/11
+      A0 fold 8/11
+      A0 fold 9/11
+      A0 fold 10/11
+      A0 fold 11/11
+  A0  board-only, sequential VISION            [7s]
+      Cube(corrected-FK-ref) ALL=1.827  Train=1.812  Heldout=1.818 px
+      Cross-view  ALL=5.185  Train=5.192  Heldout=5.175 px
+      A1 fold 1/11
+      A1 fold 2/11
+      A1 fold 3/11
+      A1 fold 4/11
+      A1 fold 5/11
+      A1 fold 6/11
+      A1 fold 7/11
+      A1 fold 8/11
+      A1 fold 9/11
+      A1 fold 10/11
+      A1 fold 11/11
+  A1  +cube, sequential                        [21s]
+      Cube(corrected-FK-ref) ALL=1.220  Train=1.222  Heldout=1.233 px
+      Cross-view  ALL=4.456  Train=4.433  Heldout=4.534 px
+      A2 fold 1/11
+      A2 fold 2/11
+      A2 fold 3/11
+      A2 fold 4/11
+      A2 fold 5/11
+      A2 fold 6/11
+      A2 fold 7/11
+      A2 fold 8/11
+      A2 fold 9/11
+      A2 fold 10/11
+      A2 fold 11/11
+  A2  +unified, VISION                         [29s]
+      Cube(corrected-FK-ref) ALL=1.341  Train=1.341  Heldout=1.345 px
+      Cross-view  ALL=4.476  Train=4.456  Heldout=4.485 px
+      A4 fold 1/11
+      A4 fold 2/11
+      A4 fold 3/11
+      A4 fold 4/11
+      A4 fold 5/11
+      A4 fold 6/11
+      A4 fold 7/11
+      A4 fold 8/11
+      A4 fold 9/11
+      A4 fold 10/11
+      A4 fold 11/11
+  A4  corrected-FK soft factor                 [29s]
+      Cube(corrected-FK-ref) ALL=1.302  Train=1.304  Heldout=1.311 px
+      Cross-view  ALL=4.472  Train=4.453  Heldout=4.483 px
+      A5 fold 1/11
+      A5 fold 2/11
+      A5 fold 3/11
+      A5 fold 4/11
+      A5 fold 5/11
+      A5 fold 6/11
+      A5 fold 7/11
+      A5 fold 8/11
+      A5 fold 9/11
+      A5 fold 10/11
+      A5 fold 11/11
+  A5  corrected-FK hard fixed (P1 VISION-aligned) [23s]
+      Cube(corrected-FK-ref) ALL=0.901  Train=0.908  Heldout=0.954 px
+      Cross-view  ALL=3.969  Train=3.969  Heldout=4.014 px
+      B1 fold 1/11
+      B1 fold 2/11
+      B1 fold 3/11
+      B1 fold 4/11
+      B1 fold 5/11
+      B1 fold 6/11
+      B1 fold 7/11
+      B1 fold 8/11
+      B1 fold 9/11
+      B1 fold 10/11
+      B1 fold 11/11
+  B1  -Unified (corrected-FK soft factor, sequential) [23s]
+      Cube(corrected-FK-ref) ALL=1.202  Train=1.202  Heldout=1.237 px
+      Cross-view  ALL=4.741  Train=4.705  Heldout=4.752 px
+      B2 fold 1/11
+      B2 fold 2/11
+      B2 fold 3/11
+      B2 fold 4/11
+      B2 fold 5/11
+      B2 fold 6/11
+      B2 fold 7/11
+      B2 fold 8/11
+      B2 fold 9/11
+      B2 fold 10/11
+      B2 fold 11/11
+  B2  -board (cube only, corrected-FK soft factor) [20s]
+      Cube(corrected-FK-ref) ALL=1.196  Train=1.199  Heldout=1.228 px
+      Cross-view  ALL=3.584  Train=3.580  Heldout=3.636 px
+      B3 fold 1/11
+      B3 fold 2/11
+      B3 fold 3/11
+      B3 fold 4/11
+      B3 fold 5/11
+      B3 fold 6/11
+      B3 fold 7/11
+      B3 fold 8/11
+      B3 fold 9/11
+      B3 fold 10/11
+      B3 fold 11/11
+  B3  -cube (board only, unified)              [9s]
+      Cube(corrected-FK-ref) ALL=1.827  Train=1.812  Heldout=1.818 px
+      Cross-view  ALL=5.184  Train=5.192  Heldout=5.175 px
+
+[SAVE] ABLATION_TEST_result_0917/zeus_0917_848x480/table1_zeus/ABLATION_TEST_table1_methods.json
+[SAVE] ABLATION_TEST_result_0917/zeus_0917_848x480/table1_zeus/ABLATION_TEST_TABLE1_RESULTS.md
