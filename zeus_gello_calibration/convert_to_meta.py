@@ -124,14 +124,15 @@ def build_capture(*, event_id, capture_index, set_index, cube_gripped, grasp_id,
     return cap
 
 
-def write_intrinsics(session_root: Path, zeus_dir: Path, ur3_dir: Path, device_map: Path) -> Path:
+def write_intrinsics(session_root: Path, zeus_dir: Path, ur3_dir: Path, device_map: Path,
+                     color_w: int, color_h: int) -> Path:
     K_map, D_map = load_intrinsics_by_label(zeus_dir, ur3_dir, device_map)
     out = session_root / "intrinsics"
     out.mkdir(parents=True, exist_ok=True)
     label_by_idx = {v: k for k, v in LOCAL_CAM_IDS.items()}
     for idx in sorted(label_by_idx):
         np.savez(out / f"cam{idx}.npz", color_K=np.asarray(K_map[idx], float), color_D=np.asarray(D_map[idx], float),
-                 depth_scale_m_per_unit=np.float64(0.001), label=label_by_idx[idx], color_w=1280, color_h=720)
+                 depth_scale_m_per_unit=np.float64(0.001), label=label_by_idx[idx], color_w=color_w, color_h=color_h)
     (out / "device_map.json").write_text(json.dumps({
         "note": "Zeus rig, index order = zeus_gello_calibration.fit_grasp_offset.LOCAL_CAM_IDS; "
                 "cam0 (039422061216) intrinsics come from the UR3 rig's charuco calibration of the same unit",
@@ -140,12 +141,29 @@ def write_intrinsics(session_root: Path, zeus_dir: Path, ur3_dir: Path, device_m
     return out
 
 
+def detect_capture_resolution(session1_dir: Path, capture_subdir: str) -> tuple[int, int]:
+    """실제로 찍힌 사진 한 장의 크기를 재서 (width, height)를 돌려준다 -- intrinsics
+    메타데이터에 하드코딩된 해상도를 안 믿고, 진짜 촬영 해상도를 그대로 쓰기 위함."""
+    root = session1_dir / capture_subdir
+    for cap_dir in sorted((p for p in root.iterdir() if p.is_dir() and p.name.isdigit()),
+                          key=lambda p: int(p.name)):
+        for png in sorted(cap_dir.glob("cam_*.png")):
+            img = cv2.imread(str(png))
+            if img is not None:
+                h, w = img.shape[:2]
+                return int(w), int(h)
+    raise RuntimeError(f"{root}에서 해상도를 잴 사진을 하나도 못 찾았습니다.")
+
+
 def convert(args):
     session_root = Path(args.out_root)
     calib_train_dir = session_root / "calib_train"
     calib_train_dir.mkdir(parents=True, exist_ok=True)
     charuco = CharucoTarget(charuco_config_from_dict(CHARUCO_BOARD_CONFIG))
-    intrinsics_dir = write_intrinsics(session_root, Path(args.zeus_intrinsics_dir), Path(args.ur3_intrinsics_dir), Path(args.device_map))
+    color_w, color_h = detect_capture_resolution(SESSION1_DIR, args.session1_capture_subdir)
+    print(f"[해상도] 실제 촬영 사진 기준: {color_w}x{color_h}")
+    intrinsics_dir = write_intrinsics(session_root, Path(args.zeus_intrinsics_dir), Path(args.ur3_intrinsics_dir),
+                                      Path(args.device_map), color_w, color_h)
 
     meta = {
         "root_folder": str(calib_train_dir.resolve()),
@@ -167,7 +185,7 @@ def convert(args):
             "schema_version": "capture_config_v1",
             "charuco_board_config": dict(CHARUCO_BOARD_CONFIG),
             "intrinsics_dir": str(intrinsics_dir.resolve()),
-            "width": 1280, "height": 720, "fps": 15, "save_depth": False,
+            "width": color_w, "height": color_h, "fps": 15, "save_depth": False,
             "capture_gate": {"schema_version": "capture_gate_profiles_v1",
                              "profiles": {"A_placement": {"expected_cube_gripped": False},
                                           "B_eyetohand": {"expected_cube_gripped": True}}},
@@ -179,7 +197,7 @@ def convert(args):
 
     # session1: 쥔 큐브
     s1 = SESSION1_DIR / args.session1_capture_subdir
-    for idx in sorted(int(p.name) for p in s1.iterdir() if p.is_dir()):
+    for idx in sorted(int(p.name) for p in s1.iterdir() if p.is_dir() and p.name.isdigit()):
         captures.append(build_capture(event_id=event_id, capture_index=idx, set_index=None, cube_gripped=True, grasp_id=0,
                                       capture_block="B_eyetohand", capture_dir=s1 / f"{idx:03d}",
                                       calib_train_dir=calib_train_dir, charuco=charuco, session_tag="session1"))
@@ -190,7 +208,7 @@ def convert(args):
     s2 = SESSION2_DIR / args.session2_capture_subdir
     items = compute_ordered_targets(SESSION2_DIR)
     T_nom = np.eye(4); T_nom[2, 3] = args.nominal_flange_to_cube_center_mm / 1000.0
-    for idx in sorted(int(p.name) for p in s2.iterdir() if p.is_dir()):
+    for idx in sorted(int(p.name) for p in s2.iterdir() if p.is_dir() and p.name.isdigit()):
         if idx >= len(items):
             continue
         T_place = pose6_to_T(items[idx]["target"])
@@ -215,7 +233,7 @@ def convert(args):
 
     # session3: 손목 보드
     s3 = SESSION3_DIR / args.session3_capture_subdir
-    for idx in sorted(int(p.name) for p in s3.iterdir() if p.is_dir()):
+    for idx in sorted(int(p.name) for p in s3.iterdir() if p.is_dir() and p.name.isdigit()):
         captures.append(build_capture(event_id=event_id, capture_index=idx, set_index=None, cube_gripped=False, grasp_id=None,
                                       capture_block="A_placement", capture_dir=s3 / f"{idx:03d}",
                                       calib_train_dir=calib_train_dir, charuco=charuco, session_tag="session3"))

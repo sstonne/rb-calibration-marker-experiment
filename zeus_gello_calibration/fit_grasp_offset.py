@@ -144,16 +144,24 @@ def load_intrinsics_npz_generic(path: Path):
 def load_intrinsics_by_label(zeus_intrinsics_dir: Path, ur3_intrinsics_dir: Path,
                              device_map_path: Path) -> tuple:
     """Return (K_map, D_map) keyed by LOCAL_CAM_IDS, from the two directories.
-    `<zeus_intrinsics_dir>/overrides/<serial>*.npz` 가 있으면 그 카메라는 그 값을 우선 쓴다."""
+    `<zeus_intrinsics_dir>/overrides/<serial>*.npz` 가 있으면 그 카메라는 그 값을 우선 쓴다.
+
+    BORROWED_UR3_LABEL(039422061216)은 원래 Zeus 쪽에 그 유닛의 자체 calibration이
+    없어서 UR3 rig의 charuco 결과를 빌려 쓰던 카메라다. 지금 device_map에 그 serial의
+    자체 항목(serial_to_idx)이 있으면 -- 즉 이 zeus_intrinsics_dir가 그 카메라도 직접
+    찍었으면 -- 해상도가 안 맞을 수 있는 UR3(항상 1280x720) 값 대신 그 자체 값을 쓴다.
+    UR3 borrow는 device_map에 그 serial이 아예 없는(과거) 경우의 fallback으로만 남는다.
+    """
     label_to_serial, serial_to_idx = resolve_zeus_camera_serials(device_map_path)
     K_map, D_map = {}, {}
     for label, local_id in LOCAL_CAM_IDS.items():
         serial_for_label = BORROWED_UR3_LABEL if label == BORROWED_UR3_LABEL else label_to_serial[label]
         override = find_intrinsics_override(Path(zeus_intrinsics_dir), serial_for_label)
+        has_own_zeus_entry = serial_for_label in serial_to_idx
         if override is not None:
             K, D = load_intrinsics_npz_generic(override)
             print(f"[intrinsics] {label} (serial {serial_for_label}): override {override.name} 사용 (fx={K[0,0]:.1f})")
-        elif label == BORROWED_UR3_LABEL:
+        elif label == BORROWED_UR3_LABEL and not has_own_zeus_entry:
             K, D, _ = load_intrinsics_with_depth_scale(str(ur3_intrinsics_dir), 0)
             npz = np.load(ur3_intrinsics_dir / "cam0.npz", allow_pickle=True)
             actual_serial = str(npz["serial"]) if "serial" in npz else None
@@ -163,9 +171,10 @@ def load_intrinsics_by_label(zeus_intrinsics_dir: Path, ur3_intrinsics_dir: Path
                     f"{BORROWED_UR3_LABEL!r}, got {actual_serial!r} -- the "
                     "borrowed-camera assumption this script relies on no "
                     "longer holds")
+            print(f"[intrinsics] {label} (serial {serial_for_label}): device_map에 자체 항목이 없어 "
+                  f"UR3 rig 값을 빌려 씀 (fx={K[0,0]:.1f}, 해상도가 zeus_intrinsics_dir와 다를 수 있음)")
         else:
-            serial = label_to_serial[label]
-            zeus_idx = serial_to_idx[serial]
+            zeus_idx = serial_to_idx[serial_for_label]
             K, D, _ = load_intrinsics_with_depth_scale(str(zeus_intrinsics_dir), zeus_idx)
         K_map[local_id] = K
         D_map[local_id] = D
