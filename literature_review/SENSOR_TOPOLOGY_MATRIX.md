@@ -373,7 +373,7 @@ $$e_{\text{held-out}} \;=\; \underbrace{e_{\text{cam-net}}}_{\text{새 물체 �
 
 | ID | 논문 | 상태 | 왜 추천하나 |
 |---|---|---|---|
-| **N1** | **Marker-Based Extrinsic Calibration for Accurate Multi-Camera 3D Reconstruction** (arXiv 2505.02539, 2025) | **신규 발굴** | **RealSense 12대 + 큐브 마커**. 센서와 타깃이 **둘 다** 우리와 겹치는 유일한 논문이다. 큐브의 직교성 제약을 보정에 쓰는 것도 우리 다면 AprilTag 큐브와 같은 발상. **단 보고된 "positional error 0.0012 mm"는 물리 정확도로 보기 어렵다** — 자기 일관성 잔차일 가능성이 높아 원문 표 확인 전에는 인용하지 않는다 |
+| ~~N1~~ | ~~Marker-Based Extrinsic Calibration for Accurate Multi-Camera 3D Reconstruction~~ (arXiv 2505.02539, 2025) | **⚠️ 2026-09-17 제외** | RealSense 12대 + 큐브 마커로 구성은 겹친다. 그러나 원문 확인 결과 **GT가 자기 최적 결과**다 — *"the optimized calibration that obtained the best results ... was taken as ground truth."* 0.0012 mm는 기준 카메라와의 평면 정렬 잔차(Procrustes)이고, 비교 방법이 없다. **순환 검증이라 수치 인용 금지.** 관련 연구에서 "RealSense + 큐브 마커 선례"로 한 줄만 언급 가능 |
 | **C5** | Imperfect 3-D targets (IEEE TIM 2026) | 초록만 확인 | **타깃 자체의 제작 오차를 보정 변수로 넣는다.** 우리 큐브 면 간 위치·각도 오차와 정확히 같은 문제. 수치는 미확인이라 정량 비교는 못 하지만 **문제 설정 인용처로는 최적** |
 
 ### 8.4 Tier 3 — 로봇을 포함하고 0~5 mm를 보고한 논문
