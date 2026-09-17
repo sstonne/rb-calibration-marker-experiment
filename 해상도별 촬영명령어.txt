@@ -1,0 +1,73 @@
+1920×1080
+(주의: 이 intrinsics는 color만 1920x1080이고 depth는 1280x720으로 찍혀 있음
+ -- --depth-width/--depth-height를 꼭 같이 줘야 함, 안 주면 RuntimeError로 막힘)
+
+cd zeus_gello_calibration
+DM=../intrinsics_1920x1080_rgbd720/device_map.json
+
+python replay_and_recapture.py --session 1 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 1920 --height 1080 \
+  --depth-width 1280 --depth-height 720 --device-map $DM --regrasp-joints
+
+python session2_pick_and_place.py --execute --no-step \
+  --out-root data/session2_floor_board_dual_cam_0909/capture_placed_0917 \
+  --width 1920 --height 1080 --depth-width 1280 --depth-height 720 --device-map $DM
+
+python replay_and_recapture.py --session 3 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 1920 --height 1080 \
+  --depth-width 1280 --depth-height 720 --device-map $DM
+
+
+  
+1280×720
+
+DM=../intrinsics_1280x720/device_map.json
+
+python replay_and_recapture.py --session 1 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 1280 --height 720 --device-map $DM --regrasp-joints
+
+python session2_pick_and_place.py --execute --no-step \
+  --out-root data/session2_floor_board_dual_cam_0909/capture_placed_0917 \
+  --width 1280 --height 720 --device-map $DM
+
+python replay_and_recapture.py --session 3 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 1280 --height 720 --device-map $DM
+
+
+848×480 (color 848x480, depth 1280x720 -- rgbd720)
+
+DM=../intrinsics_848x480_rgbd720/device_map.json
+
+python replay_and_recapture.py --session 1 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 848 --height 480 \
+  --depth-width 1280 --depth-height 720 --device-map $DM --regrasp-joints
+
+python session2_pick_and_place.py --execute --no-step \
+  --out-root data/session2_floor_board_dual_cam_0909/capture_placed_0917 \
+  --width 848 --height 480 --depth-width 1280 --depth-height 720 --device-map $DM
+
+python replay_and_recapture.py --session 3 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 848 --height 480 \
+  --depth-width 1280 --depth-height 720 --device-map $DM
+
+
+640×360 (color 640x360, depth 1280x720 -- rgbd720; 640x480 아님)
+
+DM=../intrinsics_640x360_rgbd720/device_map.json
+
+python replay_and_recapture.py --session 1 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 640 --height 360 \
+  --depth-width 1280 --depth-height 720 --device-map $DM --regrasp-joints
+
+python session2_pick_and_place.py --execute --no-step \
+  --out-root data/session2_floor_board_dual_cam_0909/capture_placed_0917 \
+  --width 640 --height 360 --depth-width 1280 --depth-height 720 --device-map $DM
+
+python replay_and_recapture.py --session 3 --execute --no-step \
+  --output-subdir capture_replayed_0917 --width 640 --height 360 \
+  --depth-width 1280 --depth-height 720 --device-map $DM
+
+
+촬영 후 캘리브레이션 (해상도 공통, 한 줄):
+python run_zeus_calibration.py --tag 0917_848x480 --zeus-intrinsics-dir ../intrinsics_848x480_rgbd720
+python run_zeus_calibration.py --tag 0917_640x360 --zeus-intrinsics-dir ../intrinsics_640x360_rgbd720
