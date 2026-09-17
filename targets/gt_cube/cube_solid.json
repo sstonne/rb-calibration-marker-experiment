@@ -2,13 +2,13 @@
   "name": "GT validation cube",
   "units": "mm",
   "origin": "center of the 59 x 59 x 59 mm body; +Z up",
-  "envelope": "59 (X) x 88 (Y) x 94 (Z) mm = body 59 + top protrusion 35 (riser 25 + I-plate 10)",
-  "note": "Drawing-only description of the physical solid. The calibration model uses cube_config.json; this file just says what the body looks like around the markers. 2026-09-17: I-plate neck measured with calipers at 26mm (not the original 25mm drawing value) -- neck and block Y ranges updated accordingly (total Y envelope 87 -> 88mm).",
+  "envelope": "59 (X) x 88 (Y) x 94 (Z) mm = body 59 + top protrusion 35 (tapered riser 17.5 + I-beam plate 17.5)",
+  "note": "Drawing-only description of the physical solid. The calibration model uses cube_config.json; this file just says what the body looks like around the markers. 2026-09-17: cross-checked against STL/GT_test_cube_modified_v6.stl (binary STL, 68 triangles). STL bbox is exactly 59x88x94mm, confirming the 26mm-neck correction (block centers y=+/-28.5mm match cube_config.json's marker_center_m for ids 0/1). The STL's z-transition levels are -29.5/29.5/47.0/64.5mm, i.e. the 35mm top protrusion splits 17.5+17.5 (not 25+10 as previously guessed here), and the lower 17.5mm section is a taper from the 59x59 body square up to the I-beam footprint, not a constant 31x59 box -- the 'riser' row below is a simplified bounding-box stand-in for that taper. The upper 17.5mm section (z 47.0-64.5) is a genuine constant I-beam cross-section (two 31x31 blocks + 15x26 neck) and matches the boxes below exactly.",
   "boxes": [
     {"label": "body 59x59x59",        "x": [-29.5,  29.5], "y": [-29.5,  29.5], "z": [-29.5, 29.5]},
-    {"label": "riser 31x59x25",       "x": [-15.5,  15.5], "y": [-29.5,  29.5], "z": [ 29.5, 54.5]},
-    {"label": "I-plate -Y block 31x31","x": [-15.5,  15.5], "y": [-44.0, -13.0], "z": [ 54.5, 64.5]},
-    {"label": "I-plate neck 15x26",   "x": [ -7.5,   7.5], "y": [-13.0,  13.0], "z": [ 54.5, 64.5]},
-    {"label": "I-plate +Y block 31x31","x": [-15.5,  15.5], "y": [ 13.0,  44.0], "z": [ 54.5, 64.5]}
+    {"label": "riser (taper, simplified as 59x59 box) 59x59x17.5", "x": [-29.5,  29.5], "y": [-29.5,  29.5], "z": [ 29.5, 47.0]},
+    {"label": "I-plate -Y block 31x31","x": [-15.5,  15.5], "y": [-44.0, -13.0], "z": [ 47.0, 64.5]},
+    {"label": "I-plate neck 15x26",   "x": [ -7.5,   7.5], "y": [-13.0,  13.0], "z": [ 47.0, 64.5]},
+    {"label": "I-plate +Y block 31x31","x": [-15.5,  15.5], "y": [ 13.0,  44.0], "z": [ 47.0, 64.5]}
   ]
 }
