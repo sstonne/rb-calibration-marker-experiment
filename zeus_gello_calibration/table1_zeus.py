@@ -152,10 +152,10 @@ ROWS = {
         label="FK hard fixed (nominal 160mm)", targets=("board", "cube"),
         opt="uni", fk="mechanical_fixed",
     ),
-    "A4": dict(label="corrected-FK soft factor", targets=("board", "cube"), opt="uni", fk="corrected_factor"),
-    "A5": dict(label="corrected-FK hard fixed (P1 VISION-aligned)", targets=("board", "cube"), opt="uni", fk="corrected_fixed"),
-    "B1": dict(label="-Unified (corrected-FK soft factor, sequential)", targets=("board", "cube"), opt="seq", fk="corrected_factor"),
-    "B2": dict(label="-board (cube only, corrected-FK soft factor)", targets=("cube",), opt="uni", fk="corrected_factor"),
+    "A4": dict(label="FtC FK soft factor", targets=("board", "cube"), opt="uni", fk="corrected_factor"),
+    "A5": dict(label="FtC FK fixed (P1 VISION flange-to-cube)", targets=("board", "cube"), opt="uni", fk="corrected_fixed"),
+    "B1": dict(label="-Unified (FtC FK fixed, sequential)", targets=("board", "cube"), opt="seq", fk="corrected_fixed"),
+    "B2": dict(label="-board (cube only, FtC FK fixed)", targets=("cube",), opt="uni", fk="corrected_fixed"),
     "B3": dict(label="-cube (board only, unified)", targets=("board",), opt="uni", fk="none"),
 }
 ROW_ORDER = ("A0", "A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3")
@@ -695,10 +695,10 @@ DEFAULT_CONDITIONS = {
     "A1": ("board + cube", "Sequential", "VISION"),
     "A2": ("board + cube", "Unified", "VISION"),
     "A3": ("board + cube", "Unified", "raw-FK hard fixed"),
-    "A4": ("board + cube", "Unified", "corrected-FK soft factor"),
-    "A5": ("board + cube", "Unified", "corrected-FK hard fixed"),
-    "B1": ("board + cube", "Sequential", "corrected-FK soft factor"),
-    "B2": ("cube", "Unified", "corrected-FK soft factor"),
+    "A4": ("board + cube", "Unified", "FtC FK soft factor"),
+    "A5": ("board + cube", "Unified", "FtC FK fixed"),
+    "B1": ("board + cube", "Sequential", "FtC FK fixed"),
+    "B2": ("cube", "Unified", "FtC FK fixed"),
     "B3": ("board", "Unified", "VISION"),
 }
 PIXEL_COLUMNS = {
@@ -792,8 +792,8 @@ def _conditions(row, body):
     optimization = {"seq": "Sequential", "uni": "Unified"}.get(condition.get("opt"), optimization)
     fk = {
         "none": "VISION", "mechanical_fixed": DEFAULT_CONDITIONS["A3"][2],
-        "corrected_factor": "corrected-FK soft factor",
-        "corrected_fixed": "corrected-FK hard fixed",
+        "corrected_factor": "FtC FK soft factor",
+        "corrected_fixed": "FtC FK fixed",
     }.get(condition.get("fk"), fk)
     return target, optimization, fk
 
