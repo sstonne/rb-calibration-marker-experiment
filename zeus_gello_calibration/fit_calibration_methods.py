@@ -59,7 +59,7 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from calibration_pipeline.apriltag_cube import AprilTagCubeTarget, inv_T  # noqa: E402
+from calibration_pipeline.apriltag_cube import AprilTagCubeTarget, inv_T, rodrigues_to_Rt  # noqa: E402
 from calibration_pipeline.board_config import charuco_config_from_dict  # noqa: E402
 from calibration_pipeline.charuco import CharucoTarget  # noqa: E402
 from calibration_pipeline.config import get_default_cube_config  # noqa: E402
@@ -115,6 +115,50 @@ def rmse_px(errs):
 
 def fk_anchor_cubes(items_by_index, T_gripper_cube):
     return {idx: pose6_to_T(item["target"]) @ T_gripper_cube for idx, item in items_by_index.items()}
+
+
+# session3 동안 큐브는 마지막 placement 자리에 놓인 채 정지해 있다. 그 큐브를
+# 고정캠 3대와 (손목이 돌아가는 동안) 그리퍼캠이 같이 보므로, 해당 세트의
+# T_base_cube 변수를 공유하는 관측으로 쓴다 -- 새 변수 없이 제약만 늘어난다.
+# 큐브가 어느 세트 자리에 있는지는 고정캠 PnP로 판정하고, 이 거리 안에 없으면
+# (예: --return-home으로 옮겨진 경우) 큐브 관측을 쓰지 않는다.
+S3_CUBE_MAX_DIST_MM = 15.0
+
+
+def build_synthetic_meta_s3_cube(session3_dir: Path, capture_subdir: str, capture_indices, set_index: int) -> dict:
+    label_by_id = {v: k for k, v in LOCAL_CAM_IDS.items()}
+    captures = []
+    for idx in capture_indices:
+        cams = {}
+        for local_id, label in label_by_id.items():
+            rel = f"{capture_subdir}/{idx:03d}/cam_{label}.png"
+            if (session3_dir / rel).is_file():
+                cams[str(local_id)] = {"saved": True, "rgb_path": rel}
+        captures.append({"event_id": SESSION3_EVENT_OFFSET + int(idx), "cube_gripped": False,
+                         "set_index": int(set_index), "cams": cams})
+    return {"captures": captures}
+
+
+def detect_s3_cube_set(session3_dir: Path, capture_subdir: str, capture_indices, cube, K_map, D_map,
+                       cam_init, anchors, max_dist_mm=S3_CUBE_MAX_DIST_MM):
+    """고정캠 PnP로 session3 큐브의 base 위치를 잡고 가장 가까운 session2 세트를 고른다."""
+    label_by_id = {v: k for k, v in LOCAL_CAM_IDS.items()}
+    cands = []
+    for idx in list(capture_indices)[:5]:
+        for c, T_base_cam in cam_init.items():
+            p = session3_dir / capture_subdir / f"{idx:03d}" / f"cam_{label_by_id[c]}.png"
+            img = cv2.imread(str(p)) if p.is_file() else None
+            if img is None:
+                continue
+            ok, rv, tv, *_ = cube.solve_pnp_cube(img, K_map[c], D_map[c], reproj_thr_mean_px=10.0, return_reproj=True)
+            if ok:
+                cands.append(T_base_cam @ rodrigues_to_Rt(rv, tv))
+    if not cands or not anchors:
+        return None, float("nan")
+    T = cands[0] if len(cands) == 1 else cp.robust_se3_average(cands, None)[0]
+    s, dist = min(((s, float(np.linalg.norm(T[:3, 3] - A[:3, 3]) * 1000.0)) for s, A in anchors.items()),
+                  key=lambda x: x[1])
+    return (s if dist <= max_dist_mm else None), dist
 
 
 def init_cube_poses(obs_list, K_map, D_map, cam_init, gtc_init, robot_T, gripper_id, set_ids):
@@ -218,6 +262,25 @@ def load_all_data(args):
         obs_s3_all = list(obs_s3_gripper)
     print(f"session3 고정캠 보드 관측치: {len(obs_s3_fixed)}개 (신규 -- 예전엔 빠뜨렸음)")
 
+    # session3 큐브 (마지막 placement 자리에 정지) -- 고정캠 3대 + 그리퍼캠이 본다.
+    obs_s3_cube, obs_s3_cube_fixed, obs_s3_cube_gripper, s3_cube_set = [], [], [], None
+    if not getattr(args, "no_s3_cube", False) and s3_idx:
+        s3_cube_set, s3_dist = detect_s3_cube_set(
+            session3_dir, args.session3_capture_subdir, s3_idx, cube, K_map, D_map, cam_init,
+            fk_anchor_cubes(items_by_index, grasp_init))
+        if s3_cube_set is None:
+            print(f"[session3 큐브] session2 세트 자리에 없음(최근접 {s3_dist:.1f}mm) -> 큐브 관측 미사용")
+        else:
+            meta_s3_cube = build_synthetic_meta_s3_cube(session3_dir, args.session3_capture_subdir, s3_idx, s3_cube_set)
+            obs_s3_cube, _ = load_cube_pixel_observations(
+                str(session3_dir), meta_s3_cube, cube, K_map, D_map, all_cam_ids, gripper_cam_idx=-999,
+                exclude_gripped=False, fixed_min_corners=args.fixed_min_corners, image_scale=1.0,
+                observation_policy=args.cube_observation_policy)
+            obs_s3_cube_fixed = [o for o in obs_s3_cube if int(o.cam) in cam_init]
+            obs_s3_cube_gripper = [o for o in obs_s3_cube if int(o.cam) == GRIPPER_LOCAL_ID]
+            print(f"session3 큐브 관측치 (세트 {s3_cube_set} 자리, FK 앵커와 {s3_dist:.1f}mm): "
+                  f"고정캠 {len(obs_s3_cube_fixed)}개 / 그리퍼캠 {len(obs_s3_cube_gripper)}개")
+
     # session2 사진에도 같은 보드가 그대로 바닥에 있다 (실측: 고정캠 8~60코너,
     # 그리퍼캠 14/15장 39~60코너). 그리고 session2/session3 사이에 보드가 안
     # 움직였다(같은 고정캠으로 본 base 좌표 차이 0.25~0.42mm) -- 그래서 session3와
@@ -236,7 +299,7 @@ def load_all_data(args):
           f"session2-그리퍼캠 {len(obs_s2_gripper)}개 / session2-보드 {len(obs_s2_board)}개 / "
           f"session3-고정캠 {len(obs_s3_fixed)}개 / session3-그리퍼캠 {len(obs_s3_gripper)}개")
     total = (len(obs_s1) + len(obs_s2_fixed) + len(obs_s2_gripper) + len(obs_s2_board)
-             + len(obs_s3_fixed) + len(obs_s3_gripper))
+             + len(obs_s3_fixed) + len(obs_s3_gripper) + len(obs_s3_cube))
     print(f"총 관측치: {total}개 (통합/독립 공통, 같은 양)\n")
 
     observation_groups = {
@@ -245,6 +308,7 @@ def load_all_data(args):
         "session2_gripper_cube": obs_s2_gripper,
         "session2_board": obs_s2_board,
         "session3_board": obs_s3_all,
+        "session3_cube": obs_s3_cube,
     }
 
     def file_source(path):
@@ -299,6 +363,8 @@ def load_all_data(args):
         obs_s2_fixed=obs_s2_fixed, obs_s2_gripper=obs_s2_gripper, robot_T_s2_gripper=robot_T_s2_gripper,
         obs_s2_board=obs_s2_board, obs_s2_board_fixed=obs_s2_board_fixed, obs_s2_board_gripper=obs_s2_board_gripper,
         obs_s3=obs_s3_all, obs_s3_fixed=obs_s3_fixed, obs_s3_gripper=obs_s3_gripper, robot_T_s3=robot_T_s3,
+        obs_s3_cube=obs_s3_cube, obs_s3_cube_fixed=obs_s3_cube_fixed, obs_s3_cube_gripper=obs_s3_cube_gripper,
+        s3_cube_set=s3_cube_set,
         items_by_index=items_by_index,
         source_data_provenance=source_data_provenance,
     )
@@ -341,7 +407,7 @@ def init_gtc_from_cubes(data):
 def solve_unified(data, fk_mode, gtc_init, board_init):
     cam_init, grasp_init = data["cam_init"], data["grasp_init"]
     K_map, D_map = data["K_map"], data["D_map"]
-    obs_s2 = data["obs_s2_fixed"] + data["obs_s2_gripper"]
+    obs_s2 = data["obs_s2_fixed"] + data["obs_s2_gripper"] + data.get("obs_s3_cube", [])
     set_ids = sorted(data["items_by_index"])
     robot_T = {**data["robot_T_s1"], **data["robot_T_s2_gripper"], **data["robot_T_s3"]}
     observations = data["obs_s1"] + obs_s2 + data.get("obs_s2_board", []) + data["obs_s3"]
@@ -403,7 +469,7 @@ def solve_parallel_fixed(data):
     그리퍼 정보 전혀 안 씀. 고정캠도 session3 보드를 잘 본다(실측 확인)."""
     cam_init, grasp_init = data["cam_init"], data["grasp_init"]
     K_map, D_map = data["K_map"], data["D_map"]
-    obs_s2 = data["obs_s2_fixed"]
+    obs_s2 = data["obs_s2_fixed"] + data.get("obs_s3_cube_fixed", [])
     obs_s3f = data["obs_s3_fixed"]
     set_ids = sorted(data["items_by_index"])
     cubes = init_cube_poses(obs_s2, K_map, D_map, cam_init, np.eye(4), {}, -999, set_ids)
@@ -427,7 +493,7 @@ def solve_parallel_fixed(data):
 def solve_parallel_gripper(data, gtc_init, board_init):
     """그리퍼 그룹: session2-그리퍼캠 + session3-그리퍼캠만, 고정캠 정보 전혀 안 씀."""
     K_map, D_map = data["K_map"], data["D_map"]
-    obs_s2g = data["obs_s2_gripper"]
+    obs_s2g = data["obs_s2_gripper"] + data.get("obs_s3_cube_gripper", [])
     obs_s3g = data["obs_s3_gripper"]
     set_ids = sorted(data["items_by_index"])
     robot_T = {**data["robot_T_s2_gripper"], **data["robot_T_s3"]}
@@ -534,6 +600,7 @@ def main():
     ap.add_argument("--cube-config", default=None,
                     help="큐브 마커 config JSON (기본: config.py 메인 큐브). GT 큐브로 찍은 촬영이면 targets/gt_cube/cube_config.json")
     ap.add_argument("--s3-gripper-only", action="store_true", help="session3는 그리퍼캠 관측만 사용 (고정캠 보드 관측 제외)")
+    ap.add_argument("--no-s3-cube", action="store_true", help="session3에 찍힌(정지) 큐브 관측을 쓰지 않음")
     args = ap.parse_args()
     global FIT_SUFFIX
     FIT_SUFFIX = args.tag

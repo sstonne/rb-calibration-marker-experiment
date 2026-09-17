@@ -138,6 +138,9 @@ def evaluate_heldout(method, data, fk_mode, gtc_init, board_init, robot_T_all, K
         data_fold = dict(data)
         data_fold["obs_s2_fixed"] = [o for o in data["obs_s2_fixed"] if o.set_idx is None or int(o.set_idx) != s]
         data_fold["obs_s2_gripper"] = [o for o in data["obs_s2_gripper"] if o.set_idx is None or int(o.set_idx) != s]
+        # session3 큐브 관측은 마지막 placement 세트 변수를 공유하므로 그 세트가 held-out이면 같이 뺀다.
+        for key in ("obs_s3_cube", "obs_s3_cube_fixed", "obs_s3_cube_gripper"):
+            data_fold[key] = [o for o in data.get(key, []) if o.set_idx is None or int(o.set_idx) != s]
         data_fold["items_by_index"] = {k: v for k, v in data["items_by_index"].items() if k != s}
         try:
             cams, gtc = fit_frozen(method, data_fold, fk_mode, gtc_init, board_init)
@@ -351,6 +354,7 @@ def main():
                     help="보드 관측 전부 제외(session3 미사용 + session2 보드 제외); 통합 2조건만 (독립은 식별 불가)")
     ap.add_argument("--cube-config", default=None, help="큐브 마커 config JSON (GT 큐브 촬영이면 targets/gt_cube/cube_config.json)")
     ap.add_argument("--s3-gripper-only", action="store_true", help="session3는 그리퍼캠 관측만 사용")
+    ap.add_argument("--no-s3-cube", action="store_true", help="session3에 찍힌(정지) 큐브 관측을 쓰지 않음")
     args = ap.parse_args()
 
     data = load_all_data(args)

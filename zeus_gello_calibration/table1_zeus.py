@@ -167,7 +167,9 @@ def split_observations(data, targets, drop_set=None):
     cube_obs, board_obs = [], []
     if "cube" in targets:
         cube_obs = list(data["obs_s1"])  # 쥔 큐브 (grasp 모델, placement 아님)
-        for o in data["obs_s2_fixed"] + data["obs_s2_gripper"]:
+        # session3 큐브(마지막 placement 자리에 정지)는 그 세트 변수를 공유하므로
+        # drop_set 규칙이 그대로 적용된다 (held-out 채점에는 안 들어감).
+        for o in data["obs_s2_fixed"] + data["obs_s2_gripper"] + data.get("obs_s3_cube", []):
             if drop_set is not None and o.set_idx is not None and int(o.set_idx) == int(drop_set):
                 continue
             cube_obs.append(o)
@@ -713,6 +715,8 @@ def main():
                         help="Cube geometry JSON for the captured target")
     parser.add_argument("--s3-gripper-only", action="store_true",
                         help="Use only gripper-camera board observations from session3")
+    parser.add_argument("--no-s3-cube", action="store_true",
+                        help="Do not use the (static) cube seen in session3; default uses it as extra observations of its placement set")
     parser.add_argument("--include-session2-board", action="store_true",
                         help="Include session2 board observations and exclude the held-out placement's board event")
     parser.add_argument("--rows", default=",".join(r for r in ROW_ORDER if r in ROWS))
@@ -802,10 +806,12 @@ def main():
                 "p2_fixed_cube": len(data["obs_s2_fixed"]),
                 "p2_gripper_cube": len(data["obs_s2_gripper"]),
                 "p3_board": len(data["obs_s3"]),
+                "p3_cube": len(data.get("obs_s3_cube", [])),
+                "p3_cube_set": data.get("s3_cube_set"),
                 "p2_board": len(data.get("obs_s2_board", [])) if args.include_session2_board else 0,
                 "total": (
                     len(data["obs_s1"]) + len(data["obs_s2_fixed"])
-                    + len(data["obs_s2_gripper"]) + len(data["obs_s3"])
+                    + len(data["obs_s2_gripper"]) + len(data["obs_s3"]) + len(data.get("obs_s3_cube", []))
                     + (len(data.get("obs_s2_board", [])) if args.include_session2_board else 0)
                 ),
             },
