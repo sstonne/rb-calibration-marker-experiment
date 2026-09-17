@@ -1,0 +1,160 @@
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+session2 그리퍼캠 큐브 관측치: 15개 (신규 -- 예전엔 빠뜨렸음)
+[s3-gripper-only] session3 고정캠 보드 관측 30개 제외
+session3 고정캠 보드 관측치: 0개 (신규 -- 예전엔 빠뜨렸음)
+session3 큐브 관측치 (세트 14 자리, FK 앵커와 0.7mm): 고정캠 45개 / 그리퍼캠 14개
+session2 보드 관측치: 고정캠 37개 / 그리퍼캠 15개 (신규 -- 예전엔 빠뜨렸음)
+session1 44개 / session2-고정캠 40개 / session2-그리퍼캠 15개 / session2-보드 52개 / session3-고정캠 0개 / session3-그리퍼캠 14개
+총 관측치: 224개 (통합/독립 공통, 같은 양)
+
+T_gripper_cam 초기값 t_mm=[37.57, 35.18, 36.86] ({'method': 'PARK', 'score_mm_equivalent': 8.352125562254688, 'n_poses': 14})
+
+placement 15개 leave-one-out x row 9개
+
+      A0 fold 1/15
+      A0 fold 2/15
+      A0 fold 3/15
+      A0 fold 4/15
+      A0 fold 5/15
+      A0 fold 6/15
+      A0 fold 7/15
+      A0 fold 8/15
+      A0 fold 9/15
+      A0 fold 10/15
+      A0 fold 11/15
+      A0 fold 12/15
+      A0 fold 13/15
+      A0 fold 14/15
+      A0 fold 15/15
+  A0  board-only, sequential VISION            [14s]
+      Cube(corrected-FK-ref) ALL=2.860  Train=2.832  Heldout=2.836 px
+      Cross-view  ALL=5.988  Train=5.982  Heldout=5.996 px
+      A1 fold 1/15
+      A1 fold 2/15
+      A1 fold 3/15
+      A1 fold 4/15
+      A1 fold 5/15
+      A1 fold 6/15
+      A1 fold 7/15
+      A1 fold 8/15
+      A1 fold 9/15
+      A1 fold 10/15
+      A1 fold 11/15
+      A1 fold 12/15
+      A1 fold 13/15
+      A1 fold 14/15
+      A1 fold 15/15
+  A1  +cube, sequential                        [60s]
+      Cube(corrected-FK-ref) ALL=2.071  Train=2.063  Heldout=2.089 px
+      Cross-view  ALL=4.285  Train=4.272  Heldout=4.325 px
+      A2 fold 1/15
+      A2 fold 2/15
+      A2 fold 3/15
+      A2 fold 4/15
+      A2 fold 5/15
+      A2 fold 6/15
+      A2 fold 7/15
+      A2 fold 8/15
+      A2 fold 9/15
+      A2 fold 10/15
+      A2 fold 11/15
+      A2 fold 12/15
+      A2 fold 13/15
+      A2 fold 14/15
+      A2 fold 15/15
+  A2  +unified, VISION                         [72s]
+      Cube(corrected-FK-ref) ALL=1.981  Train=1.971  Heldout=1.974 px
+      Cross-view  ALL=4.376  Train=4.355  Heldout=4.372 px
+      A4 fold 1/15
+      A4 fold 2/15
+      A4 fold 3/15
+      A4 fold 4/15
+      A4 fold 5/15
+      A4 fold 6/15
+      A4 fold 7/15
+      A4 fold 8/15
+      A4 fold 9/15
+      A4 fold 10/15
+      A4 fold 11/15
+      A4 fold 12/15
+      A4 fold 13/15
+      A4 fold 14/15
+      A4 fold 15/15
+  A4  corrected-FK soft factor                 [78s]
+      Cube(corrected-FK-ref) ALL=1.957  Train=1.948  Heldout=1.952 px
+      Cross-view  ALL=4.373  Train=4.353  Heldout=4.370 px
+      A5 fold 1/15
+      A5 fold 2/15
+      A5 fold 3/15
+      A5 fold 4/15
+      A5 fold 5/15
+      A5 fold 6/15
+      A5 fold 7/15
+      A5 fold 8/15
+      A5 fold 9/15
+      A5 fold 10/15
+      A5 fold 11/15
+      A5 fold 12/15
+      A5 fold 13/15
+      A5 fold 14/15
+      A5 fold 15/15
+  A5  corrected-FK hard fixed (P1 VISION-aligned) [57s]
+      Cube(corrected-FK-ref) ALL=1.129  Train=1.134  Heldout=1.184 px
+      Cross-view  ALL=3.841  Train=3.844  Heldout=3.867 px
+      B1 fold 1/15
+      B1 fold 2/15
+      B1 fold 3/15
+      B1 fold 4/15
+      B1 fold 5/15
+      B1 fold 6/15
+      B1 fold 7/15
+      B1 fold 8/15
+      B1 fold 9/15
+      B1 fold 10/15
+      B1 fold 11/15
+      B1 fold 12/15
+      B1 fold 13/15
+      B1 fold 14/15
+      B1 fold 15/15
+  B1  -Unified (corrected-FK soft factor, sequential) [58s]
+      Cube(corrected-FK-ref) ALL=2.018  Train=2.013  Heldout=2.033 px
+      Cross-view  ALL=4.406  Train=4.393  Heldout=4.422 px
+      B2 fold 1/15
+      B2 fold 2/15
+      B2 fold 3/15
+      B2 fold 4/15
+      B2 fold 5/15
+      B2 fold 6/15
+      B2 fold 7/15
+      B2 fold 8/15
+      B2 fold 9/15
+      B2 fold 10/15
+      B2 fold 11/15
+      B2 fold 12/15
+      B2 fold 13/15
+      B2 fold 14/15
+      B2 fold 15/15
+  B2  -board (cube only, corrected-FK soft factor) [55s]
+      Cube(corrected-FK-ref) ALL=2.018  Train=1.995  Heldout=2.005 px
+      Cross-view  ALL=4.152  Train=4.111  Heldout=4.185 px
+      B3 fold 1/15
+      B3 fold 2/15
+      B3 fold 3/15
+      B3 fold 4/15
+      B3 fold 5/15
+      B3 fold 6/15
+      B3 fold 7/15
+      B3 fold 8/15
+      B3 fold 9/15
+      B3 fold 10/15
+      B3 fold 11/15
+      B3 fold 12/15
+      B3 fold 13/15
+      B3 fold 14/15
+      B3 fold 15/15
+  B3  -cube (board only, unified)              [22s]
+      Cube(corrected-FK-ref) ALL=2.859  Train=2.832  Heldout=2.836 px
+      Cross-view  ALL=5.988  Train=5.981  Heldout=5.996 px
+
+[SAVE] ABLATION_TEST_result_0917/zeus_0917_1280x720/table1_zeus/ABLATION_TEST_table1_methods.json
+[SAVE] ABLATION_TEST_result_0917/zeus_0917_1280x720/table1_zeus/ABLATION_TEST_TABLE1_RESULTS.md
