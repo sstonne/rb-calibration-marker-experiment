@@ -836,7 +836,8 @@ def run_filter(args) -> dict:
             "sha256": _sha256(intrinsic_path),
         }
     cube_cfg, cube_cfg_source = resolve_cube_config_for_run(
-        str(session_root), default_cfg=get_default_cube_config())
+        str(session_root), cube_config_json=getattr(args, "cube_config", None),
+        default_cfg=get_default_cube_config())
     board_cfg, board_cfg_source = load_charuco_config_from_meta(
         str(session_root), require_frozen=True)
     cube = AprilTagCubeTarget(
@@ -958,6 +959,12 @@ def parse_args(argv=None):
     parser.add_argument("--intrinsics-dir", default="intrinsics")
     parser.add_argument("--output-dir")
     parser.add_argument("--image-scale", type=float, default=1.0)
+    parser.add_argument(
+        "--cube-config", default=None,
+        help="큐브 기하 JSON 경로로 프로젝트 기본(도면 nominal) 대신 명시적으로 override. "
+             "resolve_cube_config_for_run()이 지원하는 그 경로 그대로 전달됨 "
+             "(예: targets/gt_cube/cube_config.json).",
+    )
     parser.add_argument(
         "--cube-corner-refinement-mode",
         choices=CUBE_CORNER_REFINEMENT_MODES,
