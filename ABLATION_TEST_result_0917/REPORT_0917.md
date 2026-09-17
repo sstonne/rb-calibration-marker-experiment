@@ -64,26 +64,26 @@
 | joint held-out mm / ° | 0.65 / 0.22 | 0.56 / 0.21 | 0.61 / — |
 | 카메라 합의 mm | 2.49 | 3.04 | 4.98 |
 | session2 절대 / 상대 mm | 0.54 / 1.04 | 0.54 / 1.36 | 0.52 / 1.11 |
-| session1 fit RMSE px | 1.07 | 0.73 | 0.52 |
 
 - **위치 정확도(0.56~0.62mm)는 해상도와 무관.** 해상도를 2.3배 올려도 안 좋아짐 → 바닥은 FK·큐브 기하·파지 반복성.
 - **회전만 1920이 유일하게 좋음** (0.24° vs 0.4°대): 마커 안 코너 간격 정밀도가 픽셀 밀도를 따라감.
 - **카메라 합의는 해상도에 비례해 나빠짐** (2.5→3.0→5.0mm): 단일 카메라 깊이 정밀도는 해상도를 따라가지만 3대 joint에서 상쇄됨.
-- session1 fit RMSE(px)가 낮은 해상도에서 작아지는 건 픽셀이 커져서지 정확도 개선이 아님.
 
 ---
 
 ## 3. 정확도 검증 (외부 GT 없이)
 
-### 3.1 session2 joint 절대·상대 검증 (1920, A5 T_base_Ci)
+### 3.1 session1 / session2 joint 절대·상대 검증 (1920, A5 T_base_Ci)
 
 | 세션 | 절대 mm (평균/중앙/P95) | 절대 ° | 절대 px | 상대 mm (평균/중앙/P95) | 상대 ° | 상대 px |
 |---|---|---:|---:|---|---:|---:|
+| session1 handheld (16포즈, 120쌍) | 0.85 / 0.77 / 1.33 | 0.30 | 2.02 | 1.31 / 1.25 / 2.50 | 0.45 | 3.10 |
 | session2 held (15포즈, 105쌍) | 0.54 / 0.51 / 0.89 | 0.25 | 1.45 | 1.04 / 0.73 / 3.23 | 0.37 | 2.98 |
 
-- 절대 = joint 큐브 위치 vs FK@T_flange_cube(포즈별). 상대 = i→j 이동을 FK로 예측한 것 vs joint 관측(모든 쌍, 양방향).
+- 절대 = 각 포즈에서 3대 joint 큐브 위치 vs FK@T_flange_cube. **학습에 쓴 데이터 위에서** 잰 값(in-sample). 1.2의 held-out joint mm는 같은 계산을 **학습에서 뺀 placement** 위에서 한 것(out-of-sample).
+- 상대 = i→j 이동을 FK로 예측한 것 vs joint 관측(모든 쌍, 양방향). 카메라·FK의 공통 편향이 상쇄됨.
 - held-out(0.65) vs in-sample 절대(0.54)의 차이가 작음 → **과적합 없음**.
-- 상대 ≈ 절대 × √2 (두 포즈 오차 합성). 이동량 최대 370mm에도 오차가 이동량에 비례하지 않음 → 누적 계통오차 없음.
+- 상대 ≈ 절대 × √2 (두 포즈 오차 합성). 이동량 최대 370mm·회전 120°(session1)에도 오차가 이동량에 비례하지 않음 → 누적 계통오차 없음.
 - 같은 지표로 raw(단일 카메라 PnP, joint 없음)는 6.0px → joint 최적화가 2.5~3배 개선.
 
 ### 3.2 held-out 지표 3종의 관계 (1920, 통합_raw-fk)
@@ -177,11 +177,3 @@ held(놓기 직전, 그 위치의 첫 사진) 기준으로 released(그리퍼 �
 2. **위치 정확도 바닥 ≈0.6mm는 해상도가 아니라** FK·큐브 기하·파지 반복성(y ±0.4mm)이 정함. 해상도는 회전(0.4°→0.24°)에만 효과.
 3. **그리퍼 열기·재파지 슬립은 중앙값 0.1mm, 최대 0.5mm**(3대 joint 기준, 해상도 무관). 오차는 파지 순간의 중심 위치(닫힘 방향)에서 결정.
 4. T_flange_cube: z 160.9±0.06mm, 16포즈로 ~0.3mm 불확실도.
-
-## 부록: 재현 명령
-```
-cd zeus_gello_calibration
-python run_zeus_calibration.py --tag 0917_1920x1080 --zeus-intrinsics-dir ../intrinsics_1920x1080_rgbd720
-python run_zeus_calibration.py --tag 0917_1280x720  --zeus-intrinsics-dir ../intrinsics_1280x720
-python run_zeus_calibration.py --tag 0917_848x480   --zeus-intrinsics-dir ../intrinsics_848x480_rgbd720
-```
