@@ -745,7 +745,10 @@ def main():
         "--output-subdir",
         type=require_subdir_name,
         default="capture_replayed",
-        help="재촬영 저장 폴더 이름 (기본: capture_replayed). 기존 데이터가 있으면 실행 거부",
+        help="재촬영 저장 폴더 이름 (기본: capture_replayed). 실제로는 여기에 "
+             "'_{width}x{height}'가 자동으로 붙는다(예: capture_replayed_1920x1080) -- "
+             "같은 이름으로 해상도만 바꿔가며 여러 번 찍어도 폴더가 안 겹친다. "
+             "기존 데이터가 있으면 실행 거부",
     )
     ap.add_argument(
         "--session-label",
@@ -834,6 +837,12 @@ def main():
     depth_height = int(args.depth_height) if args.depth_height is not None else int(args.height)
     args.depth_width = depth_width
     args.depth_height = depth_height
+
+    # 해상도별로 여러 번 촬영할 때 폴더가 겹치지 않도록, --output-subdir에 해상도를
+    # 자동으로 붙인다 (이미 그 해상도로 끝나면 중복으로 안 붙임).
+    res_suffix = f"_{args.width}x{args.height}"
+    if not args.output_subdir.endswith(res_suffix):
+        args.output_subdir = require_subdir_name(args.output_subdir + res_suffix)
 
     if args.all_phases:
         if args.session_dir is not None:

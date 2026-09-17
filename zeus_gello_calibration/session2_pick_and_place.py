@@ -51,8 +51,9 @@ from robot.backends.zeus_client import ZeusClient, ZeusError  # noqa: E402
 
 from zeus_gello_calibration.capture_session import (  # noqa: E402
     load_camera_labels, connect_cameras, stop_cameras, LiveView,
-    grab_frames, write_capture, read_robot_state,
+    grab_frames, write_capture, read_robot_state, validate_intrinsics_stream,
     ROBOT_IP_DEFAULT, ROBOT_PORT_DEFAULT, DEVICE_MAP_DEFAULT,
+    CAM_WIDTH, CAM_HEIGHT, CAM_FPS,
 )
 from zeus_gello_calibration.paths import (  # noqa: E402
     SESSION2_DIR,
@@ -318,7 +319,29 @@ def main():
                     help="이미 실행된 스텝 수 -- 실패/중단 후 이어서 재실행할 때 그만큼 건너뜀")
     ap.add_argument("--no-cam-reset", action="store_true")
     ap.add_argument("--no-preview", action="store_true")
+    ap.add_argument("--width", type=int, default=CAM_WIDTH, help="RealSense color/depth width")
+    ap.add_argument("--height", type=int, default=CAM_HEIGHT, help="RealSense color/depth height")
+    ap.add_argument("--depth-width", type=int, default=None, help="RealSense depth width")
+    ap.add_argument("--depth-height", type=int, default=None, help="RealSense depth height")
+    ap.add_argument("--fps", type=int, default=CAM_FPS, help="RealSense stream FPS")
     args = ap.parse_args()
+
+    if (args.depth_width is None) != (args.depth_height is None):
+        ap.error("--depth-width와 --depth-height는 함께 지정해야 합니다.")
+    if (
+        args.width <= 0 or args.height <= 0 or args.fps <= 0
+        or (args.depth_width is not None and args.depth_width <= 0)
+        or (args.depth_height is not None and args.depth_height <= 0)
+    ):
+        ap.error("--width, --height, --depth-width, --depth-height, --fps 값은 모두 양수여야 합니다.")
+    depth_width = int(args.depth_width) if args.depth_width is not None else int(args.width)
+    depth_height = int(args.depth_height) if args.depth_height is not None else int(args.height)
+
+    # 해상도별로 여러 번 촬영할 때 폴더가 겹치지 않도록, --out-root에 해상도를
+    # 자동으로 붙인다 (이미 그 해상도로 끝나면 중복으로 안 붙임).
+    res_suffix = f"_{args.width}x{args.height}"
+    if not args.out_root.endswith(res_suffix):
+        args.out_root = args.out_root + res_suffix
 
     try:
         session2_dir = require_zeus_data_path(args.session2_dir, label="--session2-dir")
@@ -360,7 +383,15 @@ def main():
         return
 
     labels = load_camera_labels(Path(args.device_map))
-    cams, used_labels = connect_cameras(labels, no_reset=args.no_cam_reset)
+    validate_intrinsics_stream(
+        Path(args.device_map), args.width, args.height, args.fps,
+        depth_width=depth_width, depth_height=depth_height,
+    )
+    cams, used_labels = connect_cameras(
+        labels, no_reset=args.no_cam_reset,
+        width=args.width, height=args.height, fps=args.fps,
+        depth_width=depth_width, depth_height=depth_height,
+    )
     view = None
     if not args.no_preview:
         view = LiveView(cams, used_labels, window_name="session2_pick_and_place (q/ESC=닫기)")
