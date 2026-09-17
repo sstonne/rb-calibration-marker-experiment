@@ -64,7 +64,7 @@
 | R1 | Graph-based multi-camera hand-eye (ICRA'23) | **Kinect v2 ×3** (RGB만 사용) | × | **RM** | 3 (전부 고정) | × | × | 실촬영 장수 `미확인` / (sim) 150 robot poses |
 | R2 | Allegro, Multi-Camera Hand-Eye (RA-L'24) | **Kinect V2 / RealSense D455 / RealSense L515** (METRIC), 산업셀은 모델 `미확인` | △ (3종 중 2종) | **RM** | 4 (METRIC), 산업 ABB 4·KUKA 3 — 전부 고정 | × (보드를 EE에 부착) | × (Ceres 비선형 최적화) | **산업셀 1: 10장 미만, 산업셀 2: 15장** |
 | R3 | Zhou, Multi hand-eye graph (TIE'24) | **Hikvision MV-CE060-10UC ×5** (6 MP RGB) | × | **RM** | 5 = **손목 3 + 고정 2** | **○** (핵심 기여) | × | `미확인` / (sim) 로봇 25대·100 poses |
-| R4 | Ha, Probabilistic AX=YB (T-RO'23) | `미확인` | ? | R1 | ? | ? | × | `미확인` (실험표 원문 미확보) |
+| R4 | Ha, Probabilistic AX=YB (T-RO'23) | **Logitech C920 웹캠** (1080p) — 실험2 GT는 **NDI Polaris Spectra** | × | 실험1: R1 / 실험2: 카메라 2대 AX=YB | 실험1: 1 / 실험2: 2 (**시야 비중첩**, 강체 결합) | ○ (실험1: UR3e 손목) | × | **실험1: 88 자세** / **실험2: 183 쌍** |
 | R5 | Ulrich & Hillemann, Uncertainty-Aware (T-RO'24) | **IDS U3-3280SE** 2448×2048 + 8 mm 렌즈 | × | **R1** | 1 | ○ (hand-eye 본체) | × | **25 robot poses** (+ Tabb 공개 데이터 4세트) |
 | R6 | Kalib (IROS'25) | **RealSense D415**, **Orbbec Femto Bolt**, **Azure Kinect**; DROID는 1280×720 | △ | R1 (카메라별 개별 적용) | 1~3 | **○** (EoB·EiH 통합 정식화) | **○** SpatialTracker (zero-shot, 재학습 불필요) | 실촬영 **10초 영상**; ablation상 **10~20 frame**이면 충분 / (sim) 300 frames |
 | R7 | EasyHeC (RA-L'23) | **RealSense** (모델 `미확인`) | ○ | R1 | 1 | × (eye-to-hand만) | **○** PointRend·PVNet (각 10,000장 학습) | Baxter **100 images / 20 joint poses** |
@@ -73,20 +73,20 @@
 | R10 | Certifiable generalized RWHEC (IJRR'26) | 카메라 + AprilTag, 기준값은 **OptiTrack**·Kalibr | ? (모델 `미확인`) | RM (일반 운동계) | 다중 | **○** (eye-in-hand 구성) | × (SDP 완화) | `미확인` |
 | R11 | PlaneHEC (ICRA'25) | **RealSense D435** 1280×720 | ○ | R1 | 1 | **○** (팔에 고정) | × (RANSAC 평면검출) | **300 set**의 점군+자세 수집, 보정에는 **최소 5 set** |
 | R12 | UAL-HED (arXiv'26) | **Leica AT960 레이저트래커 + T-Mac** — **카메라 아님** | × | **RS** | 0 | × | × | 검증에 **별도 99 data pair** |
-| R13 | Multi-unit dual quaternion (CSIAM'26) | Tabb 공개 데이터셋 재사용 (센서 `미확인`) | ? | **RM** | 2~3 | × | × | `미확인` (공개 데이터셋 6/7/8) |
+| R13 | Multi-unit dual quaternion (CSIAM'26) | Tabb 공개 데이터셋 6/7/8 재사용 — 산업 카메라 1228×1029, 6/8 mm 렌즈, Denso 로봇 | × | **다중 EiH** (RM 아님 — §2.4) | 2~3, **전부 EE 장착** | ○ | × | **robot position 15 / 42 / 42** (DS6/7/8) |
 | R14 | Robotic flexible 3D scanning (Sensors'25) | **LMI Gocator 3210 구조광 스캐너** + KUKA KR | × | **RS** | 0 (스캐너) | ○ (스캐너가 EE 장착) | × | 검증 **10개 위치** |
-| R15 | GWM-view (RCIM'23) | 산업용 카메라 ×3 (모델 `미확인`) + ABB IRB 6700 | ? | **RM** | 3 (main 1 + auxiliary 2, 고정) | × | × | `미확인` |
+| R15 | GWM-view (RCIM'23) | **Hikrobot MV-CS060-10GM ×3** (6 MP 모노, 3072×2048\*, **25 mm 렌즈, fx≈2557 px**) + ABB IRB 6700 (반복정밀도 0.05 mm) | × | **RM** | 3 (main 1 + auxiliary 2, 고정) | × | × | `미확인` — 평가는 특징점 6그룹 × 자세 3개 |
 
 ### 2.2 카메라끼리만 하는 보정 (로봇 없음)
 
 | ID | 논문 | 센서 (모델) | RealSense인가 | 구성 | 카메라 수 | EIH | 학습 | 촬영 장수 |
 |---|---|---|---|---|---|---|---|---|
 | C1 | FusedBA (Sensors'24) | **e-con See3CAM_24CUG** 글로벌셔터 RGB 1920×1200 ×7; 검증용 **Qualisys Arqus A12 ×10 + Miqus M3 ×6** | × | **CM** | 7 (+mocap 16) | × | × | wand 시퀀스에서 **50 Hz 추출**, **33회 보정 반복**; 검증은 별도 2분 기록 |
-| C2 | 비동기 wand (Sensors'24) | 모델 `미확인`, 60/90/110 Hz | × | **CM** | 3 | × | × | `미확인` (프레임레이트만 명시) |
+| C2 | 비동기 wand (Sensors'24) | **CatchBest CZE130MGEHD ×3** + AZURE-0420MM 렌즈(4 mm, 77°), IR LED + 850 nm 필터, **640×480**, 60/90/110 Hz | × | **CM** | 3 | × | × | `미확인` (프레임레이트만 명시) |
 | C3 | 사람 움직임 기반 (RA-L'25) | 공개 데이터셋(Panoptic/ZJU/MMPTRACK) 영상 | × | **CM** | 4 | × | **○** 사전학습 3D human pose | 공개 시퀀스 전체 |
-| C4 | Weighted AprilTag PnP (Algorithms'26) | 모델 `미확인` | ? | **CM** | **20** (object-centric rig) | × | × | `미확인` |
-| C5 | Imperfect 3-D targets (TIM'26) | 모델 `미확인`, 고해상도 생체영상 | × | **CM** | 3 | × | × | `미확인` (초록만 확인) |
-| C6 | Timestamp 없는 wand (Sensors'26) | 모델 `미확인` | × | **CM** | 3 / 5 / 10 | × | × | **45개 고정점 재구성, 20회 반복** |
+| C4 | Weighted AprilTag PnP (Algorithms'26) | **GoPro Hero 13 Black 1대** (3840×2160, 어안) | × | **CM** (정적 장면) | ⚠️ **실물 1대를 20위치로 옮겨 찍음** — "20카메라"는 가상 | × | × | **영상에서 20 프레임 추출**, AprilTag 29개 |
+| C5 | Imperfect 3-D targets (TIM'26) | 리그 3개: **20 MP ×24** / **5 MP ×5** / **5 MP ×12** (제조사 미기재) | × | **CM** (리그0만 UR3e로 검증) | 24 / 5 / 12 | × | × | **카메라당 119 / 48 / 77장** |
+| C6 | Timestamp 없는 wand (Sensors'26) | **Panasonic LUMIX 미러리스 10대** (G9PRO×6, S1R×2, BGH1×1, GH6×1), **1920×1080 @ 180 fps** | × | **CM** | 3 / 5 / 10 | × | × | wand 1.5~2분 = **15,000~20,000 프레임**, 검증 45점 × 20회 |
 | C7 | Caliscope (JOSS'24) | 범용 웹캠·비디오 | × | **CM** | 가변 | × | × | 비디오 기반, 정량표 없음 |
 | C8 | AIRLS (Photonics'24) | **OptiTrack FLEX13 ×4** (IR mocap) 1280×1024 @ 120 Hz | × | **CM** | 4 | × | × | **약 1,000 frame** wand 데이터, 검증 wand 2종 × 5회 |
 | C9 | Uncertainty budget (Sensors'23) | 산업 카메라 2대 + **CMM** 기준 | × | **CM** (계측) | 2 | × | × | CMM 이동으로 만든 virtual grid |
@@ -408,6 +408,75 @@ $$e_{\text{held-out}} \;=\; \underbrace{e_{\text{cam-net}}}_{\text{새 물체 �
 3. **바닥 추정을 반드시 하라.** 우리 탁상 거리(0.5~1 m)에서 RealSense급 카메라망의 $e_{\text{cam-net}}$이 얼마인지를
    우리 데이터로 직접 재면(cross-view 삼각측량 일관성), "우리 2~3 mm 중 얼마가 카메라망 탓이고 얼마가 앵커 탓인가"가 갈린다.
    **이 분해가 논문에서 가장 설득력 있는 그림이 될 것이다.**
+
+---
+
+## 9. 원문 확보로 확인된 사항 (2026-09-17)
+
+유료·차단으로 못 읽던 6편의 원문을 [`Related_work/`](../Related_work/)에 확보해 직접 읽었다.
+**그 결과 기존 분류에서 정정할 것이 3건 나왔다.**
+
+### 9.1 ⚠️ 정정 1 — R15의 "1 mm 미만"은 물체 위치 오차가 아니다
+
+[`2023plus_calibration_review.md`](2023plus_calibration_review.md) §1.0은 R15를 **"우리보다 확연히 작은 보고값, 물체 위치 작업 면에서 우선 확인"**으로 첫 줄에 올렸다. **틀렸다.**
+
+원문 §5.2:
+
+> *"the three-dimensional coordinate distance between different feature points on the surface of automotive flywheel shell is calculated and then compared with the measured values."*
+
+즉 **특징점 두 개 사이 거리**(50~350 mm)를 실측값과 비교한 것이다. **C8·R14와 같은 부류**이고, 두 점이 같이 밀리는 **공통 편향을 못 잡는다.** 로봇 base 좌표계에서의 물체 위치 정확도가 아니다.
+
+추가로:
+- 결과는 **막대그래프(Fig. 14)로만** 제시된다. 정확한 수치표가 없다.
+- "measured values"를 무엇으로 쟀는지 **본문에 없다.** (실험대에 광학 변위 테이블·위치 프로브가 있다고만 적혀 있다.)
+- 재투영 **0.0752 px**를 보고하지만, **fx ≈ 2557 px**(25 mm 렌즈)로 우리(fx ≈ 904 px)보다 각분해능이 **약 2.8배** 좋은 조건이다.
+
+\* 원문은 해상도를 "3027×2048"로 적었는데, MV-CS060-10GM의 실제 센서 해상도는 3072×2048이다. 오타로 보인다.
+
+**결론: R15는 우리 held-out과 비교 대상이 아니다.** "두 점 거리" 부류로 옮긴다.
+
+### 9.2 ⚠️ 정정 2 — C4의 "20카메라"는 실물 카메라 1대다
+
+원문 §6.2.1:
+
+> *"A single GoPro Hero 13 Black camera was used ... a camera pass around the setup was performed, and 20 frames were extracted from the video stream. ... the resulting dataset is equivalent to a simultaneous 20-camera capture, with the caveat that all cameras share the same intrinsics."*
+
+**GoPro 1대로 정적 장면을 돌면서 찍은 20프레임**이다. 실물 20카메라 리그가 아니다. 모든 "카메라"가 **같은 내부 파라미터**를 공유한다. 그리고 실데이터엔 GT가 없어 **일관성 지표만** 쓴다.
+
+**결론: "20카메라 object-centric rig"라는 기존 서술을 철회한다.** 초기화 기법 참고로만 쓴다.
+
+### 9.3 ⚠️ 정정 3 — R13은 RM이 아니라 다중 EiH다
+
+R13은 Tabb 공개 데이터셋 6·7·8을 쓰는데, §2.4에서 확인했듯 Tabb 데이터셋의 카메라는 **전부 손목 장착**이다. §2.1의 R13 행을 **다중 EiH**로 고쳤다.
+
+### 9.4 새로 확인된 수치
+
+| 논문 | 센서 | 결과 | 무엇을 재나 |
+|---|---|---|---|
+| **C5** | 리그 0: 20 MP×24 / 리그 1: 5 MP×5 / 리그 2: 5 MP×12 | 재투영 **0.91→0.59 / 4.30→1.34 / 5.85→0.61 px** | 재투영 (Table II) |
+| **C5** | 〃 | 타깃 형상 보정량 평균 **0.3 mm**(400 mm PMMA) / **15 µm rms**(50 mm 알루미늄) / **0.37 mm**(30 mm 3D 프린트) | 타깃 기하 |
+| **C5** | 〃 | 고정점이 불량하면 스케일 오차 **−3.1 % / −5.0 %** (Table IV) | 스케일 |
+| **R4** 실험 2 | Logitech C920 ×2, GT = NDI Polaris Spectra | 체커보드 모서리 간 거리 오차 **0.50 mm** (비교군 4.83 mm) | **두 점 거리** |
+| **R4** 실험 1 | Logitech C920 + UR3e | GT 없음. 부분집합 vs 전체 추정 일관성만 | 자기 일관성 |
+| **C6** | Panasonic LUMIX ×10, 1920×1080 | (기존과 동일) 10캠 1.445 mm | 영상 기반 gold standard 대비 |
+
+### 9.5 우리에게 직접 중요한 것
+
+**① C5 리그 2가 우리 큐브와 가장 닮았다.** **3D 프린트 큐브(30 mm)에 종이 인쇄 마커**를 붙였고, 형상 보정량이 **평균 0.37 mm**였다.
+→ 우리 59 mm 3D 프린트 큐브에도 **0.4 mm급 기하 오차는 충분히 현실적**이다. [`calibrate_gt_cube_geometry.py`](../zeus_gello_calibration/calibrate_gt_cube_geometry.py)의 면별 형상 보정이 **필요하다는 외부 근거**다.
+
+**② C5 Table IV가 우리 스케일 문제를 설명한다.** 타깃 형상을 같이 추정할 때 **고정점(gauge)을 잘못 잡으면 스케일이 −3~−5 % 틀어졌다.**
+→ 우리 0.99(1 % 차이)의 원인 후보가 **intrinsic 말고 하나 더** 생겼다: **형상 보정의 gauge 선택.** 스케일을 1.0으로 되돌린 뒤 8 mm 불일치가 재현되면 intrinsic과 함께 이것도 봐야 한다.
+
+**③ C5는 인쇄 정밀도를 ±50 µm로 적었다.** 51 mm 마커에서 0.1 %다. **인쇄 "정밀도"만으로는 1 % 차이가 안 나온다.** 인쇄물이 정확하다는 판단(스케일 1.0 복원)과 일관된다. (단 프린터의 배율 설정 실수는 정밀도와 별개다.)
+
+**④ C5 리그 0은 UR3e로 구형 타깃을 30곳에 옮기고, 복원 위치를 로봇 보고 위치와 "강체 변환까지 맞춘 뒤"(up-to-rigid) 비교했다.**
+→ 이게 [`RELATIVE_MEASUREMENT_EXPERIMENTS.md`](../RELATIVE_MEASUREMENT_EXPERIMENTS.md)의 **상대 측정 발상과 정확히 같다.** 우리 실험 A의 **직접 선행 사례**로 인용할 수 있다.
+
+**⑤ R4는 GT보다 작은 값을 보고했다 — 반면교사.** GT(NDI Polaris) 자체 오차가 **약 1 mm**인데 결과가 **0.50 mm**다.
+→ 절대값 0.50 mm는 GT 분해능 아래라 의미가 약하고, **비교군과의 차이(4.33 mm)만 유효**하다. 저자도 "추적 오차 약 1 mm를 고려해도 유의하다"며 **상대 비교로** 주장한다. 리뷰어 C가 지적한 "GT는 주장보다 훨씬 정확해야 한다"의 실제 사례다.
+
+**⑥ R4는 웹캠(약 10만 원)으로 T-RO에 실렸다.** 센서 가격이 게재를 막지 않는다는 또 하나의 근거다.
 
 ---
 

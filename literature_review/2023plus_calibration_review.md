@@ -16,7 +16,7 @@
 
 | 논문 | 실제 장비에서 보고한 결과 | 2~3 mm 대비 | 처음 보는 물체 평가와의 관계 |
 |---|---|---|---|
-| **R15 GWM-View, 2023** | 복잡한 산업 부품의 평균 positioning error **1 mm 미만** | **확연히 작은 보고값; 물체 위치 작업 면에서 우선 확인** | 3카메라+ABB 로봇; 임의 초기 자세의 알려진 부품. 미지 물체 일반화는 미확인; 초록·공개 실험 절만 확인 |
+| ~~R15 GWM-View, 2023~~ | ~~평균 positioning error 1 mm 미만~~ | **⚠️ 2026-09-17 정정: 비교 대상 아님** | 원문 확인 결과 **특징점 두 개 사이 거리**(50~350 mm)를 실측값과 비교한 값이다. 물체의 robot-base 위치 오차가 아니며 공통 편향을 못 잡는다. 결과는 막대그래프로만 제시. [SENSOR_TOPOLOGY_MATRIX §9.1](SENSOR_TOPOLOGY_MATRIX.md) |
 | **R12 UAL-HED, 2026** | 별도 99개 측정에서 FK 대비 conversion **0.202~0.342 mm** | **확연히 작음; FK 기준 변환이라는 점에서 가까움** | 카메라 대신 laser tracker+T-Mac의 6DoF 측정. 신규 물체 vision 인식은 없음 |
 | **R14 Enhanced robotic 3D scanning, 2025** | CMM 기준 구 사이 거리: 평균 **0.373 mm**, 최대 **0.421 mm** | **확연히 작음; 3D 형상 계측 기준** | 로봇+정밀 structured-light scanner. 구 간 거리이므로 물체 원점 위치와는 다름 |
 | **C8 AIRLS multi-camera, 2024** | 검증 wand 길이 평균 오차 **0.42±0.09 / 0.46±0.13 mm** | **확연히 작음; 카메라만의 거리 측정 기준** | 4대 광학 카메라, 보정과 다른 검증 wand. 알려진 반사 마커 간 거리이며 robot-base 절대 위치 아님 |
@@ -25,7 +25,7 @@
 | C6 Ohshima, 2026 | 5카메라 3D 점 **2.113±0.662 mm**, 10카메라 **1.445±0.833 mm** | 5대는 비슷함, 10대는 낮음 | 영상 기반 참조 calibration과 비교. 알려진 고정점, 일반 물체 인식 아님 |
 | **R8 EasyHeC++, 2024** | 실제 robot targeting **3.0 / 3.1 mm** | **비슷한 수준; 수치상 우리보다 작지는 않음** | 로봇이 목표점을 짚는 작업; 위치 추정 외 tool·동작 오차 포함 |
 
-근거: 각 ID의 실물 결과표·원문 위치를 아래 개별 항목에 연결했다.[^R15][^R12][^R14][^C8][^C1][^C6][^R8] **넓은 의미의 실측 mm 성능에서 더 좋은 보고값은 존재한다. 그러나 이 목록만으로 ‘처음 보는 물체 + 우리의 센서 구성 + 같은 GT 평가’ 전체를 더 잘 푼 방법이 확인된 것은 아니다.** 가장 가까운 후속 검토 대상은 실제 부품 위치를 평가하는 GWM-View, 보정 후 별도 관측의 3D 점을 검증하는 FusedBA, 실제 로봇 목표점 접근을 평가하는 EasyHeC++다. UAL-HED·정밀 스캐닝은 FK와 센서 정확도의 상한을 논의할 때 중요하다.
+근거: 각 ID의 실물 결과표·원문 위치를 아래 개별 항목에 연결했다.[^R15][^R12][^R14][^C8][^C1][^C6][^R8] **넓은 의미의 실측 mm 성능에서 더 좋은 보고값은 존재한다. 그러나 이 목록만으로 ‘처음 보는 물체 + 우리의 센서 구성 + 같은 GT 평가’ 전체를 더 잘 푼 방법이 확인된 것은 아니다.** 가장 가까운 후속 검토 대상은 보정 후 별도 관측의 3D 점을 검증하는 FusedBA와 실제 로봇 목표점 접근을 평가하는 EasyHeC++다. (GWM-View는 원문 확인 결과 두 점 거리 지표라 제외했다 — 2026-09-17 정정.) UAL-HED·정밀 스캐닝은 FK와 센서 정확도의 상한을 논의할 때 중요하다.
 
 ### 1.1 현재 구현에서 확인한 구성
 
@@ -78,10 +78,10 @@ Zeus 문서의 FK 기준 검증에는 `session1` 비전으로 구한 `T_gripper_
 | 실측 근거 | 해당 논문 | 실제로 검증하는 것 |
 |---|---|---|
 | 별도 계측 장비 기준 | C1 mocap, C9 CMM, R10의 OptiTrack 관련 항목 | 3D 점·타깃 변환 오차; C1은 궤적 정합 후 평가 |
-| 실제 물체의 알려진 거리 | C2, C8, R14(CMM 기준 거리) | 두 구 사이 거리 재구성; camera pose의 독립 6DoF GT 아님 |
+| 실제 물체의 알려진 거리 | C2, C8, R14(CMM 기준 거리), **R15(특징점 간 거리)**, **R4 실험 2(체커보드 모서리 간 거리)** | 두 점 사이 거리 재구성; camera pose의 독립 6DoF GT 아님. R15·R4는 2026-09-17 원문 확인 후 추가 |
 | 영상·FK 기반 참조 calibration | C3, C6, R2, R10의 Kalibr 항목, D1 | 기준 calibration 대비 차이; 기준 자체의 오차 존재 |
 | 실측 pose 결과지만 GT 구축 상세 미확인 | R9 | 실촬영 데이터의 pose 오차; 독립 계측 SOTA 판단 보류 |
-| 실제 로봇 targeting·부품 positioning | R7, R8, R15(상세 GT 미확인) | 목표점 접근 오차; robot·tool·vision 오차가 함께 포함 |
+| 실제 로봇 targeting | R7, R8 | 목표점 접근 오차; robot·tool·vision 오차가 함께 포함 |
 | 영상 잔차·운동학 일관성·반복성 | C4, R1, R3, R5, R6, R11, R12, R13 | 실측 데이터 적합도·정밀도; 독립 절대 정확도와 구분 |
 | 실측 정량 검증 부족 | C5, C7, R4 | 관련 연구로 유지하되 정량 SOTA 비교 제외 |
 
@@ -110,7 +110,7 @@ Zeus 문서의 FK 기준 검증에는 `session1` 비전으로 구한 `T_gripper_
 | R12 | Optimal Uncertainty-Aware Calibration for the AX=YB Problem | arXiv 2026, IJRR 심사 중 | 로봇·레이저 트래커 | 4/5 | S2: 불확실성 적응 | 실측 conversion 0.342 mm; 카메라 실험 아닌 tracker–FK 비교 |
 | R13 | Multi-Camera Robot-World Hand-Eye Calibration by Solving Multi-Unit Dual Quaternion Equations | CSIAM Trans. Applied Math. 2026 | 로봇 | 4/5 | B: 빠른 대수 해법 | 실물 dataset 7: 2.48/2.54/1.67 px, 0.30 s; pixel 정확도 최고 아님 |
 | R14 | Enhanced Calibration Method for Robotic Flexible 3D Scanning System | Sensors 2025 | 로봇·3D 스캐너 | 4/5 | S1: 해당 구 간격 비교 | 실물 평균 구 간 거리 오차 0.373 mm, 최대 0.421 mm |
-| R15 | GWM-view: Gradient-weighted multi-view calibration method for machining robot positioning | RCIM 2023 | 로봇·멀티카메라 | **5/5: 실제 부품 위치** | B: 상세 SOTA 판단 보류 | 실제 부품 평균 positioning 1 mm 미만; 실험표·GT 상세 미확인 |
+| R15 | GWM-view: Gradient-weighted multi-view calibration method for machining robot positioning | RCIM 2023 | 로봇·멀티카메라 | 3/5: 구성 참고 | B | **특징점 간 거리** 평균 1 mm 미만(그래프만). 물체 위치 오차 아님 — 2026-09-17 정정 |
 | D1 | METRIC—Multi-Eye to Robot Indoor Calibration Dataset | Information 2023 | 벤치마크 | **5/5: 공개 평가** | E | 실제 GT는 AprilTag+CAD+FK로 구성; laser tracker GT 아님 |
 
 각 행의 원문 링크와 출처는 아래 개별 항목 및 참고문헌에 있다. EoB는 eye-on-base(eye-to-hand), EiH는 eye-in-hand다.
@@ -440,7 +440,7 @@ KUKA 로봇과 LMI Gocator structured-light scanner의 hand–eye 및 robot kine
 | Camera-only, stand-alone calibration의 독립 3D 검증 | **FusedBA 2024** | 자체 MCalib 조건에서 강함; mocap-assisted보다 우수하지 않음 |
 | Camera-only, 별도 wand의 거리 측정 | **AIRLS 2024** | 4카메라·두 종류 검증 wand의 Table 3에서 비교군보다 낮은 평균 오차; 절대 point 위치 SOTA와 구분 |
 | Robot+scanner의 구 간격 측정 | **Zhou et al. 2025** | CMM 기준 실측 및 논문 내 Ren·Mu 비교에서 강함; 센서와 평가량이 다름 |
-| Multi-camera+robot의 실제 산업 부품 위치 | **GWM-View 2023: 우선 확인 후보** | 평균 1 mm 미만 보고; 상세 결과표·GT 조건 미확인으로 SOTA 확정 보류 |
+| Multi-camera+robot의 실제 산업 부품 위치 | **해당 논문 없음** | GWM-View는 원문 확인 결과 특징점 간 거리 지표라 제외(2026-09-17) |
 | Camera-only, 인체 기반 보정 | **Lee et al. 2025** | 동기화 실영상의 pose·대응에서 강함; 인위적 비동기 평가는 제외; mm 순위와 분리 |
 | Robot segmentation/rendering 기반 calibration | **EasyHeC++ 2024** | 실물 targeting에서 강함. PCK threshold에 따라 승자는 다름 |
 | 우리 mixed fixed+wrist + board+cube + FK target handling 전체 | **확정된 단일 SOTA 없음** | 조사한 논문과 우리 구현을 동일 세팅·독립 GT에서 직접 비교해야 판정 가능 |
@@ -491,7 +491,7 @@ KUKA 로봇과 LMI Gocator structured-light scanner의 hand–eye 및 robot kine
 | **5** | R6 Kalib 또는 R8 EasyHeC++ | 연속 video+FK+reference point; EasyHeC++는 robot geometry | 마커 사용에 따른 정확도·준비시간 trade-off |
 | **6** | R9 Calib3R / R10 Wise / R13 Zhu | 코드 가용성·rig 구성·pose 입력을 맞춤 | markerless joint, global solver, 빠른 algebraic solver와의 위치 |
 
-신규 물체의 위치 정확도를 주요 기여로 삼는다면 **R15 GWM-View의 실험표 확보와 C8의 별도 검증 물체 평가를 추가 우선순위**로 둔다. 이 우선순위는 프로젝트 구조와 재현 가능성에 대한 분석 제안이다. **모든 외부 방법을 지금 실행했다는 의미는 아니다.** 아래 결과는 문헌 보고값이며 이 프로젝트에서 재현 실행한 외부 baseline 결과가 아니다.
+신규 물체의 위치 정확도를 주요 기여로 삼는다면 **C1의 독립 기록 평가 설계와 C8의 별도 검증 물체 평가를 추가 우선순위**로 둔다. (R15는 원문 확보 후 두 점 거리 지표로 확인되어 우선순위에서 뺐다.) 이 우선순위는 프로젝트 구조와 재현 가능성에 대한 분석 제안이다. **모든 외부 방법을 지금 실행했다는 의미는 아니다.** 아래 결과는 문헌 보고값이며 이 프로젝트에서 재현 실행한 외부 baseline 결과가 아니다.
 
 ### 8.3 논문 주장과 필요한 추가 검증
 
