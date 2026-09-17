@@ -391,8 +391,20 @@ def build_event_split(observations: Sequence[PixelObs], gripper: int, fraction: 
                 "n_events": len(events), "n_eih_cube_events": len(eih),
             }
             continue
-        order = list(events)
-        rng.shuffle(order)
+        # Prefer holding out non-eih events for test before touching scarce
+        # eih (gripper-camera cube) events. Randomize within each group so
+        # tie-breaks among multiple candidates of the same kind stay seeded,
+        # but never spend an eih event on the test split while a non-eih
+        # event is available to serve that role instead -- eih coverage is
+        # the bottleneck resource for per-set training, so wasting one on a
+        # held-out slot it didn't need to fill only starves training for no
+        # accuracy benefit (the held-out score does not care which kind of
+        # event it consumed).
+        non_eih = [e for e in events if e not in eih]
+        eih_only = [e for e in events if e in eih]
+        rng.shuffle(non_eih)
+        rng.shuffle(eih_only)
+        order = non_eih + eih_only
         wanted = max(1, int(round(float(fraction) * len(events))))
         chosen = []
         remaining_eih = set(eih)
@@ -1517,7 +1529,9 @@ def detect_observations(args, meta, K_map, D_map, all_cam_ids, gripper):
             manifest_diag,
         )
     cfg, cfg_source = resolve_cube_config_for_run(
-        args.root_folder, calib_dir=args.calib_dir, default_cfg=get_default_cube_config())
+        args.root_folder, calib_dir=args.calib_dir,
+        cube_config_json=getattr(args, "cube_config", None),
+        default_cfg=get_default_cube_config())
     cube = AprilTagCubeTarget(cfg)
     observations, observation_diag = load_cube_board_pixel_observations(
         args.root_folder, meta, cube, K_map, D_map, all_cam_ids, gripper,
@@ -1840,6 +1854,7 @@ def prepare_ablation_data(args) -> PreparedAblationData:
         set_filter=sorted(eligible),
         fixed_anchor_observations=pool,
         event_roles=event_roles,
+        require_e2e=bool(getattr(args, "require_e2e_path_metric", True)),
     )
     validate_frozen_path_evaluation_mask(path_evaluation_mask)
 
@@ -2167,6 +2182,13 @@ def parse_args(argv=None):
                      "A6 shares the baseline but awaits independent labels"))
     parser.add_argument("--root_folder", default=DEFAULT_SESSION_ROOT)
     parser.add_argument("--intrinsics_dir", default="intrinsics")
+    parser.add_argument(
+        "--cube-config", "--cube_config", dest="cube_config", default=None,
+        help=("Cube geometry JSON to override the project default when "
+              "detecting observations directly (i.e. when --observation-manifest "
+              "is unset/empty and detectors are re-run here). Ignored when a "
+              "frozen --observation-manifest is used, since that manifest "
+              "already recorded its own cube_config_source at Step 04 time."))
     parser.add_argument("--calib_dir", default=None,
                         help="Default: <session>/calib_out from --root_folder.")
     parser.add_argument(
@@ -2254,6 +2276,20 @@ def parse_args(argv=None):
         "--baseline_only", action="store_true",
         help="Prepare the authenticated shared baseline/artifacts without fitting rows.")
     parser.add_argument("--sanity_only", action="store_true")
+    parser.add_argument(
+        "--require-e2e-path-metric", "--require_e2e_path_metric",
+        dest="require_e2e_path_metric", action="store_true", default=True,
+        help="Require the held-out set's e2e cross-camera path metric (default on).")
+    parser.add_argument(
+        "--no-require-e2e-path-metric", "--no_require_e2e_path_metric",
+        dest="require_e2e_path_metric", action="store_false",
+        help=("Skip the e2e cross-camera path metric requirement. Needed for "
+              "capture protocols with only one gripper-camera event per set "
+              "(e.g. Zeus session2 pick-and-place): that single event cannot "
+              "simultaneously satisfy per-set training AND be the held-out "
+              "e2e sample, so something has to give. Off by default; when "
+              "used, e2e diagnostics are simply absent from the report "
+              "instead of the run refusing to proceed."))
     parser.add_argument(
         "--include_gripped_cube", action="store_true",
         help=("Also load cube_gripped=True observations (grip-target model, "
