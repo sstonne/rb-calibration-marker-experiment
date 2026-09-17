@@ -1,0 +1,22 @@
+session root: /home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/data/session1_handheld_fixed_cam_0909  (16 captures: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+  local cam 0 (039422061216): fx=912.1 fy=912.9
+  local cam 1 (fixed2): fx=910.7 fy=913.0
+  local cam 2 (fixed3): fx=922.0 fy=923.8
+  local cam 3 (gripper): fx=922.5 fy=922.3
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+loaded 43 cube observations (policy=legacy)
+PnP-accepted cube detections per camera (out of 16 captures):
+  cam0 (039422061216): 15 pnp-accepted, 13 selected for calibration
+  cam1 (fixed2): 16 pnp-accepted, 14 selected for calibration
+  cam2 (fixed3): 16 pnp-accepted, 16 selected for calibration
+  cam3 (gripper): 0 pnp-accepted, 0 selected for calibration
+  cam0 (039422061216): initial T_gripper_cube translation_mm=[-1.0, -0.4, 160.5] (n_poses=13, method=SHAH, residual_median_mm=1.23, residual_median_deg=0.43)
+  cam1 (fixed2): initial T_gripper_cube translation_mm=[-0.2, 0.9, 162.3] (n_poses=14, method=SHAH, residual_median_mm=2.27, residual_median_deg=0.38)
+  cam2 (fixed3): initial T_gripper_cube translation_mm=[1.2, 0.1, 162.7] (n_poses=16, method=SHAH, residual_median_mm=1.40, residual_median_deg=0.33)
+  cam3 (gripper): only 0 usable cube observations, skipping as an initializer
+initial T_gripper_cube (robust avg of 3 cams): translation_mm=[0.0, 0.2, 161.8] dispersion={'num_total': 3, 'num_inliers': 3, 'inlier_ratio': 1.0, 'translation_std_mm': 0.37004541288125453, 'rotation_std_deg': 0.05003651763503918}
+cameras with no independent initializer (excluded from the joint solve): ['gripper']
+solving with 4 free SE(3) variables over 43 observations (0 dropped: camera(s) with no initializer)
+solve success=True train_reprojection_rmse_px=0.7254 (initial was 1.5902)
+FITTED T_gripper_cube: translation_mm=[-0.06, -0.28, 160.89] |t|_mm=160.89 rotvec_deg=[-179.8, 2.09, 0.0] |r|_deg=179.81
+wrote /home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/fit_통합_0917_1920ds1280x720.json

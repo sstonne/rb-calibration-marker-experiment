@@ -1,0 +1,45 @@
+{
+  "row": "A5",
+  "fit_json": "/home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/fit_통합_0917_1920ds1280x720.json",
+  "methods_json": "/home/sstone/rb-calibration-marker-experiment/ABLATION_TEST_result_0917/zeus_0917_1920ds1280x720/table1_zeus/ABLATION_TEST_table1_methods.json",
+  "session1": {
+    "n_poses": 16,
+    "n_pairs": 120,
+    "joint_fit_px_rmse": 0.6832557640882592,
+    "absolute": {
+      "mm_mean": 0.810242381202073,
+      "mm_median": 0.72574092088236,
+      "mm_p95": 1.2771412550439516,
+      "deg_mean": 0.3470932958839824,
+      "px_rmse": 1.3144327740945927
+    },
+    "relative": {
+      "mm_mean": 1.4232834578018552,
+      "mm_median": 1.352599303448332,
+      "mm_p95": 2.8614061946727314,
+      "deg_mean": 0.49858358429931887,
+      "deg_median": 0.445764291580367,
+      "px_rmse": 2.277965002674878
+    }
+  },
+  "session2_held": {
+    "n_poses": 15,
+    "n_pairs": 105,
+    "joint_fit_px_rmse": 0.6065138686218522,
+    "absolute": {
+      "mm_mean": 0.5360847863345366,
+      "mm_median": 0.546958089146289,
+      "mm_p95": 0.8433743808693052,
+      "deg_mean": 0.3141499511998008,
+      "px_rmse": 0.9889951067334938
+    },
+    "relative": {
+      "mm_mean": 1.172609222147423,
+      "mm_median": 0.8568084805381653,
+      "mm_p95": 3.2980198022197844,
+      "deg_mean": 0.4072176852324304,
+      "deg_median": 0.32312201035823973,
+      "px_rmse": 2.119780763272576
+    }
+  }
+}

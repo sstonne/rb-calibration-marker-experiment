@@ -1,0 +1,26 @@
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+session2 그리퍼캠 큐브 관측치: 15개 (신규 -- 예전엔 빠뜨렸음)
+[s3-gripper-only] session3 고정캠 보드 관측 30개 제외
+session3 고정캠 보드 관측치: 0개 (신규 -- 예전엔 빠뜨렸음)
+session3 큐브 관측치 (세트 14 자리, FK 앵커와 2.2mm): 고정캠 30개 / 그리퍼캠 14개
+session2 보드 관측치: 고정캠 29개 / 그리퍼캠 15개 (신규 -- 예전엔 빠뜨렸음)
+session1 39개 / session2-고정캠 30개 / session2-그리퍼캠 15개 / session2-보드 44개 / session3-고정캠 0개 / session3-그리퍼캠 14개
+총 관측치: 186개 (통합/독립 공통, 같은 양)
+
+[통합_no-fk] leave-one-out held-out 계산 중 (15개 세트)...
+[통합_raw-fk] leave-one-out held-out 계산 중 (15개 세트)...
+[독립_no-fk] leave-one-out held-out 계산 중 (15개 세트)...
+
+[train-pooled: 전체 데이터 fit에서 잰 카메라 간 일치도]
+       condition  heldout_px  heldout_mm  heldout_deg  cross_view_px  cross_cam_mm  cross_cam_deg
+        통합_no-fk      1.3129        2.02         0.69         3.1578        4.7838         1.2750
+       통합_raw-fk      1.0108        2.01         0.69         2.7748        4.1220         1.2755
+        독립_no-fk      1.3746        2.02         0.68         3.1507        4.7513         1.3086
+
+[held-out: 빠진 세트에 대해서만 잰 카메라 간 일치도, 15 fold pooled / joint = 다중뷰 공동 삼각측량 held-out]
+       condition   xview_px  xview_pairs  camcom_mm  camcom_deg  camcom_pairs  joint_mm  joint_deg
+        통합_no-fk     3.1653           47     4.7982      1.2784            47     1.334      0.429
+       통합_raw-fk     2.8125           47     4.1613      1.2817            47     0.760      0.421
+        독립_no-fk     3.1664           47     4.7760      1.3112            47     1.351      0.561
+
+wrote /home/sstone/rb-calibration-marker-experiment/ABLATION_TEST_result_0917/zeus_0917_1920ds848x480/heldout_and_consistency_0917_1920ds848x480.json

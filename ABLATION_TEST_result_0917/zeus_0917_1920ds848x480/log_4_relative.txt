@@ -1,0 +1,13 @@
+row A5 최종 T_base_Ci + 고정캠 3대 joint 삼각측량
+
+=== session1 (handheld): joint 포즈 16개, 상대 쌍 120개 ===
+  [joint 자체 적합 잔차]            px RMSE 0.46
+  [절대: joint vs FK@T_flange_cube]  mm 평균 0.84 중앙값 0.89 P95 1.21 | deg 0.38 | px RMSE 0.89
+  [상대: FK 예측 vs joint, 모든 쌍]  mm 평균 1.49 중앙값 1.37 P95 2.88 | deg 0.53 | px RMSE 1.59
+
+=== session2 held (placement): joint 포즈 15개, 상대 쌍 105개 ===
+  [joint 자체 적합 잔차]            px RMSE 0.42
+  [절대: joint vs FK@T_flange_cube]  mm 평균 0.53 중앙값 0.53 P95 0.83 | deg 0.30 | px RMSE 0.66
+  [상대: FK 예측 vs joint, 모든 쌍]  mm 평균 1.16 중앙값 0.94 P95 3.21 | deg 0.42 | px RMSE 1.37
+
+wrote /home/sstone/rb-calibration-marker-experiment/ABLATION_TEST_result_0917/zeus_0917_1920ds848x480/joint_relative_eval_0917_1920ds848x480.json
