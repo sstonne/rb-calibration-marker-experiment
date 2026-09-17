@@ -63,7 +63,7 @@
 | **ours** | 본 프로젝트 | **RealSense D415×3 + D435×1** | ○ | **RM** | 4 (고정3+손목1) | **○** | × | **45 event** (≈180 이미지) |
 | R1 | Graph-based multi-camera hand-eye (ICRA'23) | **Kinect v2 ×3** (RGB만 사용) | × | **RM** | 3 (전부 고정) | × | × | 실촬영 장수 `미확인` / (sim) 150 robot poses |
 | R2 | Allegro, Multi-Camera Hand-Eye (RA-L'24) | **Kinect V2 / RealSense D455 / RealSense L515** (METRIC), 산업셀은 모델 `미확인` | △ (3종 중 2종) | **RM** | 4 (METRIC), 산업 ABB 4·KUKA 3 — 전부 고정 | × (보드를 EE에 부착) | × (Ceres 비선형 최적화) | **산업셀 1: 10장 미만, 산업셀 2: 15장** |
-| R3 | Zhou, Multi hand-eye graph (TIE'24) | **Hikvision MV-CE060-10UC ×5** (6 MP RGB) | × | **RM** | 5 = **손목 3 + 고정 2** | **○** (핵심 기여) | × | `미확인` / (sim) 로봇 25대·100 poses |
+| R3 | Zhou, Multi hand-eye graph (TIE'24) | **Hikvision MV-CE060-10UC ×5** (6 MP RGB) | × | **RM** | 5 = **손목 3 + 고정 2** (고정 2대는 **공통 시야 없음**) | **○** (핵심 기여) | × | **보정 선(edge)마다 30 자세** / (sim) 로봇 25대·100 poses |
 | R4 | Ha, Probabilistic AX=YB (T-RO'23) | **Logitech C920 웹캠** (1080p) — 실험2 GT는 **NDI Polaris Spectra** | × | 실험1: R1 / 실험2: 카메라 2대 AX=YB | 실험1: 1 / 실험2: 2 (**시야 비중첩**, 강체 결합) | ○ (실험1: UR3e 손목) | × | **실험1: 88 자세** / **실험2: 183 쌍** |
 | R5 | Ulrich & Hillemann, Uncertainty-Aware (T-RO'24) | **IDS U3-3280SE** 2448×2048 + 8 mm 렌즈 | × | **R1** | 1 | ○ (hand-eye 본체) | × | **25 robot poses** (+ Tabb 공개 데이터 4세트) |
 | R6 | Kalib (IROS'25) | **RealSense D415**, **Orbbec Femto Bolt**, **Azure Kinect**; DROID는 1280×720 | △ | R1 (카메라별 개별 적용) | 1~3 | **○** (EoB·EiH 통합 정식화) | **○** SpatialTracker (zero-shot, 재학습 불필요) | 실촬영 **10초 영상**; ablation상 **10~20 frame**이면 충분 / (sim) 300 frames |
