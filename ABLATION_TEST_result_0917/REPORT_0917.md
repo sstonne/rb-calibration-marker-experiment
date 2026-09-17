@@ -34,16 +34,17 @@
 
 ### 1.1 방법별 전체 지표 (1920×1080, held-out 15-fold)
 
-| Row | 학습 표적 | 최적화 | FK 처리 | train px | held-out px | cross-view held-out px | joint mm 평균 / 중앙값 / P95 | joint ° | 카메라 합의 mm  |
-|---|---|---|---|---:|---:|---|---|---:|---:|
-| A1 | board+cube | Sequential | VISION | 2.83 | 2.85 | 5.53 | 1.29 / 1.26 / 1.82 | 0.26 | 2.80 |
-| A2 | board+cube | Unified | VISION | 2.62 | 2.62 | 5.77 | 1.22 / 1.17 / 1.72 | 0.24 | 3.11 |
-| **A3** | board+cube | Unified | **FtC FK fixed** | **1.62** | **1.77** | 4.90 | **0.62 / 0.56 / 1.13** | 0.24 | 2.32 | 
-| B1 | cube | Unified | FtC FK fixed | 1.62 | 1.79 | 5.27 | 0.65 / 0.60 / 1.06 | 0.27 | 2.64 | 
+| Row | 학습 표적 | 최적화 | FK 처리 | train px | held-out px | cross-view held-out px | joint mm 평균 / 중앙값 / P95 | joint 축별 \|dx\| / \|dy\| / \|dz\| mm | joint ° | 카메라 합의 mm |
+|---|---|---|---|---:|---:|---|---|---|---:|---:|
+| A1 | board+cube | Sequential | VISION | 2.83 | 2.85 | 5.53 | 1.29 / 1.26 / 1.82 | 0.88 / 0.43 / 0.75 | 0.26 | 2.80 |
+| A2 | board+cube | Unified | VISION | 2.62 | 2.62 | 5.77 | 1.22 / 1.17 / 1.72 | 0.80 / 0.41 / 0.72 | 0.24 | 3.11 |
+| **A3** | board+cube | Unified | **FtC FK fixed** | **1.62** | **1.77** | 4.90 | **0.62 / 0.56 / 1.13** | 0.25 / 0.48 / 0.10 | 0.24 | 2.32 |
+| B1 | cube | Unified | FtC FK fixed | 1.62 | 1.79 | 5.27 | 0.65 / 0.60 / 1.06 | 0.25 / 0.51 / 0.11 | 0.27 | 2.64 |
 
 - **train / held-out px**: 학습 데이터 vs 학습에서 뺀 placement의 큐브 재투영 RMSE. 둘이 같으면 과적합 없음.
 - **cross-view px**: 카메라 A의 PnP 포즈를 캘리브레이션으로 B에 옮겨 B의 검출 코너와 비교(모든 카메라 쌍). 카메라 간 일관성 검증.
-- **joint mm / °**: 고정캠 3대 공동 삼각측량 위치 vs FK@T_flange_cube (held-out placement). **정확도 기준 지표.** P95 = 상위 5% 최악값.
+- **joint mm / °**: 고정캠 3대 공동 삼각측량 위치 vs FK@T_flange_cube, **held-out placement에서** 잰 값(모든 열이 held-out). **정확도 기준 지표.** P95 = 상위 5% 최악값.
+- **joint 축별 mm**: 같은 오차를 로봇 base 좌표 x / y / z 축으로 나눈 절대값 평균. VISION 행(A1, A2)은 x·z에 +0.7~0.9mm의 일정한 편향(부호 평균 +0.80 / +0.72)이 있고, FtC FK fixed 행은 x·z 편향이 사라지는 대신 y에 −0.35~−0.42mm 편향이 남음 — 4.1의 파지 y 흔들림(닫힘 방향)과 같은 축.
 - **카메라 합의 mm**: 카메라 한 대씩 따로 구한 held-out 큐브 위치끼리의 pairwise 차이. 외부파라미터 일관성.
 - **FtC FK** : session1 비전으로 잰 flange-to-cube 변환 × 로봇 FK. fixed = 큐브 위치를 이 값으로 고정하고 카메라만 최적화.
 
