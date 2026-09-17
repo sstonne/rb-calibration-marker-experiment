@@ -968,6 +968,8 @@
    0.758
   ]
  ],
+ "n_angles": 512,
+ "sections_file": "d435_sections.npz",
  "m3_holes_xy": [
   [
    -22.5,
