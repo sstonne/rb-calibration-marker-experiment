@@ -26,18 +26,18 @@
 
 ### 1.1 방법별 전체 지표 (1920×1080, held-out 15-fold)
 
-| Row | 학습 표적 | 최적화 | FK 처리 | train px | held-out px | cross-view held-out px (전체 / 고정↔고정 / 고정↔그리퍼) | joint mm 평균 / 중앙값 / P95 | joint ° | 카메라 합의 mm | fold 수렴 |
+| Row | 학습 표적 | 최적화 | FK 처리 | train px | held-out px | cross-view held-out px | joint mm 평균 / 중앙값 / P95 | joint ° | 카메라 합의 mm | fold 수렴 |
 |---|---|---|---|---:|---:|---|---|---:|---:|---:|
-| A0 | board | Sequential | VISION | 3.93 | 3.93 | 9.52 / 10.55 / 8.39 | 1.73 / 1.80 / 2.53 | 0.41 | 6.12 | 15/15 |
-| A1 | board+cube | Sequential | VISION | 2.83 | 2.85 | 5.53 / 5.50 / 5.55 | 1.29 / 1.26 / 1.82 | 0.26 | 2.80 | 15/15 |
-| A2 | board+cube | Unified | VISION | 2.62 | 2.62 | 5.77 / 5.92 / 5.62 | 1.22 / 1.17 / 1.72 | 0.24 | 3.11 | 15/15 |
-| **A3** | board+cube | Unified | **FtC FK fixed** | **1.62** | **1.77** | **4.90** / 4.54 / 5.22 | **0.62 / 0.56 / 1.13** | 0.24 | **2.32** | 15/15 |
-| B1 | board+cube | Sequential | FtC FK fixed | 2.84 | 2.85 | 5.66 / 5.71 / 5.61 | 1.28 / 1.26 / 1.90 | 0.29 | 2.99 | 15/15 |
-| B2 | cube | Unified | FtC FK fixed | 2.77 | 2.79 | 5.37 / 5.21 / 5.52 | 1.42 / 1.34 / 1.83 | 0.29 | 2.71 | 15/15 |
-| B3 | board | Unified | VISION | 3.93 | 3.93 | 9.52 / 10.55 / 8.39 | 1.73 / 1.80 / 2.53 | 0.41 | 6.12 | 15/15 |
+| A0 | board | Sequential | VISION | 3.93 | 3.93 | 9.52 | 1.73 / 1.80 / 2.53 | 0.41 | 6.12 | 15/15 |
+| A1 | board+cube | Sequential | VISION | 2.83 | 2.85 | 5.53 | 1.29 / 1.26 / 1.82 | 0.26 | 2.80 | 15/15 |
+| A2 | board+cube | Unified | VISION | 2.62 | 2.62 | 5.77 | 1.22 / 1.17 / 1.72 | 0.24 | 3.11 | 15/15 |
+| **A3** | board+cube | Unified | **FtC FK fixed** | **1.62** | **1.77** | **4.90** | **0.62 / 0.56 / 1.13** | 0.24 | **2.32** | 15/15 |
+| B1 | board+cube | Sequential | FtC FK fixed | 2.84 | 2.85 | 5.66 | 1.28 / 1.26 / 1.90 | 0.29 | 2.99 | 15/15 |
+| B2 | cube | Unified | FtC FK fixed | 2.77 | 2.79 | 5.37 | 1.42 / 1.34 / 1.83 | 0.29 | 2.71 | 15/15 |
+| B3 | board | Unified | VISION | 3.93 | 3.93 | 9.52 | 1.73 / 1.80 / 2.53 | 0.41 | 6.12 | 15/15 |
 
 - **train / held-out px**: 학습 데이터 vs 학습에서 뺀 placement의 큐브 재투영 RMSE. 둘이 같으면 과적합 없음.
-- **cross-view px**: 카메라 A의 PnP 포즈를 캘리브레이션으로 B에 옮겨 B의 검출 코너와 비교. 고정↔고정은 카메라 외부파라미터, 고정↔그리퍼는 hand-eye+FK까지 검증.
+- **cross-view px**: 카메라 A의 PnP 포즈를 캘리브레이션으로 B에 옮겨 B의 검출 코너와 비교(모든 카메라 쌍). 카메라 간 일관성 검증.
 - **joint mm / °**: 고정캠 3대 공동 삼각측량 위치 vs FK@T_flange_cube (held-out placement). **정확도 기준 지표.** P95 = 상위 5% 최악값.
 - **카메라 합의 mm**: 카메라 한 대씩 따로 구한 held-out 큐브 위치끼리의 pairwise 차이. 외부파라미터 일관성.
 - FtC FK = session1 비전으로 잰 flange-to-cube 변환 × 로봇 FK. fixed = 큐브 위치를 이 값으로 고정하고 카메라만 최적화.
