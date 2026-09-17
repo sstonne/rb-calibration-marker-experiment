@@ -161,8 +161,8 @@ def cyl(d, length, center, axis="z", sections=64):
                     transform=_axis_T(axis, center))
 
 
-def csk(d_big, d_small, length, center):
-    """+Z 쪽이 넓은 카운터싱크 원뿔대."""
+def csk(d_big, d_small, length, center, wide_down=False):
+    """카운터싱크 원뿔대. 기본은 +Z 쪽이 넓고, wide_down 이면 -Z 쪽이 넓다."""
     n = 48
     ang = np.linspace(0, 2 * np.pi, n, endpoint=False)
     bot = np.c_[d_small / 2 * np.cos(ang), d_small / 2 * np.sin(ang),
@@ -176,6 +176,9 @@ def csk(d_big, d_small, length, center):
         j = (i + 1) % n
         faces += [[i, j, n + j], [i, n + j, n + i], [cb, j, i], [ct, n + i, n + j]]
     m = trimesh.Trimesh(vertices=verts, faces=np.array(faces), process=True)
+    if wide_down:
+        m.apply_transform(np.diag([1.0, 1.0, -1.0, 1.0]))
+        trimesh.repair.fix_normals(m)
     m.apply_translation(center)
     return m
 
@@ -190,7 +193,7 @@ def sleeve_body(clip_x=None, with_pad=True, with_vents=True):
 
     solid = prism(out, 0.0, OY, zc=ZC)
     if with_pad:                                # 암이 붙을 평평한 자리
-        solid = solid.union(span(-26, 26, 0.0, OY, top_out - 1.0, pad_top),
+        solid = solid.union(span(-26, 26, 1.0, OY - 1.0, top_out - 1.0, pad_top),
                             engine=ENGINE)
 
     cuts = [prism(cav, -1.0, CY, zc=ZC)]        # 앞으로 열린 캐비티
@@ -198,7 +201,7 @@ def sleeve_body(clip_x=None, with_pad=True, with_vents=True):
     # 뒷판은 |x| <= REAR_HALF_X 만 남긴다 (USB-C 커넥터와 케이블 통로)
     for sx in (1, -1):
         x0, x1 = (REAR_HALF_X, ox + 1) if sx > 0 else (-ox - 1, -REAR_HALF_X)
-        cuts.append(span(x0, x1, CY - 0.01, OY + 1, -1.0, pad_top + 1))
+        cuts.append(span(x0, x1, CY, OY + 1, -1.0, pad_top + 1))
 
     # 뒷판 M3 관통 2개 — 메시에서 직접 읽은 위치
     for hx, hy in M3_XY:
@@ -216,7 +219,8 @@ def sleeve_body(clip_x=None, with_pad=True, with_vents=True):
         for sx in (-1, 1):
             for y in PAD_Y:
                 cuts.append(cyl(M3_CLR, 20.0, (sx * PAD_X, y, pad_top), axis="z"))
-                cuts.append(csk(M3_CSK, M3_CLR, 1.6, (sx * PAD_X, y, CZ - 0.8)))
+                cuts.append(csk(M3_CSK, M3_CLR, 1.8, (sx * PAD_X, y, CZ + 0.8),
+                                wide_down=True))
 
     if clip_x is not None:                      # 게이지: 같은 단면으로 구간만 남김
         cuts.append(span(clip_x[1], ox + 1, -2, OY + 1, -5, pad_top + 1))
@@ -267,6 +271,19 @@ def to_print_orientation(mesh):
     return m
 
 
+def clean_export(mesh, path):
+    """내보내기 전 정리. 부울 결과에 겹친 면이 남아 STL 이 비다양체가 되곤 한다."""
+    m = mesh.copy()
+    # STL 은 float32 라, 1e-6 mm 쯤 떨어진 정점들이 다시 읽을 때 합쳐지면서
+    # 면이 4개 붙은 모서리가 생긴다. 내보내기 전에 미리 같은 눈금으로 스냅한다.
+    m.merge_vertices()
+    m.update_faces(m.unique_faces())
+    m.update_faces(m.nondegenerate_faces())
+    m.remove_unreferenced_vertices()
+    m.export(path)
+    return m
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else HERE
     os.makedirs(out, exist_ok=True)
@@ -280,7 +297,7 @@ def main():
         "d435_arm.stl": arm(),
     }
     for name, mesh in parts.items():
-        mesh.export(os.path.join(out, name))
+        mesh = clean_export(mesh, os.path.join(out, name))
         e = mesh.extents
         print(f"  {name:16s} {e[0]:6.1f} x {e[1]:6.1f} x {e[2]:6.1f} mm   "
               f"watertight={mesh.is_watertight}  vol={mesh.volume / 1000:6.1f} cm^3")

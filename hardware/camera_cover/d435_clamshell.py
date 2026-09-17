@@ -37,7 +37,8 @@ TAB_Y = (4.0, 22.0)
 TAB_HALF_Z = 3.5      # 쪼갠 뒤 한 쪽당 3.5mm
 TAB_SCREW_X = 50.7
 TAB_SCREW_Y = (8.0, 18.0)
-PIN_D = 3.0           # 아래쪽 정렬 핀
+PIN_D = 3.0           # 정렬 다월 (3mm 봉을 따로 꽂는다)
+PIN_DEPTH = 2.6       # 한 쪽당 구멍 깊이
 PIN_Y = 13.0
 
 
@@ -158,6 +159,10 @@ def shell():
     for sx in (-1, 1):
         for y in TAB_SCREW_Y:
             cuts.append(cyl(M3_CLR, 40.0, (sx * TAB_SCREW_X, y, ZC), axis="z"))
+        # 정렬 다월 구멍. 양쪽에 구멍만 내고 3mm 봉(필라멘트 토막)을 꽂는다.
+        # 한쪽에 핀을 세우면 그 쪽이 핀 두 개로만 베드에 서서 출력이 안 된다.
+        cuts.append(cyl(PIN_D + 0.25, 2 * PIN_DEPTH,
+                        (sx * TAB_SCREW_X, PIN_Y, ZC), axis="z"))
 
     for c in cuts:
         solid = solid.difference(c, engine=ENGINE)
@@ -178,15 +183,15 @@ def finish_top(top):
     """암이 붙는 자리와 정렬 핀 구멍."""
     top_out = top.bounds[1][2]
     pad_top = top_out + PAD_EXTRA
-    top = top.union(span(-26, 26, 0.0, OY, top_out - 1.0, pad_top), engine=ENGINE)
+    top = top.union(span(-26, 26, 1.0, OY - 1.0, top_out - 1.0, pad_top), engine=ENGINE)
 
     cuts = []
     for sx in (-1, 1):
         for y in PAD_Y:                       # 암 체결 4공 (안쪽에서 접시머리)
             cuts.append(cyl(M3_CLR, 30.0, (sx * PAD_X, y, pad_top), axis="z"))
-            cuts.append(csk(M3_CSK, M3_CLR, 1.6, (sx * PAD_X, y, CZ - 0.8)))
-        cuts.append(cyl(PIN_D + 0.3, 2.8,     # 정렬 핀이 들어갈 구멍
-                        (sx * TAB_SCREW_X, PIN_Y, ZC + 1.4), axis="z"))
+            cuts.append(csk(M3_CSK, M3_CLR, 1.8, (sx * PAD_X, y, CZ + 0.8),
+                            wide_down=True))
+        pass
     for c in cuts:
         top = top.difference(c, engine=ENGINE)
     return top
@@ -204,9 +209,6 @@ def finish_bottom(bottom):
     for c in cuts:
         bottom = bottom.difference(c, engine=ENGINE)
 
-    for sx in (-1, 1):                        # 정렬 핀
-        bottom = bottom.union(
-            cyl(PIN_D, 2.5, (sx * TAB_SCREW_X, PIN_Y, ZC + 1.25)), engine=ENGINE)
     return bottom
 
 
@@ -220,6 +222,19 @@ def lay_flat(mesh, flip):
     return m
 
 
+def clean_export(mesh, path):
+    """내보내기 전 정리. 부울 결과에 겹친 면이 남아 STL 이 비다양체가 되곤 한다."""
+    m = mesh.copy()
+    # STL 은 float32 라, 1e-6 mm 쯤 떨어진 정점들이 다시 읽을 때 합쳐지면서
+    # 면이 4개 붙은 모서리가 생긴다. 내보내기 전에 미리 같은 눈금으로 스냅한다.
+    m.merge_vertices()
+    m.update_faces(m.unique_faces())
+    m.update_faces(m.nondegenerate_faces())
+    m.remove_unreferenced_vertices()
+    m.export(path)
+    return m
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else HERE
     os.makedirs(out, exist_ok=True)
@@ -230,7 +245,7 @@ def main():
         "d435_shell_bottom.stl": lay_flat(finish_bottom(bottom), flip=True),
     }
     for name, mesh in parts.items():
-        mesh.export(os.path.join(out, name))
+        mesh = clean_export(mesh, os.path.join(out, name))
         e = mesh.extents
         print(f"  {name:22s} {e[0]:6.1f} x {e[1]:6.1f} x {e[2]:6.1f} mm   "
               f"watertight={mesh.is_watertight}  vol={mesh.volume / 1000:6.1f} cm^3")
