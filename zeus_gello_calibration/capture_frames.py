@@ -10,8 +10,8 @@
   python capture_frames.py --shots 5                    # Enter 누를 때마다 1장, 5장
   python capture_frames.py --shots 5 --no-robot         # 로봇 서버 없이 사진만
   python capture_frames.py --shots 5 --no-cam-reset     # USB 리셋 생략 (리셋이 카메라를 떨어뜨릴 때)
-  python capture_frames.py --shots 5 --width 1920 --height 1080 --depth-width 1280 --depth-height 720 \\
-      --device-map ../intrinsics_1920x1080_rgbd720/device_map.json   # 해상도 지정 (폴더명에 자동으로 붙음)
+  python capture_frames.py --shots 5 --width 1920 --height 1080 --depth-width 1280 --depth-height 720 --device-map ../intrinsics_1920x1080_rgbd720/device_map.json
+      # 해상도 지정 (폴더명에 자동으로 붙음). 위 한 줄 그대로 복붙 가능.
 """
 
 from __future__ import annotations

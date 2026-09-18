@@ -81,7 +81,7 @@ from session2_pick_and_place import SESSION2_DIR_DEFAULT, compute_ordered_target
 
 SESSION1_DIR_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "data" / "session1_handheld_fixed_cam_0909"
 SESSION3_DIR_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "data" / "session3_wrist_motion_gripper_cam_0909"
-FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "pass1_grasp_offset_replayed.json"
+FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "pass1_grasp_offset_replayed.json"
 
 # 이벤트 id 네임스페이스 충돌 방지 (robot_T 딕셔너리 키). session2는
 # build_synthetic_meta_placed가 이미 event_id에 SESSION2_EVENT_OFFSET(1000)을
@@ -558,7 +558,8 @@ def main_cube_only(args, data):
     gtc_init, diag = init_gtc_from_cubes(data)
     print(f"[cube-only] T_gripper_cam 초기값 (session2 큐브만): t_mm={np.round(gtc_init[:3,3]*1000,2).tolist()} "
           f"(n={diag['num_total']}, inlier={diag['num_inliers']}, std={diag['translation_std_mm']:.2f}mm)\n")
-    fit_out_dir = REPO_ROOT / "zeus_gello_calibration"
+    fit_out_dir = REPO_ROOT / "zeus_gello_calibration" / "results" / "fits"
+    fit_out_dir.mkdir(parents=True, exist_ok=True)
     results = {}
     for fk_mode, label in (("no_fk", "통합_no-fk_cubeonly"), ("fixed_fk", "통합_raw-fk_cubeonly")):
         state, diag, n_obs = solve_unified(data, fk_mode, gtc_init, None)
@@ -593,7 +594,7 @@ def main():
     ap.add_argument("--fit-json", default=str(FIT_JSON_DEFAULT))
     ap.add_argument("--fixed-min-corners", type=int, default=8)
     ap.add_argument("--cube-observation-policy", default="legacy", choices=("legacy", "core_multiface"))
-    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "calibration_methods_comparison.json"))
+    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "results" / "heldout" / "calibration_methods_comparison.json"))
     ap.add_argument("--cube-only", action="store_true",
                     help="보드 관측 전부 제외(session3 미사용 + session2 보드 제외). late_table1 B2(-board) 대응")
     ap.add_argument("--tag", default="", help="출력 파일 접미사 (예: _0914 -> fit_통합_no-fk_0914.json). 다른 촬영분 결과를 덮어쓰지 않게")
@@ -604,8 +605,8 @@ def main():
     args = ap.parse_args()
     global FIT_SUFFIX
     FIT_SUFFIX = args.tag
-    if args.tag and args.out == str(REPO_ROOT / "zeus_gello_calibration" / "calibration_methods_comparison.json"):
-        args.out = str(REPO_ROOT / "zeus_gello_calibration" / f"calibration_methods_comparison{args.tag}.json")
+    if args.tag and args.out == str(REPO_ROOT / "zeus_gello_calibration" / "results" / "heldout" / "calibration_methods_comparison.json"):
+        args.out = str(REPO_ROOT / "zeus_gello_calibration" / "results" / "heldout" / f"calibration_methods_comparison{args.tag}.json")
 
     data = load_all_data(args)
     K_map, D_map = data["K_map"], data["D_map"]
@@ -617,7 +618,8 @@ def main():
         data["obs_s3"], data["robot_T_s3"], K_map, D_map, GRIPPER_LOCAL_ID)
     print(f"T_gripper_cam 초기값 (session3만): t_mm={np.round(gtc_init[:3,3]*1000,2).tolist()} ({eih_diag})\n")
 
-    fit_out_dir = REPO_ROOT / "zeus_gello_calibration"
+    fit_out_dir = REPO_ROOT / "zeus_gello_calibration" / "results" / "fits"
+    fit_out_dir.mkdir(parents=True, exist_ok=True)
     results = {}
     print("각 방식의 T_gripper_cube/T_base_cam을 gt_pick_test.py용 JSON으로 저장:")
     for fk_mode, label in (("no_fk", "통합_no-fk"), ("fixed_fk", "통합_raw-fk")):

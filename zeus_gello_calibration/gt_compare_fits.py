@@ -105,12 +105,12 @@ def detect_cube_pose_all(frames, K_map, D_map, T_base_cam, T_gripper_cam, T_base
 # 여기 들어있었는데 지금 "독립"의 정의(핸드오프 없는 완전 독립)와 안 맞는 옛날
 # 파일이라 제거했다.
 DEFAULT_FITS = [
-    ("통합_no-fk_px", REPO_ROOT / "zeus_gello_calibration" / "fit_통합_no-fk.json"),
-    ("통합_no-fk_mm", REPO_ROOT / "zeus_gello_calibration" / "fit_통합_no-fk_mm.json"),
-    ("통합_raw-fk_px", REPO_ROOT / "zeus_gello_calibration" / "fit_통합_raw-fk.json"),
-    ("통합_raw-fk_mm", REPO_ROOT / "zeus_gello_calibration" / "fit_통합_raw-fk_mm.json"),
-    ("독립_no-fk_px", REPO_ROOT / "zeus_gello_calibration" / "fit_독립_no-fk.json"),
-    ("독립_no-fk_mm", REPO_ROOT / "zeus_gello_calibration" / "fit_독립_no-fk_mm.json"),
+    ("통합_no-fk_px", REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "fit_통합_no-fk.json"),
+    ("통합_no-fk_mm", REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "fit_통합_no-fk_mm.json"),
+    ("통합_raw-fk_px", REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "fit_통합_raw-fk.json"),
+    ("통합_raw-fk_mm", REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "fit_통합_raw-fk_mm.json"),
+    ("독립_no-fk_px", REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "fit_독립_no-fk.json"),
+    ("독립_no-fk_mm", REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "fit_독립_no-fk_mm.json"),
 ]
 
 

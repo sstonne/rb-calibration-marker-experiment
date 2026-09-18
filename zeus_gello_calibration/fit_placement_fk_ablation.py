@@ -73,7 +73,7 @@ from session2_pick_and_place import (  # noqa: E402
 )
 
 SESSION1_DIR_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "data" / "session1_handheld_fixed_cam_0909"
-FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "pass1_grasp_offset_replayed.json"
+FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "pass1_grasp_offset_replayed.json"
 SESSION2_EVENT_OFFSET = 1000  # session1과 event id가 안 겹치게 (robot_T 딕셔너리 키 충돌 방지)
 
 
@@ -155,7 +155,7 @@ def main():
                     help="카메라 extrinsics/grasp offset 초기값 출처 (fit_grasp_offset.py 결과)")
     ap.add_argument("--fixed-min-corners", type=int, default=8)
     ap.add_argument("--cube-observation-policy", default="legacy", choices=("legacy", "core_multiface"))
-    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "placement_fk_ablation.json"))
+    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "results" / "heldout" / "placement_fk_ablation.json"))
     args = ap.parse_args()
 
     session1_dir = Path(args.session1_dir)

@@ -227,7 +227,7 @@ def main():
     ap.add_argument("--zeus-intrinsics-dir", default=str(REPO_ROOT / "intrinsics"))
     ap.add_argument("--ur3-intrinsics-dir", default=str(REPO_ROOT / "ur3_calibration" / "intrinsics"))
     ap.add_argument("--device-map", default=str(REPO_ROOT / "intrinsics" / "device_map.json"))
-    ap.add_argument("--out", default=str(Path(__file__).with_name("gt_cube_geometry_calibration.json")))
+    ap.add_argument("--out", default=str(Path(__file__).with_name("results") / "gt_eval" / "gt_cube_geometry_calibration.json"))
     args = ap.parse_args()
 
     roots = args.roots or [SESSION1_DIR / "capture_replayed_0914", SESSION2_DIR / "capture_placed_0914",

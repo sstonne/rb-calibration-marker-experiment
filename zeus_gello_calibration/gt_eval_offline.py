@@ -81,7 +81,7 @@ def main():
     ap.add_argument("--reproj-thr-px", type=float, default=10.0)
     ap.add_argument("--assume-flange-dz", type=float, default=None,
                     help="robot.json 에 pose 가 없을 때, 촬영 자세 = GT flange pose 의 z 에 이 값(mm)을 더한 것으로 가정 (그리퍼캠 사용)")
-    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "gt_eval_offline.json"))
+    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "results" / "gt_eval" / "gt_eval_offline.json"))
     args = ap.parse_args()
 
     base = REPO_ROOT / "zeus_gello_calibration"

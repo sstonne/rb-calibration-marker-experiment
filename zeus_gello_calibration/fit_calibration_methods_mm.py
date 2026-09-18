@@ -280,7 +280,7 @@ def main():
     ap.add_argument("--fixed-min-corners", type=int, default=8)
     ap.add_argument("--cube-observation-policy", default="legacy", choices=("legacy", "core_multiface"))
     ap.add_argument("--skip-heldout", action="store_true", help="held-out(느림)은 건너뛰고 train표만")
-    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "px_vs_mm_training.json"))
+    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "results" / "heldout" / "px_vs_mm_training.json"))
     args = ap.parse_args()
 
     data = load_all_data(args)

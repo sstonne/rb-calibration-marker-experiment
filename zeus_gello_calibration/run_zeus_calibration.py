@@ -71,7 +71,8 @@ def main():
     results = Path(args.results_root).resolve() if args.results_root else \
         REPO_ROOT / f"ABLATION_TEST_result_{time.strftime('%m%d')}" / f"zeus_{tag}"
     results.mkdir(parents=True, exist_ok=True)
-    fit_json = HERE / f"fit_통합_{tag}.json"
+    fit_json = HERE / "results" / "fits" / f"fit_통합_{tag}.json"
+    fit_json.parent.mkdir(parents=True, exist_ok=True)
     table1_dir = results / "table1_zeus"
     methods_json = table1_dir / "ABLATION_TEST_table1_methods.json"
     heldout_json = results / f"heldout_and_consistency_{tag}.json"

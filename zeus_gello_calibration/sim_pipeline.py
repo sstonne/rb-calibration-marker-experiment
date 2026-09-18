@@ -73,7 +73,7 @@ from fit_full_calibration import CHARUCO_BOARD_CONFIG, SESSION3_EVENT_OFFSET  # 
 from fit_placement_fk_ablation import SESSION2_EVENT_OFFSET  # noqa: E402
 from session2_pick_and_place import SESSION2_DIR_DEFAULT  # noqa: E402
 
-SCENE_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "sim_scene.json"
+SCENE_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "results" / "sim" / "sim_scene.json"
 IMAGE_W, IMAGE_H = 1280, 720
 FIXED_MIN_CORNERS = 8
 BOARD_MIN_CORNERS = 12
@@ -106,7 +106,7 @@ def build_scene(args):
     """실제 데이터/fit에서 정답 장면을 뽑아 JSON으로 저장."""
     data = load_all_data(args)
     K_map, D_map = data["K_map"], data["D_map"]
-    fit = json.loads((REPO_ROOT / "zeus_gello_calibration" / "fit_통합_no-fk.json").read_text())
+    fit = json.loads((REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "fit_통합_no-fk.json").read_text())
     cams = {int(k.split("_", 1)[0]): np.asarray(v, float) for k, v in fit["T_base_cam"].items()}
     gtc = np.asarray(fit["T_gripper_cam"], float)
     grasp = np.asarray(fit["T_gripper_cube"], float)
@@ -399,7 +399,7 @@ def main():
     ap.add_argument("--sweep", action="store_true")
     ap.add_argument("--seeds", type=int, default=3)
     ap.add_argument("--base-pixel", type=float, default=0.3, help="스윕 시 기본으로 깔아두는 코너 검출 노이즈(px)")
-    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "sim_results.json"))
+    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "results" / "sim" / "sim_results.json"))
     for f in NoiseConfig.__dataclass_fields__:
         ap.add_argument(f"--{f.replace('_', '-')}", type=float, default=None)
     # build-scene용 (load_all_data 인자)

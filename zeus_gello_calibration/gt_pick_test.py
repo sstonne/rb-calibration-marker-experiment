@@ -70,7 +70,7 @@ from zeus_gello_calibration.paths import (  # noqa: E402
 )
 
 GT_CUBE_CONFIG_PATH = REPO_ROOT / "targets" / "gt_cube" / "cube_config.json"
-FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "pass1_grasp_offset_replayed.json"
+FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "pass1_grasp_offset_replayed.json"
 FIXED_LABELS = ("039422061216", "fixed2", "fixed3")  # gripper 캠 제외 (바닥 큐브를 못 봄)
 
 

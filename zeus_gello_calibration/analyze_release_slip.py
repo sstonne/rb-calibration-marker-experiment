@@ -173,7 +173,8 @@ def main():
         print(f"  {lab:>13}: 중앙값 {np.round(med, 2)}  MAD {np.round(mad, 2)}  |·| 평균 {np.linalg.norm(A, axis=1).mean():.2f} mm (n={len(A)})")
     if spread:
         print(f"  카메라 간 편차(std) 평균: {np.round(np.mean(spread, axis=0), 2)} mm  -> 슬립 측정 자체의 노이즈 바닥")
-    out = Path(args.out) if args.out else Path(args.fit).with_name(f"release_slip_{args.capture_subdir}.json")
+    out = Path(args.out) if args.out else REPO_ROOT / "zeus_gello_calibration" / "results" / "slip" / f"release_slip_{args.capture_subdir}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(rows, indent=2))
     print(f"\nwrote {out}")
 

@@ -72,7 +72,7 @@ from session2_pick_and_place import (  # noqa: E402
 
 SESSION1_DIR_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "data" / "session1_handheld_fixed_cam_0909"
 SESSION3_DIR_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "data" / "session3_wrist_motion_gripper_cam_0909"
-FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "pass1_grasp_offset_replayed.json"
+FIT_JSON_DEFAULT = REPO_ROOT / "zeus_gello_calibration" / "results" / "fits" / "pass1_grasp_offset_replayed.json"
 GRIPPER_LOCAL_ID = LOCAL_CAM_IDS["gripper"]  # 3
 SESSION3_EVENT_OFFSET = 2000  # session1(0..15)/session2(1000..1014)와 안 겹치게
 
@@ -145,7 +145,7 @@ def main():
                     help="고정캠 extrinsics/grasp offset 초기값 출처 (fit_grasp_offset.py 결과)")
     ap.add_argument("--fixed-min-corners", type=int, default=8)
     ap.add_argument("--cube-observation-policy", default="legacy", choices=("legacy", "core_multiface"))
-    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "full_calibration_ablation.json"))
+    ap.add_argument("--out", default=str(REPO_ROOT / "zeus_gello_calibration" / "results" / "heldout" / "full_calibration_ablation.json"))
     args = ap.parse_args()
 
     session1_dir = Path(args.session1_dir)
