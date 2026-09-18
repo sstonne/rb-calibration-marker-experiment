@@ -119,10 +119,10 @@ def main():
         ax.axhline(TOP_Z, c="k", ls="--", lw=0.8); ax.axhline(29.5, c="gray", ls=":", lw=0.8); ax.axhline(-29.5, c="gray", ls=":", lw=0.8)
     axes[1].add_patch(plt.Rectangle((-29.5, -29.5), 59, 59, fill=False, ec="k", lw=1.2, ls="--"))
     axes[2].add_patch(plt.Rectangle((-29.5, -29.5), 59, 59, fill=False, ec="k", lw=1.2, ls="--"))
-    fig.suptitle(f"session2 {len(sets)}세트 × 고정캠 3대 depth를 큐브 좌표계로 모음 (색 = 세트, 점선 = 큐브 도면)", fontsize=13)
-    fig.tight_layout(); fig.savefig(out / "cubeframe_all_sets.png", dpi=100)
-    json.dump({"per_set_top_dz_mm": per_set, "stats": stats}, open(out / "cubeframe_stats.json", "w"), indent=2)
-    print("wrote", out / "cubeframe_all_sets.png")
+    fig.suptitle(f"[{args.row}] session2 {len(sets)}세트 × 고정캠 3대 depth를 큐브 좌표계로 모음 (색 = 세트, 점선 = 큐브 도면)", fontsize=13)
+    fig.tight_layout(); fig.savefig(out / f"cubeframe_all_sets_{args.row}.png", dpi=100)
+    json.dump({"row": args.row, "per_set_top_dz_mm": per_set, "stats": stats}, open(out / f"cubeframe_stats_{args.row}.json", "w"), indent=2)
+    print("wrote", out / f"cubeframe_all_sets_{args.row}.png")
 
 
 if __name__ == "__main__":
