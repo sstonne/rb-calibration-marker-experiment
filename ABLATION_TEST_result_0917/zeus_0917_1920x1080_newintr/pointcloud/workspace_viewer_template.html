@@ -1,0 +1,162 @@
+<title>Zeus Workcell Cloud</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ground:#0d1216; --panel:rgba(21,28,33,.92); --line:#263038; --text:#e8edf0; --muted:#8797a1;
+    --accent:#ff8a3d; --cam0:#ff5a5f; --cam1:#57d38c; --cam2:#4fa3ff;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  html,body{height:100%;margin:0;background:var(--ground);color:var(--text);font-family:var(--sans);overflow:hidden}
+  #gl{position:fixed;inset:0;display:block}
+  #panel{position:fixed;left:16px;top:16px;width:300px;max-height:calc(100% - 32px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px 16px;backdrop-filter:blur(6px);box-sizing:border-box}
+  h1{font-size:15px;font-weight:600;margin:0 0 2px;letter-spacing:.01em;text-wrap:balance}
+  .sub{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.45}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+  .row:first-of-type{border-top:0}
+  label.k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .seg{display:flex;gap:4px}
+  .seg button{font:500 12px var(--sans);color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:4px;padding:4px 8px;cursor:pointer}
+  .seg button[aria-pressed="true"]{color:var(--ground);background:var(--accent);border-color:var(--accent)}
+  .seg button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  input[type=range]{width:120px;accent-color:var(--accent)}
+  input[type=checkbox]{accent-color:var(--accent)}
+  .legend{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin-top:10px;font:12px var(--mono)}
+  .sw{width:12px;height:12px;border-radius:2px;display:inline-block}
+  .stats{margin-top:12px;font:12px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+  .stats b{color:var(--text);font-weight:500}
+  .hint{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5}
+  #axes{position:fixed;right:16px;bottom:16px;font:11px var(--mono);color:var(--muted)}
+  #readout{position:fixed;right:16px;top:16px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font:12px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+  #readout b{color:var(--accent);font-weight:500}
+  @media (max-width:640px){#panel{width:calc(100% - 32px)}#readout{display:none}}
+</style>
+<canvas id="gl"></canvas>
+<aside id="panel">
+  <h1>Zeus 작업 셀 포인트클라우드</h1>
+  <p class="sub">session2 15세트 × 고정캠 3대 depth를 A3 캘리브레이션(T_base_Ci)으로 로봇 base 좌표에 합침. 실제 색, 복셀 __VOX__mm, 단위 mm.</p>
+  <div class="row"><label class="k">색</label>
+    <div class="seg" id="colorMode">
+      <button aria-pressed="true" data-v="rgb">실제 색</button><button aria-pressed="false" data-v="cam">카메라</button><button aria-pressed="false" data-v="z">높이</button>
+    </div></div>
+  <div class="row"><label class="k" for="psize">점 크기</label><input id="psize" type="range" min="1" max="8" step="0.5" value="3"></div>
+  <div class="row"><label class="k">카메라 위치</label><input id="showCams" type="checkbox" checked></div>
+  <div class="row"><label class="k">FK 큐브 윤곽</label><input id="showCubes" type="checkbox" checked></div>
+  <div class="row"><label class="k">base 격자</label><input id="showGrid" type="checkbox" checked></div>
+  <div class="row"><label class="k">시점</label>
+    <div class="seg"><button id="vTop">위</button><button id="vIso">사선</button><button id="vSide">옆</button></div></div>
+  <div class="legend" id="legend">
+    <span class="sw" style="background:var(--cam0)"></span><span>039422061216 (D415)</span>
+    <span class="sw" style="background:var(--cam1)"></span><span>fixed2</span>
+    <span class="sw" style="background:var(--cam2)"></span><span>fixed3</span>
+    <span class="sw" style="background:var(--accent)"></span><span>FK 큐브 59mm 윤곽 (15세트)</span>
+  </div>
+  <div class="stats" id="stats"></div>
+  <p class="hint">드래그: 회전 · 휠: 확대 · 우클릭/Shift+드래그: 이동 · 더블클릭: 시점 초기화</p>
+</aside>
+<div id="readout">커서 아래 점: <b>—</b></div>
+<div id="axes">x → 앞 · y → 왼쪽 · z ↑ 위 (로봇 base)</div>
+<script type="text/plain" id="cloud">__B64__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  const META = __META__;
+  // ---- 데이터 해독 (stride 16: xyz float32, rgb u8, cam u8) ----
+  const bin = atob(document.getElementById('cloud').textContent.trim());
+  const buf = new ArrayBuffer(bin.length); const u8 = new Uint8Array(buf);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  const N = META.n, dv = new DataView(buf);
+  const pos = new Float32Array(N*3), rgb = new Float32Array(N*3), camc = new Float32Array(N*3), zc = new Float32Array(N*3);
+  const camCol = [[1,.35,.37],[.34,.83,.55],[.31,.64,1]];
+  let zmin=1e9,zmax=-1e9, bb=[[1e9,1e9,1e9],[-1e9,-1e9,-1e9]];
+  for (let i=0;i<N;i++){ const o=i*16;
+    const x=dv.getFloat32(o,true), y=dv.getFloat32(o+4,true), z=dv.getFloat32(o+8,true);
+    pos[i*3]=x; pos[i*3+1]=y; pos[i*3+2]=z;
+    rgb[i*3]=u8[o+12]/255; rgb[i*3+1]=u8[o+13]/255; rgb[i*3+2]=u8[o+14]/255;
+    const c=camCol[u8[o+15]]||[1,1,1]; camc[i*3]=c[0]; camc[i*3+1]=c[1]; camc[i*3+2]=c[2];
+    if(z<zmin)zmin=z; if(z>zmax)zmax=z;
+    for(let k=0;k<3;k++){const v=pos[i*3+k]; if(v<bb[0][k])bb[0][k]=v; if(v>bb[1][k])bb[1][k]=v;}
+  }
+  // 높이 색: -60..+120mm 를 파랑→노랑→빨강
+  for (let i=0;i<N;i++){ const t=Math.min(1,Math.max(0,(pos[i*3+2]+60)/180));
+    const r=t<.5?t*2:1, g=t<.5?t*2:2-t*2, b=t<.5?1-t*2:0; zc[i*3]=r; zc[i*3+1]=g; zc[i*3+2]=b; }
+
+  // ---- three.js ----
+  const canvas=document.getElementById('gl');
+  const renderer=new THREE.WebGLRenderer({canvas, antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0d1216);
+  const camera=new THREE.PerspectiveCamera(50, 1, 5, 20000); camera.up.set(0,0,1);
+  const target=new THREE.Vector3(-300,450,0);
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const colAttr=new THREE.BufferAttribute(rgb.slice(),3); geo.setAttribute('color', colAttr);
+  const mat=new THREE.PointsMaterial({size:3, vertexColors:true, sizeAttenuation:false});
+  const points=new THREE.Points(geo, mat); scene.add(points);
+
+  // 격자 (base xy 평면, 큐브 바닥 높이 -22mm), 100mm 간격
+  const grid=new THREE.Group();
+  { const g=new THREE.BufferGeometry(); const v=[]; for(let x=-1100;x<=500;x+=100){v.push(x,-400,-22,x,1300,-22);} for(let y=-400;y<=1300;y+=100){v.push(-1100,y,-22,500,y,-22);}
+    g.setAttribute('position',new THREE.Float32BufferAttribute(v,3)); grid.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x263038})));
+    const ax=(dir,col)=>{const a=new THREE.BufferGeometry(); a.setAttribute('position',new THREE.Float32BufferAttribute([0,0,0,dir[0],dir[1],dir[2]],3)); return new THREE.Line(a,new THREE.LineBasicMaterial({color:col}));};
+    grid.add(ax([150,0,0],0xff5a5f)); grid.add(ax([0,150,0],0x57d38c)); grid.add(ax([0,0,150],0x4fa3ff));
+    const bm=new THREE.Mesh(new THREE.BoxGeometry(30,30,30), new THREE.MeshBasicMaterial({color:0xe8edf0})); grid.add(bm); }
+  scene.add(grid);
+
+  // 카메라 마커: 위치 + 광축 방향의 피라미드
+  const cams=new THREE.Group();
+  META.cams.forEach((c,i)=>{ const T=c.T; const p=new THREE.Vector3(T[0][3],T[1][3],T[2][3]);
+    const m=new THREE.Matrix4().set(T[0][0],T[0][1],T[0][2],T[0][3], T[1][0],T[1][1],T[1][2],T[1][3], T[2][0],T[2][1],T[2][2],T[2][3], 0,0,0,1);
+    const col=[0xff5a5f,0x57d38c,0x4fa3ff][i];
+    const fr=[[0,0,0],[-40,-22,60],[40,-22,60],[40,22,60],[-40,22,60]]; const v=[];
+    for(let k=1;k<=4;k++){v.push(...fr[0],...fr[k]); v.push(...fr[k],...fr[k%4+1]);}
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+    const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:col})); l.applyMatrix4(m); cams.add(l);
+    const s=new THREE.Mesh(new THREE.SphereGeometry(10,12,12),new THREE.MeshBasicMaterial({color:col})); s.position.copy(p); cams.add(s); });
+  scene.add(cams);
+
+  // FK 큐브 윤곽: 본체 59 + I자 플레이트(31×88×17.5 @ z 47..64.5)
+  const cubes=new THREE.Group();
+  const box=(sx,sy,z0,z1)=>{const x=sx/2,y=sy/2; const c=[[-x,-y,z0],[x,-y,z0],[x,y,z0],[-x,y,z0],[-x,-y,z1],[x,-y,z1],[x,y,z1],[-x,y,z1]]; const e=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]]; const v=[]; e.forEach(([a,b])=>v.push(...c[a],...c[b])); return v;};
+  META.cubes.forEach(T=>{ const v=[...box(59,59,-29.5,29.5),...box(31,88,47,64.5)];
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+    const m=new THREE.Matrix4().set(T[0][0],T[0][1],T[0][2],T[0][3], T[1][0],T[1][1],T[1][2],T[1][3], T[2][0],T[2][1],T[2][2],T[2][3], 0,0,0,1);
+    const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xff8a3d})); l.applyMatrix4(m); cubes.add(l); });
+  scene.add(cubes);
+
+  // ---- 조작 (자체 orbit) ----
+  let theta=-2.2, phi=0.95, dist=1500, dragging=null, last=[0,0];
+  function setView(t,p,d){theta=t;phi=p;dist=d;}
+  function place(){ camera.position.set(target.x+dist*Math.cos(phi)*Math.cos(theta), target.y+dist*Math.cos(phi)*Math.sin(theta), target.z+dist*Math.sin(phi)); camera.lookAt(target); }
+  canvas.addEventListener('contextmenu',e=>e.preventDefault());
+  canvas.addEventListener('pointerdown',e=>{dragging=(e.button===2||e.shiftKey)?'pan':'rot'; last=[e.clientX,e.clientY]; canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointerup',()=>dragging=null);
+  canvas.addEventListener('pointermove',e=>{ readout(e); if(!dragging)return; const dx=e.clientX-last[0], dy=e.clientY-last[1]; last=[e.clientX,e.clientY];
+    if(dragging==='rot'){theta-=dx*0.006; phi=Math.min(1.55,Math.max(-1.55,phi+dy*0.006));}
+    else{ const right=new THREE.Vector3().subVectors(camera.position,target).cross(camera.up).normalize(); const up=new THREE.Vector3().copy(camera.up);
+      const k=dist*0.0012; target.addScaledVector(right,dx*k); target.addScaledVector(up,dy*k); } });
+  canvas.addEventListener('wheel',e=>{e.preventDefault(); dist*=Math.exp(e.deltaY*0.0012); dist=Math.min(8000,Math.max(80,dist));},{passive:false});
+  canvas.addEventListener('dblclick',()=>{target.set(-300,450,0); setView(-2.2,0.95,1500);});
+  document.getElementById('vTop').onclick=()=>setView(-Math.PI/2,1.54,1800);
+  document.getElementById('vIso').onclick=()=>setView(-2.2,0.95,1500);
+  document.getElementById('vSide').onclick=()=>setView(-Math.PI/2,0.05,1600);
+
+  // ---- UI ----
+  document.querySelectorAll('#colorMode button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#colorMode button').forEach(x=>x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true');
+    const src={rgb,cam:camc,z:zc}[b.dataset.v]; colAttr.array.set(src); colAttr.needsUpdate=true; });
+  document.getElementById('psize').oninput=e=>{mat.size=parseFloat(e.target.value);};
+  document.getElementById('showCams').onchange=e=>cams.visible=e.target.checked;
+  document.getElementById('showCubes').onchange=e=>cubes.visible=e.target.checked;
+  document.getElementById('showGrid').onchange=e=>grid.visible=e.target.checked;
+  document.getElementById('stats').innerHTML=`점 <b>${N.toLocaleString()}</b> (복셀 ${META.vox}mm)<br>x <b>${bb[0][0].toFixed(0)}</b> … <b>${bb[1][0].toFixed(0)}</b> mm<br>y <b>${bb[0][1].toFixed(0)}</b> … <b>${bb[1][1].toFixed(0)}</b> mm<br>z <b>${bb[0][2].toFixed(0)}</b> … <b>${bb[1][2].toFixed(0)}</b> mm<br>큐브 놓은 위치 <b>${META.cubes.length}</b>곳 · 카메라 <b>${META.cams.length}</b>대`;
+
+  // 커서 아래 점 좌표 (레이캐스트)
+  const ray=new THREE.Raycaster(); ray.params.Points.threshold=6; const ro=document.querySelector('#readout b'); let lastRead=0;
+  function readout(e){ const now=performance.now(); if(now-lastRead<80)return; lastRead=now;
+    const r=canvas.getBoundingClientRect(); const m=new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+    ray.setFromCamera(m,camera); const hit=ray.intersectObject(points,false)[0];
+    ro.textContent = hit ? `x ${hit.point.x.toFixed(0)}  y ${hit.point.y.toFixed(0)}  z ${hit.point.z.toFixed(0)} mm` : '—'; }
+
+  function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  addEventListener('resize',resize); resize();
+  (function loop(){ place(); renderer.render(scene,camera); requestAnimationFrame(loop); })();
+})();
+</script>
