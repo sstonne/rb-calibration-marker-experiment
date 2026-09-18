@@ -34,22 +34,22 @@
 
 ### 1.1 방법별 전체 지표 (1920×1080, held-out 15-fold)
 
-| Row | 학습 표적 | 최적화 | FK 처리 | train px | held-out px | cross-view held-out px | joint mm (held-out) 평균 / 중앙값 / P95 | joint 축별 \|dx\| / \|dy\| / \|dz\| mm | joint ° | 카메라 합의 mm |
+| Row | 학습 표적 | 최적화 | FK 처리 | train px | held-out px | cross-view held-out px | joint mm (held-out) RMS / 중앙값 / P95 | joint 축별 RMS x / y / z mm | joint ° RMS | 카메라 합의 mm |
 |---|---|---|---|---:|---:|---|---|---|---:|---:|
-| A1 | board+cube | Sequential | VISION | 2.83 | 2.85 | 5.53 | 1.29 / 1.26 / 1.82 | 0.88 / 0.43 / 0.75 | 0.26 | 2.80 |
-| A2 | board+cube | Unified | VISION | 2.62 | 2.62 | 5.77 | 1.22 / 1.17 / 1.72 | 0.80 / 0.41 / 0.72 | 0.24 | 3.11 |
-| **A3** | board+cube | Unified | **FtC FK fixed** | **1.62** | **1.77** | 4.90 | **0.62 / 0.56 / 1.13** | 0.25 / 0.48 / 0.10 | 0.24 | 2.32 |
-| B1 | cube | Unified | FtC FK fixed | 1.62 | 1.79 | 5.27 | 0.65 / 0.60 / 1.06 | 0.25 / 0.51 / 0.11 | 0.27 | 2.64 |
+| A1 | board+cube | Sequential | VISION | 2.83 | 2.85 | 5.53 | 1.33 / 1.26 / 1.82 | 0.92 / 0.56 / 0.79 | 0.29 | 2.80 |
+| A2 | board+cube | Unified | VISION | 2.62 | 2.62 | 5.77 | 1.27 / 1.17 / 1.72 | 0.86 / 0.52 / 0.76 | 0.27 | 3.11 |
+| **A3** | board+cube | Unified | **FtC FK fixed** | **1.62** | **1.77** | 4.90 | **0.68 / 0.56 / 1.13** | 0.30 / 0.59 / 0.15 | 0.30 | 2.32 |
+| B1 | cube | Unified | FtC FK fixed | 1.62 | 1.79 | 5.27 | 0.70 / 0.60 / 1.06 | 0.32 / 0.60 / 0.16 | 0.33 | 2.64 |
 
 - **train / held-out px**: 학습 데이터 vs 학습에서 뺀 placement의 큐브 재투영 RMSE. 둘이 같으면 과적합 없음.
 - **cross-view px**: 카메라 A의 PnP 포즈를 캘리브레이션으로 B에 옮겨 B의 검출 코너와 비교(모든 카메라 쌍). 카메라 간 일관성 검증.
-- **joint mm / °**: 고정캠 3대 공동 삼각측량 위치 vs FK@T_flange_cube, **held-out placement에서** 잰 값(모든 열이 held-out). **정확도 기준 지표.** P95 = 상위 5% 최악값.
-- **joint 축별 mm**: 같은 오차를 로봇 base 좌표 x / y / z 축으로 나눈 절대값 평균. VISION 행(A1, A2)은 x·z에 +0.7~0.9mm의 일정한 편향(부호 평균 +0.80 / +0.72)이 있고, FtC FK fixed 행은 x·z 편향이 사라지는 대신 y에 −0.35~−0.42mm 편향이 남음 — 4.1의 파지 y 흔들림(닫힘 방향)과 같은 축.
+- **joint mm / °**: 고정캠 3대 공동 삼각측량 위치 vs FK@T_flange_cube, **held-out placement에서** 잰 값(모든 열이 held-out). **정확도 기준 지표.** RMS = √(mean(e²)), px 열과 같은 정의. P95 = 상위 5% 최악값.
+- **joint 축별 RMS**: 같은 오차를 로봇 base 좌표 x / y / z 축으로 나눈 RMS. 세 축의 제곱합의 제곱근이 3D RMS (A3: √(0.30²+0.59²+0.15²) = 0.68). VISION 행(A1, A2)은 x·z에 +0.7~0.9mm의 일정한 편향(부호 평균 +0.80 / +0.72)이 있고, FtC FK fixed 행은 x·z 편향이 사라지는 대신 y에 −0.35~−0.42mm 편향이 남음 — 4.1의 파지 y 흔들림(닫힘 방향)과 같은 축.
 - **카메라 합의 mm**: 카메라 한 대씩 따로 구한 held-out 큐브 위치끼리의 pairwise 차이. 외부파라미터 일관성.
 - **FtC FK** : session1 비전으로 잰 flange-to-cube 변환 × 로봇 FK. fixed = 큐브 위치를 이 값으로 고정하고 카메라만 최적화.
 
 ### 1.2 결론
-- **FtC FK fixed 행(A3, B1)이 VISION 행(A1, A2)의 절반 오차** (1920: 0.62~0.65 vs 1.22~1.29mm). 세 해상도 모두 같은 결과.
+- **FtC FK fixed 행(A3, B1)이 VISION 행(A1, A2)의 절반 오차** (1920 RMS: 0.68~0.70 vs 1.27~1.33mm). 세 해상도 모두 같은 결과.
 - FK를 고정하면 보드 유무(A3 vs B1)의 차이는 0.03mm 이내. 이유: 고정캠과 그리퍼캠을 잇는 공유 변수가 큐브 위치뿐인데, FtC FK fixed는 그것을 FK로 고정해 변수에서 빼므로 두 그룹이 독립이 됨 → 보드·그리퍼캠 쪽 정보가 고정캠 결과에 영향을 줄 수 없음. 같은 이유로 FK 고정 + Sequential 행은 A3와 동일해져 표에서 제외.
 - 통합의 효과는 큐브 위치가 자유 변수일 때 나타남: A1(순차) 1.29 vs A2(통합) 1.22mm, 완전 독립(두 그룹이 아무것도 공유하지 않음, `fit_calibration_methods.py` 독립_no-fk) 1.55 vs 통합_no-fk 1.10mm.
 - **추가 예정 (데이터 보강 후 재평가):**
@@ -58,7 +58,7 @@
 
 ---
 
-## 2. 해상도 효과 요약 (A3 기준)
+## 2. 해상도 효과 요약 (A3 기준, 평균값)
 
 | 지표 | 1920×1080 | 1280×720 | 848×480 |
 |---|---:|---:|---:|
