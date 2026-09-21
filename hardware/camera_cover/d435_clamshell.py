@@ -53,6 +53,13 @@ PIN_D = 3.0           # 정렬 다월 (3mm 봉을 따로 꽂는다)
 PIN_DEPTH = 2.6       # 한 쪽당 구멍 깊이
 PIN_Y = 9.5           # 나사 두 개 사이
 
+# 케이블이 나가는 끝. 3D 뷰어에서 찍은 자리가 x=-38.2, 깊이 20~22mm, 쪼개는 면
+# 기준 +-4.5mm 였다. 커버가 카메라 끝을 감싸는 어깨가 USB-C 플러그를 막는다.
+# 그래서 그 끝을 귀 뒤쪽부터 완전히 터 준다.
+CABLE_SIDE = -1       # -1 = -x 쪽 끝, +1 = +x 쪽 끝
+CABLE_X = 33.0        # 이 바깥으로는 전부 들어낸다
+CABLE_Y = 18.5        # 이 깊이부터 뒤로 (귀가 끝나는 지점)
+
 
 def resample_angular(poly, n=RING_N):
     """원점에서 각도 n 방향으로 광선을 쏴 볼록 다각형의 변과 만나는 점을 구한다.
@@ -175,6 +182,12 @@ def shell():
         # 한쪽에 핀을 세우면 그 쪽이 핀 두 개로만 베드에 서서 출력이 안 된다.
         cuts.append(cyl(PIN_D + 0.25, 2 * PIN_DEPTH,
                         (sx * TAB_SCREW_X, PIN_Y, ZC), axis="z"))
+
+    # 케이블 나가는 끝을 뒤쪽까지 연다
+    if CABLE_SIDE < 0:
+        cuts.append(span(-ox - 20, -CABLE_X, CABLE_Y, OY + 1, -40, ZC + 40))
+    else:
+        cuts.append(span(CABLE_X, ox + 20, CABLE_Y, OY + 1, -40, ZC + 40))
 
     for c in cuts:
         solid = solid.difference(c, engine=ENGINE)
