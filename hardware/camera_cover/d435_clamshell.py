@@ -24,22 +24,34 @@ import sys
 import numpy as np
 import trimesh
 
-from d435_gripper_cover import (CLR, ENGINE, HERE, M3_CLR, M3_CSK, M3_XY,
-                                OY, PAD_EXTRA, PAD_X, PAD_Y, PROF, REAR_HALF_X,
-                                REAR_WALL, TRIPOD, WALL, CY, CZ, ZC,
+from d435_gripper_cover import (CAM_D, CAM_H, ENGINE, HERE, M3_CLR, M3_CSK,
+                                M3_XY, PAD_EXTRA, PAD_X, PAD_Y, PROF,
+                                REAR_HALF_X, REAR_WALL, TRIPOD, TRIPOD_D, WALL,
                                 bx, csk, cyl, offset_poly, span)
+
+# 클램셸은 슬리브와 공차를 따로 쓴다.
+#
+# 슬리브는 카메라를 앞에서 90mm 밀어 넣어야 해서 공차가 없으면 조립 자체가
+# 안 된다. 클램셸은 위아래로 덮는 방식이라 그 제약이 없고, 오히려 0 으로 두면
+# 두 쪽이 카메라를 가볍게 물어 준다. 실물 출력에서 0.30 은 과했다.
+CLR = 0.0
+
+CY = CAM_D + 2 * CLR          # 캐비티 깊이
+CZ = CAM_H + 2 * CLR          # 캐비티 높이
+ZC = CZ / 2                   # 쪼개는 평면 = 카메라 높이 중앙
+OY = CY + REAR_WALL           # 외형 깊이
 
 RING_N = 512          # 단면 하나를 몇 점으로 다시 샘플할지 (r_grid 와 같다)
 
 # 두 쪽을 조이는 귀
 TAB_X = (46.0, 55.5)  # 안쪽 -> 바깥쪽
-TAB_Y = (4.0, 22.0)
+TAB_Y = (0.5, 18.5)   # 렌즈 쪽으로 3.5mm 당김. 뒤쪽 USB-C 케이블 공간 확보
 TAB_HALF_Z = 3.5      # 쪼갠 뒤 한 쪽당 3.5mm
 TAB_SCREW_X = 50.7
-TAB_SCREW_Y = (8.0, 18.0)
+TAB_SCREW_Y = (4.5, 14.5)
 PIN_D = 3.0           # 정렬 다월 (3mm 봉을 따로 꽂는다)
 PIN_DEPTH = 2.6       # 한 쪽당 구멍 깊이
-PIN_Y = 13.0
+PIN_Y = 9.5           # 나사 두 개 사이
 
 
 def resample_angular(poly, n=RING_N):
@@ -199,7 +211,7 @@ def finish_top(top):
 
 def finish_bottom(bottom):
     """삼각대 구멍, 방열 슬롯, 너트 자리, 정렬 핀."""
-    cuts = [cyl(11.0, 30.0, (TRIPOD[0], CLR + TRIPOD[2], -10.0), axis="z")]
+    cuts = [cyl(TRIPOD_D, 30.0, (TRIPOD[0], CLR + TRIPOD[2], -10.0), axis="z")]
     for sx in (-1, 1):
         for x0 in (20.0, 32.0):
             cuts.append(bx((5.0, 16.0, 30.0), (sx * x0, CLR + TRIPOD[2], -10.0)))

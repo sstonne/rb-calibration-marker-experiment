@@ -47,6 +47,10 @@ PAD_Y = (7.0, 21.0)   # 앞면에서의 깊이
 M3_CLR = 3.4
 M3_CSK = 6.4
 
+# 바닥 삼각대 구멍. 공식 메시에서 잰 1/4-20 구멍 지름과 같게 뚫는다.
+# 커버 벽을 통과시켜 1/4-20 나사를 조일 생각이면 6.8 정도로 키워야 한다.
+TRIPOD_D = 6.35
+
 # --------------------------------------------------------------------- 암 제원
 FLANGE_D = 50.0
 FLANGE_T = 6.0
@@ -209,7 +213,8 @@ def sleeve_body(clip_x=None, with_pad=True, with_vents=True):
 
     if with_vents:
         # 삼각대 구멍 접근 (바닥, 앞면에서 14.9mm) + 방열 슬롯
-        cuts.append(cyl(11.0, 20.0, (TRIPOD[0], CLR + TRIPOD[2], -1.0), axis="z"))
+        cuts.append(cyl(TRIPOD_D, 20.0, (TRIPOD[0], CLR + TRIPOD[2], -1.0),
+                        axis="z"))
         for sx in (-1, 1):
             for x0 in (20.0, 32.0):
                 cuts.append(bx((5.0, 16.0, 20.0), (sx * x0, CLR + TRIPOD[2], -1.0)))
