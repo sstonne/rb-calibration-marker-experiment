@@ -60,6 +60,20 @@ CABLE_SIDE = -1       # -1 = -x 쪽 끝, +1 = +x 쪽 끝
 CABLE_X = 33.0        # 이 바깥으로는 전부 들어낸다
 CABLE_Y = 18.5        # 이 깊이부터 뒤로 (귀가 끝나는 지점)
 
+# 쪼개는 면을 카메라 중앙보다 이만큼 내린다.
+#
+# 카메라 뒷면 M3 두 개는 둘 다 높이 정중앙(z=ZC)에 있다. 쪼개는 면이 거기 있으면
+# 구멍이 반씩 갈려 나사가 어느 쪽도 제대로 물지 못한다. 면을 내려서 두 구멍을
+# 통째로 윗쪽에 넣는다. 윗쪽은 암이 붙는 쪽이라 카메라 -> 마운트 하중 경로가
+# 직접 이어진다.
+#
+# 대가는 윗쪽을 수직으로 들어올릴 때 +x 끝에서 생기는 0.5mm 언더컷뿐이다
+# (얇은 벽이 그만큼 벌어지면 된다). 구멍 아래로는 1.3mm 살이 남는다.
+SPLIT_DROP = 3.0
+
+
+SPLIT_Z = ZC - SPLIT_DROP     # 실제로 쪼개는 높이
+
 
 def resample_angular(poly, n=RING_N):
     """원점에서 각도 n 방향으로 광선을 쏴 볼록 다각형의 변과 만나는 점을 구한다.
@@ -165,7 +179,7 @@ def shell():
     for sx in (-1, 1):
         x0, x1 = sorted((sx * TAB_X[0], sx * TAB_X[1]))
         solid = solid.union(span(x0, x1, TAB_Y[0], TAB_Y[1],
-                                 ZC - TAB_HALF_Z, ZC + TAB_HALF_Z), engine=ENGINE)
+                                 SPLIT_Z - TAB_HALF_Z, SPLIT_Z + TAB_HALF_Z), engine=ENGINE)
 
     cuts = [cavity]
     # 뒷판은 가운데만 남겨 USB-C 를 연다
@@ -177,11 +191,11 @@ def shell():
     # 귀의 M3 4개
     for sx in (-1, 1):
         for y in TAB_SCREW_Y:
-            cuts.append(cyl(M3_CLR, 40.0, (sx * TAB_SCREW_X, y, ZC), axis="z"))
+            cuts.append(cyl(M3_CLR, 40.0, (sx * TAB_SCREW_X, y, SPLIT_Z), axis="z"))
         # 정렬 다월 구멍. 양쪽에 구멍만 내고 3mm 봉(필라멘트 토막)을 꽂는다.
         # 한쪽에 핀을 세우면 그 쪽이 핀 두 개로만 베드에 서서 출력이 안 된다.
         cuts.append(cyl(PIN_D + 0.25, 2 * PIN_DEPTH,
-                        (sx * TAB_SCREW_X, PIN_Y, ZC), axis="z"))
+                        (sx * TAB_SCREW_X, PIN_Y, SPLIT_Z), axis="z"))
 
     # 케이블 나가는 끝을 뒤쪽까지 연다
     if CABLE_SIDE < 0:
@@ -195,12 +209,12 @@ def shell():
 
 
 def split(solid):
-    """z = ZC 에서 위/아래로 자른다."""
+    """SPLIT_Z 에서 위/아래로 자른다."""
     big = 200.0
     top = solid.intersection(
-        bx((big, big, big), (0, 0, ZC + big / 2)), engine=ENGINE)
+        bx((big, big, big), (0, 0, SPLIT_Z + big / 2)), engine=ENGINE)
     bottom = solid.intersection(
-        bx((big, big, big), (0, 0, ZC - big / 2)), engine=ENGINE)
+        bx((big, big, big), (0, 0, SPLIT_Z - big / 2)), engine=ENGINE)
     return top, bottom
 
 
@@ -229,7 +243,7 @@ def finish_bottom(bottom):
         for x0 in (20.0, 32.0):
             cuts.append(bx((5.0, 16.0, 30.0), (sx * x0, CLR + TRIPOD[2], -10.0)))
         for y in TAB_SCREW_Y:                 # M3 육각 너트 자리 (아래에서 끼움)
-            cuts.append(cyl(6.35, 2.7, (sx * TAB_SCREW_X, y, ZC - TAB_HALF_Z + 1.35),
+            cuts.append(cyl(6.35, 2.7, (sx * TAB_SCREW_X, y, SPLIT_Z - TAB_HALF_Z + 1.35),
                             axis="z", sections=6))
     for c in cuts:
         bottom = bottom.difference(c, engine=ENGINE)
@@ -240,7 +254,7 @@ def finish_bottom(bottom):
 def lay_flat(mesh, flip):
     """맞대는 면이 베드에 닿도록. 두 쪽 다 서포트 없이 출력된다."""
     m = mesh.copy()
-    m.apply_translation([0, 0, -ZC])
+    m.apply_translation([0, 0, -SPLIT_Z])
     if flip:
         m.apply_transform(trimesh.transformations.rotation_matrix(np.pi, [1, 0, 0]))
     m.apply_translation([0, 0, -m.bounds[0][2]])
