@@ -1,0 +1,37 @@
+row,fold,split,metric,pair_type,converged,training_placement_ids,heldout_placement_ids,rmse_px,sum_squared_error_px2,n_sets,n_events,n_observations,n_pairs,n_directions,n_corners,n_residual_components
+A5,ALL,all,cube_reprojection,overall,True,"[4, 8, 9, 12]",[],2.226397526997055,515.5119786147345,4,4,8,0,0,104,208
+A5,ALL,all,cross_view,overall,True,"[4, 8, 9, 12]",[],4.431191061722987,2042.0872394513435,4,4,8,4,8,104,208
+A5,ALL,all,cross_view,fixed_fixed,True,"[4, 8, 9, 12]",[],Pending,0.0,0,0,0,0,0,0,0
+A5,ALL,all,cross_view,fixed_gripper,True,"[4, 8, 9, 12]",[],4.431191061722987,2042.0872394513435,4,4,8,4,8,104,208
+A5,4,train,cube_reprojection,overall,True,"[8, 9, 12]",[4],2.237708032960656,380.55763029902533,3,3,6,0,0,76,152
+A5,4,train,cross_view,overall,True,"[8, 9, 12]",[4],4.026932816049921,1232.430280778461,3,3,6,3,6,76,152
+A5,4,train,cross_view,fixed_fixed,True,"[8, 9, 12]",[4],Pending,0.0,0,0,0,0,0,0,0
+A5,4,train,cross_view,fixed_gripper,True,"[8, 9, 12]",[4],4.026932816049921,1232.430280778461,3,3,6,3,6,76,152
+A5,4,heldout_test,cube_reprojection,overall,True,"[8, 9, 12]",[4],2.2234054694582235,138.41889268526882,1,1,2,0,0,28,56
+A5,4,heldout_test,cross_view,overall,True,"[8, 9, 12]",[4],5.413566606473152,820.5876952761947,1,1,2,1,2,28,56
+A5,4,heldout_test,cross_view,fixed_fixed,True,"[8, 9, 12]",[4],Pending,0.0,0,0,0,0,0,0,0
+A5,4,heldout_test,cross_view,fixed_gripper,True,"[8, 9, 12]",[4],5.413566606473152,820.5876952761947,1,1,2,1,2,28,56
+A5,8,train,cube_reprojection,overall,True,"[4, 9, 12]",[8],2.478615910581149,466.9087992461375,3,3,6,0,0,76,152
+A5,8,train,cross_view,overall,True,"[4, 9, 12]",[8],4.4398884087588595,1498.1582902495768,3,3,6,3,6,76,152
+A5,8,train,cross_view,fixed_fixed,True,"[4, 9, 12]",[8],Pending,0.0,0,0,0,0,0,0,0
+A5,8,train,cross_view,fixed_gripper,True,"[4, 9, 12]",[8],4.4398884087588595,1498.1582902495768,3,3,6,3,6,76,152
+A5,8,heldout_test,cube_reprojection,overall,True,"[4, 9, 12]",[8],1.500855346421803,63.071869584721505,1,1,2,0,0,28,56
+A5,8,heldout_test,cross_view,overall,True,"[4, 9, 12]",[8],4.992419194349463,697.8789835390502,1,1,2,1,2,28,56
+A5,8,heldout_test,cross_view,fixed_fixed,True,"[4, 9, 12]",[8],Pending,0.0,0,0,0,0,0,0,0
+A5,8,heldout_test,cross_view,fixed_gripper,True,"[4, 9, 12]",[8],4.992419194349463,697.8789835390502,1,1,2,1,2,28,56
+A5,9,train,cube_reprojection,overall,True,"[4, 8, 12]",[9],2.42623594644999,470.9296694276864,3,3,6,0,0,80,160
+A5,9,train,cross_view,overall,True,"[4, 8, 12]",[9],4.9774523771488,1982.002573342739,3,3,6,3,6,80,160
+A5,9,train,cross_view,fixed_fixed,True,"[4, 8, 12]",[9],Pending,0.0,0,0,0,0,0,0,0
+A5,9,train,cross_view,fixed_gripper,True,"[4, 8, 12]",[9],4.9774523771488,1982.002573342739,3,3,6,3,6,80,160
+A5,9,heldout_test,cube_reprojection,overall,True,"[4, 8, 12]",[9],1.8240160180628644,79.84882641959778,1,1,2,0,0,24,48
+A5,9,heldout_test,cross_view,overall,True,"[4, 8, 12]",[9],2.240033761667362,120.42603008183117,1,1,2,1,2,24,48
+A5,9,heldout_test,cross_view,fixed_fixed,True,"[4, 8, 12]",[9],Pending,0.0,0,0,0,0,0,0,0
+A5,9,heldout_test,cross_view,fixed_gripper,True,"[4, 8, 12]",[9],2.240033761667362,120.42603008183117,1,1,2,1,2,24,48
+A5,12,train,cube_reprojection,overall,True,"[4, 8, 9]",[12],1.7008590509436075,231.4337208941431,3,3,6,0,0,80,160
+A5,12,train,cross_view,overall,True,"[4, 8, 9]",[12],4.269784650409726,1458.4848768699603,3,3,6,3,6,80,160
+A5,12,train,cross_view,fixed_fixed,True,"[4, 8, 9]",[12],Pending,0.0,0,0,0,0,0,0,0
+A5,12,train,cross_view,fixed_gripper,True,"[4, 8, 9]",[12],4.269784650409726,1458.4848768699603,3,3,6,3,6,80,160
+A5,12,heldout_test,cube_reprojection,overall,True,"[4, 8, 9]",[12],4.071811001310063,397.9114759293518,1,1,2,0,0,24,48
+A5,12,heldout_test,cross_view,overall,True,"[4, 8, 9]",[12],3.732024129057437,334.27209839680614,1,1,2,1,2,24,48
+A5,12,heldout_test,cross_view,fixed_fixed,True,"[4, 8, 9]",[12],Pending,0.0,0,0,0,0,0,0,0
+A5,12,heldout_test,cross_view,fixed_gripper,True,"[4, 8, 9]",[12],3.732024129057437,334.27209839680614,1,1,2,1,2,24,48

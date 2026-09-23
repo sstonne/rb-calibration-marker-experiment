@@ -1,0 +1,22 @@
+session root: /home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/data/session1_handheld_fixed_cam_0909  (5 captures: [0, 4, 6, 12, 15])
+  local cam 0 (039422061216): fx=1368.1 fy=1369.3
+  local cam 1 (fixed2): fx=1366.0 fy=1369.5
+  local cam 2 (fixed3): fx=1382.9 fy=1385.7
+  local cam 3 (gripper): fx=1383.7 fy=1383.5
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+loaded 13 cube observations (policy=legacy)
+PnP-accepted cube detections per camera (out of 5 captures):
+  cam0 (039422061216): 5 pnp-accepted, 4 selected for calibration
+  cam1 (fixed2): 5 pnp-accepted, 4 selected for calibration
+  cam2 (fixed3): 5 pnp-accepted, 5 selected for calibration
+  cam3 (gripper): 0 pnp-accepted, 0 selected for calibration
+  cam0 (039422061216): only 4 usable cube observations, skipping as an initializer
+  cam1 (fixed2): only 4 usable cube observations, skipping as an initializer
+  cam2 (fixed3): initial T_gripper_cube translation_mm=[-0.0, 0.1, 160.4] (n_poses=5, method=SHAH, residual_median_mm=1.11, residual_median_deg=0.24)
+  cam3 (gripper): only 0 usable cube observations, skipping as an initializer
+initial T_gripper_cube (robust avg of 1 cams): translation_mm=[-0.0, 0.1, 160.4] dispersion={'num_total': 1, 'num_inliers': 1, 'inlier_ratio': 1.0, 'translation_std_mm': 0.0, 'rotation_std_deg': 0.0}
+cameras with no independent initializer (excluded from the joint solve): ['039422061216', 'fixed2', 'gripper']
+solving with 2 free SE(3) variables over 5 observations (8 dropped: camera(s) with no initializer)
+solve success=True train_reprojection_rmse_px=0.6498 (initial was 1.3053)
+FITTED T_gripper_cube: translation_mm=[-0.03, -0.16, 162.26] |t|_mm=162.26 rotvec_deg=[-179.68, 1.5, 0.06] |r|_deg=179.68
+wrote /home/sstone/rb-calibration-marker-experiment/ABLATION_TEST_result_0917/data_ratio_0917_1920x1080/r30_0/fit.json

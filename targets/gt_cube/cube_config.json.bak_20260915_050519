@@ -1,0 +1,30 @@
+{
+  "_comment": [
+    "Cube config for the separate GT-validation cube (see cube_solid.json).",
+    "Same six AprilTag 36h11 markers and sizes as the main cube; only the body",
+    "shape and the two top-marker centers differ.",
+    "Object frame: origin at the center of the 59 x 59 x 59 mm body, +Z up.",
+    "  side markers 2..5 : body face centers, z = 0",
+    "  top markers 0,1   : centered on the two 31 x 31 I-plate blocks,",
+    "                      y = -/+28, on the top surface z = +74.5",
+    "face_roll_deg is COPIED from the main cube and is NOT yet verified for this",
+    "physical cube -- re-run the face-roll self-calibration before trusting it."
+  ],
+  "cube_side_m": 0.059,
+  "marker_size_m": 0.051,
+  "dictionary_name": "DICT_APRILTAG_36h11",
+  "marker_ids": [0, 1, 2, 3, 4, 5],
+  "id_to_face": {"0": "+Z", "1": "+Z", "2": "+X", "3": "+Y", "4": "-X", "5": "-Y"},
+  "marker_size_by_id": {"0": 0.025, "1": 0.025, "2": 0.051, "3": 0.051, "4": 0.051, "5": 0.051},
+  "marker_center_m": {
+    "0": [0.0, -0.028, 0.0745],
+    "1": [0.0, 0.028, 0.0745],
+    "2": [0.0295, 0.0, 0.0],
+    "3": [0.0, 0.0295, 0.0],
+    "4": [-0.0295, 0.0, 0.0],
+    "5": [0.0, -0.0295, 0.0]
+  },
+  "corner_reorder": {"0": [0,1,2,3], "1": [0,1,2,3], "2": [0,1,2,3], "3": [0,1,2,3], "4": [0,1,2,3], "5": [0,1,2,3]},
+  "face_roll_deg": {"0": 0.0, "1": 0.0, "2": 90.0, "3": 180.0, "4": 270.0, "5": 0.0},
+  "marker_inset_m": 0.0
+}

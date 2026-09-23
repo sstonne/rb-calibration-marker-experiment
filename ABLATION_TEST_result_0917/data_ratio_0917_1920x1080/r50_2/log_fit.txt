@@ -1,0 +1,22 @@
+session root: /home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/data/session1_handheld_fixed_cam_0909  (8 captures: [3, 4, 6, 7, 9, 10, 11, 13])
+  local cam 0 (039422061216): fx=1368.1 fy=1369.3
+  local cam 1 (fixed2): fx=1366.0 fy=1369.5
+  local cam 2 (fixed3): fx=1382.9 fy=1385.7
+  local cam 3 (gripper): fx=1383.7 fy=1383.5
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+loaded 22 cube observations (policy=legacy)
+PnP-accepted cube detections per camera (out of 8 captures):
+  cam0 (039422061216): 7 pnp-accepted, 7 selected for calibration
+  cam1 (fixed2): 8 pnp-accepted, 7 selected for calibration
+  cam2 (fixed3): 8 pnp-accepted, 8 selected for calibration
+  cam3 (gripper): 0 pnp-accepted, 0 selected for calibration
+  cam0 (039422061216): initial T_gripper_cube translation_mm=[-0.9, -0.4, 159.7] (n_poses=7, method=SHAH, residual_median_mm=0.81, residual_median_deg=0.28)
+  cam1 (fixed2): initial T_gripper_cube translation_mm=[-1.2, 1.1, 162.9] (n_poses=7, method=SHAH, residual_median_mm=2.31, residual_median_deg=0.24)
+  cam2 (fixed3): initial T_gripper_cube translation_mm=[0.5, 0.7, 164.5] (n_poses=8, method=SHAH, residual_median_mm=1.69, residual_median_deg=0.37)
+  cam3 (gripper): only 0 usable cube observations, skipping as an initializer
+initial T_gripper_cube (robust avg of 3 cams): translation_mm=[-0.5, 0.5, 162.4] dispersion={'num_total': 3, 'num_inliers': 3, 'inlier_ratio': 1.0, 'translation_std_mm': 0.7427177409114654, 'rotation_std_deg': 0.1921748190197215}
+cameras with no independent initializer (excluded from the joint solve): ['gripper']
+solving with 4 free SE(3) variables over 22 observations (0 dropped: camera(s) with no initializer)
+solve success=True train_reprojection_rmse_px=0.8250 (initial was 3.9831)
+FITTED T_gripper_cube: translation_mm=[-0.1, -0.42, 160.43] |t|_mm=160.44 rotvec_deg=[-179.81, 2.17, 0.07] |r|_deg=179.82
+wrote /home/sstone/rb-calibration-marker-experiment/ABLATION_TEST_result_0917/data_ratio_0917_1920x1080/r50_2/fit.json

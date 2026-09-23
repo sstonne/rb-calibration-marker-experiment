@@ -1,0 +1,17 @@
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+session2 그리퍼캠 큐브 관측치: 0개 (신규 -- 예전엔 빠뜨렸음)
+[s3-gripper-only] session3 고정캠 보드 관측 10개 제외
+session3 고정캠 보드 관측치: 0개 (신규 -- 예전엔 빠뜨렸음)
+session3 큐브 관측치 (세트 14 자리, FK 앵커와 3.2mm): 고정캠 15개 / 그리퍼캠 0개
+session2 보드 관측치: 고정캠 10개 / 그리퍼캠 0개 (신규 -- 예전엔 빠뜨렸음)
+session1 24개 / session2-고정캠 19개 / session2-그리퍼캠 0개 / session2-보드 10개 / session3-고정캠 0개 / session3-그리퍼캠 0개
+총 관측치: 68개 (통합/독립 공통, 같은 양)
+
+Traceback (most recent call last):
+  File "/home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/table1_zeus.py", line 1292, in <module>
+    main()
+  File "/home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/table1_zeus.py", line 1079, in main
+    gtc_init, board_init, eih_diag = estimate_board_handeye_initial(
+  File "/home/sstone/rb-calibration-marker-experiment/calibration_pipeline/table1.py", line 284, in estimate_board_handeye_initial
+    raise RuntimeError(f"train-only board hand-eye initialization needs >=5 poses, got {len(poses)}")
+RuntimeError: train-only board hand-eye initialization needs >=5 poses, got 0

@@ -1,0 +1,29 @@
+cube config: /home/sstone/rb-calibration-marker-experiment/targets/gt_cube/cube_config.json (json_config)
+session2 그리퍼캠 큐브 관측치: 10개 (신규 -- 예전엔 빠뜨렸음)
+[s3-gripper-only] session3 고정캠 보드 관측 30개 제외
+session3 고정캠 보드 관측치: 0개 (신규 -- 예전엔 빠뜨렸음)
+[session3 큐브] session2 세트 자리에 없음(최근접 45.5mm) -> 큐브 관측 미사용
+session2 보드 관측치: 고정캠 29개 / 그리퍼캠 10개 (신규 -- 예전엔 빠뜨렸음)
+session1 30개 / session2-고정캠 28개 / session2-그리퍼캠 10개 / session2-보드 39개 / session3-고정캠 0개 / session3-그리퍼캠 9개
+총 관측치: 116개 (통합/독립 공통, 같은 양)
+
+T_gripper_cam 초기값 t_mm=[40.03, 36.54, 33.58] ({'method': 'PARK', 'score_mm_equivalent': 8.222546139831891, 'n_poses': 9})
+
+placement 10개 leave-one-out x row 1개
+
+      A5 fold 1/10
+      A5 fold 2/10
+      A5 fold 3/10
+      A5 fold 4/10
+      A5 fold 5/10
+      A5 fold 6/10
+      A5 fold 7/10
+      A5 fold 8/10
+      A5 fold 9/10
+      A5 fold 10/10
+  A5  FtC FK fixed (P1 VISION flange-to-cube)  [21s]
+      Cube(corrected-FK-ref) ALL=1.556  Train=1.561  Heldout=1.685 px
+      Cross-view  ALL=5.656  Train=5.643  Heldout=5.673 px
+
+[SAVE] ABLATION_TEST_result_0917/data_ratio_0917_1920x1080/r70_3/ABLATION_TEST_table1_methods.json
+[SAVE] ABLATION_TEST_result_0917/data_ratio_0917_1920x1080/r70_3/ABLATION_TEST_TABLE1_RESULTS.md

@@ -1,0 +1,285 @@
+{
+  "_comment": [
+    "Cube config for the separate GT-validation cube (see cube_solid.json).",
+    "Same six AprilTag 36h11 markers and sizes as the main cube; only the body",
+    "shape and the two top-marker centers differ.",
+    "Object frame: origin at the center of the 59 x 59 x 59 mm body, +Z up.",
+    "  overall 59 x 88 x 94 mm = body 59 + top protrusion 35 (riser 25 + I-plate 10)",
+    "  side markers 2..5 : body face centers, z = 0",
+    "  top markers 0,1   : centered on the two 31 x 31 I-plate blocks,",
+    "                      y = -/+28.5, on the top surface z = +64.5",
+    "face_roll_deg is COPIED from the main cube and is NOT yet verified for this",
+    "physical cube -- re-run the face-roll self-calibration before trusting it.",
+    "marker_pose_4x4 (side markers 2..5) self-calibrated on 2026-09-15 by",
+    "zeus_gello_calibration/calibrate_gt_cube_geometry.py from 0914 captures:",
+    "multi-marker corner RMSE 2.29 -> 0.49 px. Gauge markers: [5].",
+    "Global marker scale 0.99 applied (marker sizes and all marker positions) on 2026-09-15 after cam 039422061216 intrinsics were re-shot: scale sweep 0.985..1.01 of the 0914 unified fit gives train RMSE 0.549 (1.0) -> 0.529 (0.99) px and session2 posterior cube agreement 6.3 -> 1.6 mm. Printed markers ~1% smaller than nominal (51 -> 50.49 mm, 25 -> 24.75 mm). Please confirm with calipers.",
+    "2026-09-17: marker scale reverted 0.99 -> 1.0. Basis: operator (sstone) confirms the printed markers are dimensionally correct at nominal size (51 mm / 25 mm); the 0.99 factor had been selected by a data sweep, not by physical measurement. Reverted values: marker sizes, marker_center_m, and the translation column of marker_pose_4x4 were all divided by 0.99 (rotations and cube_side_m untouched). EXPECTED SIDE EFFECTS from the 0915 sweep record: train RMSE 0.529 -> 0.549 px, session2 posterior cube agreement 1.6 -> 6.3 mm, and the z common-mode bias (+2.0~2.2 mm) should drop toward 0. If the 8 mm camera-pair disagreement reappears, that error is real and was previously being absorbed by the scale factor - investigate intrinsics, not the marker size.",
+    "2026-09-17: I-plate neck measured with calipers at 26mm (not the 25mm drawing value used previously) -- see cube_solid.json. This shifts the top-marker gauge (0,1) I-plate block center from y=+/-28 to y=+/-28.5mm. marker_center_m for ids 0/1 updated accordingly; calibrate_gt_cube_geometry.py then re-run with --write to re-fit the side markers (2..5) against the corrected gauge."
+  ],
+  "cube_side_m": 0.059,
+  "marker_size_m": 0.051,
+  "dictionary_name": "DICT_APRILTAG_36h11",
+  "marker_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "id_to_face": {
+    "0": "+Z",
+    "1": "+Z",
+    "2": "+X",
+    "3": "+Y",
+    "4": "-X",
+    "5": "-Y"
+  },
+  "marker_size_by_id": {
+    "0": 0.025,
+    "1": 0.025,
+    "2": 0.051,
+    "3": 0.051,
+    "4": 0.051,
+    "5": 0.051
+  },
+  "marker_center_m": {
+    "0": [
+      0.0,
+      -0.0285,
+      0.0645
+    ],
+    "1": [
+      0.0,
+      0.0285,
+      0.0645
+    ],
+    "2": [
+      0.0295,
+      0.0,
+      0.0
+    ],
+    "3": [
+      0.0,
+      0.0295,
+      0.0
+    ],
+    "4": [
+      -0.0295,
+      0.0,
+      0.0
+    ],
+    "5": [
+      0.0,
+      -0.0295,
+      0.0
+    ]
+  },
+  "corner_reorder": {
+    "0": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "1": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "2": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "3": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "4": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "5": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "face_roll_deg": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 90.0,
+    "3": 180.0,
+    "4": 270.0,
+    "5": 0.0
+  },
+  "marker_inset_m": 0.0,
+  "marker_pose_4x4": {
+    "0": [
+      [
+        0.9999883697548418,
+        -0.0036729840617247406,
+        -0.0031256268389232927,
+        -0.000295981
+      ],
+      [
+        0.003658945106209275,
+        0.9999832461022545,
+        -0.004485491668451992,
+        -0.028192619
+      ],
+      [
+        0.0031420496118980657,
+        0.004474003004058118,
+        0.999985055299006,
+        0.064703198
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "1": [
+      [
+        0.9999809422848619,
+        -0.0056835748408889525,
+        0.002410818140669583,
+        -0.000559318
+      ],
+      [
+        0.0057141969525520125,
+        0.9999005777998208,
+        -0.012891177943528998,
+        0.02882223
+      ],
+      [
+        -0.0023373104771965423,
+        0.012904708156804529,
+        0.9999139990454783,
+        0.064919811
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "2": [
+      [
+        0.00291484280338708,
+        0.007506477502569053,
+        0.9999675777178654,
+        0.029271767
+      ],
+      [
+        0.9999913828406357,
+        -0.0029778094574031966,
+        -0.002892558609374596,
+        0.000593181
+      ],
+      [
+        0.0029559999838986717,
+        0.9999673921915349,
+        -0.007515092664522854,
+        -0.000140382
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "3": [
+      [
+        -0.9999790145073368,
+        0.0044631057126749436,
+        -0.004695873969030081,
+        -0.000589034
+      ],
+      [
+        -0.004712262694745782,
+        -0.0036686505237477755,
+        0.9999821676328186,
+        0.030132121
+      ],
+      [
+        0.004445798604439169,
+        0.9999833107060999,
+        0.003689604861861638,
+        3.9346e-05
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "4": [
+      [
+        -0.002610734879756327,
+        0.004947382427799851,
+        -0.9999843536128454,
+        -0.030327753
+      ],
+      [
+        -0.9999432211596648,
+        -0.010344258026198816,
+        0.0025594496910107956,
+        0.000202512
+      ],
+      [
+        -0.010331433599506779,
+        0.9999342577054755,
+        0.0049741076363970516,
+        0.000104552
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "5": [
+      [
+        0.9999999999989999,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        -0.9999999999989999,
+        -0.0295
+      ],
+      [
+        0.0,
+        0.9999999999989999,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "marker_scale_applied": 1.0
+}

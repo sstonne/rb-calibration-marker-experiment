@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-09-17T23:54:35",
+  "pose_convention": "pose=[x,y,z,rz,ry,rx] mm/deg (i611); joints deg",
+  "pose": [
+    -301.271,
+    508.53099999999995,
+    305.67699999999996,
+    -157.61278262291668,
+    9.102523195463876,
+    149.80904015745534
+  ],
+  "joints": [
+    39.956296410891085,
+    -28.835086633663362,
+    -103.95737933168317,
+    -40.64874690594059,
+    -25.667543316831683,
+    -41.1430228960396
+  ],
+  "gripper": [
+    "0",
+    "0",
+    "0",
+    "1"
+  ],
+  "capture_index": 11,
+  "replayed_from": "/home/sstone/rb-calibration-marker-experiment/zeus_gello_calibration/data/session1_handheld_fixed_cam_0909/capture/011"
+}

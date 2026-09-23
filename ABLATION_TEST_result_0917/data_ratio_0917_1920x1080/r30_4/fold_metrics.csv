@@ -1,0 +1,37 @@
+row,fold,split,metric,pair_type,converged,training_placement_ids,heldout_placement_ids,rmse_px,sum_squared_error_px2,n_sets,n_events,n_observations,n_pairs,n_directions,n_corners,n_residual_components
+A5,ALL,all,cube_reprojection,overall,True,"[1, 5, 11, 14]",[],2.31184752842647,470.32823153285875,4,4,8,0,0,88,176
+A5,ALL,all,cross_view,overall,True,"[1, 5, 11, 14]",[],8.70876198038339,6674.1431003254675,4,4,8,4,8,88,176
+A5,ALL,all,cross_view,fixed_fixed,True,"[1, 5, 11, 14]",[],Pending,0.0,0,0,0,0,0,0,0
+A5,ALL,all,cross_view,fixed_gripper,True,"[1, 5, 11, 14]",[],8.70876198038339,6674.1431003254675,4,4,8,4,8,88,176
+A5,1,train,cube_reprojection,overall,True,"[5, 11, 14]",[1],2.1710297226789756,320.50916385937734,3,3,6,0,0,68,136
+A5,1,train,cross_view,overall,True,"[5, 11, 14]",[1],8.076747005588564,4435.9012690753,3,3,6,3,6,68,136
+A5,1,train,cross_view,fixed_fixed,True,"[5, 11, 14]",[1],Pending,0.0,0,0,0,0,0,0,0
+A5,1,train,cross_view,fixed_gripper,True,"[5, 11, 14]",[1],8.076747005588564,4435.9012690753,3,3,6,3,6,68,136
+A5,1,heldout_test,cube_reprojection,overall,True,"[5, 11, 14]",[1],2.7384887445195134,149.9864120772012,1,1,2,0,0,20,40
+A5,1,heldout_test,cross_view,overall,True,"[5, 11, 14]",[1],11.017955268537238,2427.906765989749,1,1,2,1,2,20,40
+A5,1,heldout_test,cross_view,fixed_fixed,True,"[5, 11, 14]",[1],Pending,0.0,0,0,0,0,0,0,0
+A5,1,heldout_test,cross_view,fixed_gripper,True,"[5, 11, 14]",[1],11.017955268537238,2427.906765989749,1,1,2,1,2,20,40
+A5,5,train,cube_reprojection,overall,True,"[1, 11, 14]",[5],1.7967222999604,219.51834957589932,3,3,6,0,0,68,136
+A5,5,train,cross_view,overall,True,"[1, 11, 14]",[5],7.931683635183673,4277.989159627554,3,3,6,3,6,68,136
+A5,5,train,cross_view,fixed_fixed,True,"[1, 11, 14]",[5],Pending,0.0,0,0,0,0,0,0,0
+A5,5,train,cross_view,fixed_gripper,True,"[1, 11, 14]",[5],7.931683635183673,4277.989159627554,3,3,6,3,6,68,136
+A5,5,heldout_test,cube_reprojection,overall,True,"[1, 11, 14]",[5],5.074668747208853,515.0452578779655,1,1,2,0,0,20,40
+A5,5,heldout_test,cross_view,overall,True,"[1, 11, 14]",[5],12.452645912110054,3101.3678042478246,1,1,2,1,2,20,40
+A5,5,heldout_test,cross_view,fixed_fixed,True,"[1, 11, 14]",[5],Pending,0.0,0,0,0,0,0,0,0
+A5,5,heldout_test,cross_view,fixed_gripper,True,"[1, 11, 14]",[5],12.452645912110054,3101.3678042478246,1,1,2,1,2,20,40
+A5,11,train,cube_reprojection,overall,True,"[1, 5, 14]",[11],2.5196524859968648,406.3135136121715,3,3,6,0,0,64,128
+A5,11,train,cross_view,overall,True,"[1, 5, 14]",[11],9.706605680120354,6029.9644050780635,3,3,6,3,6,64,128
+A5,11,train,cross_view,fixed_fixed,True,"[1, 5, 14]",[11],Pending,0.0,0,0,0,0,0,0,0
+A5,11,train,cross_view,fixed_gripper,True,"[1, 5, 14]",[11],9.706605680120354,6029.9644050780635,3,3,6,3,6,64,128
+A5,11,heldout_test,cube_reprojection,overall,True,"[1, 5, 14]",[11],1.748807134097535,73.39983341449042,1,1,2,0,0,24,48
+A5,11,heldout_test,cross_view,overall,True,"[1, 5, 14]",[11],6.132246315133938,902.5066768673703,1,1,2,1,2,24,48
+A5,11,heldout_test,cross_view,fixed_fixed,True,"[1, 5, 14]",[11],Pending,0.0,0,0,0,0,0,0,0
+A5,11,heldout_test,cross_view,fixed_gripper,True,"[1, 5, 14]",[11],6.132246315133938,902.5066768673703,1,1,2,1,2,24,48
+A5,14,train,cube_reprojection,overall,True,"[1, 5, 11]",[14],2.417492366383489,374.03323785743623,3,3,6,0,0,64,128
+A5,14,train,cross_view,overall,True,"[1, 5, 11]",[14],9.484395154485076,5757.04009257088,3,3,6,3,6,64,128
+A5,14,train,cross_view,fixed_fixed,True,"[1, 5, 11]",[14],Pending,0.0,0,0,0,0,0,0,0
+A5,14,train,cross_view,fixed_gripper,True,"[1, 5, 11]",[14],9.484395154485076,5757.04009257088,3,3,6,3,6,64,128
+A5,14,heldout_test,cube_reprojection,overall,True,"[1, 5, 11]",[14],3.766939348028094,340.55596924133573,1,1,2,0,0,24,48
+A5,14,heldout_test,cross_view,overall,True,"[1, 5, 11]",[14],4.371392489162179,458.61773506328433,1,1,2,1,2,24,48
+A5,14,heldout_test,cross_view,fixed_fixed,True,"[1, 5, 11]",[14],Pending,0.0,0,0,0,0,0,0,0
+A5,14,heldout_test,cross_view,fixed_gripper,True,"[1, 5, 11]",[14],4.371392489162179,458.61773506328433,1,1,2,1,2,24,48

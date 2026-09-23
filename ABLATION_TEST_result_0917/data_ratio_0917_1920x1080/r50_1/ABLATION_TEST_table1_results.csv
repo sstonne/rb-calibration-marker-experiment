@@ -1,0 +1,10 @@
+row,status,targets,optimization,fk,pending_reason,all_cube_rmse_px,train_cube_rmse_px,heldout_test_cube_rmse_px,all_cross_view_cube_rmse_px,train_cross_view_cube_rmse_px,heldout_test_cross_view_cube_rmse_px,mean_tre_mm,mean_rotation_error_deg,p95_tre_mm,failure_rate,external_gt_status,n_folds,n_converged,full_fit_converged
+A0,pending,board,Sequential,VISION,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending
+A1,pending,board + cube,Sequential,VISION,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending
+A2,pending,board + cube,Unified,VISION,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending
+A3,pending,board + cube,Unified,raw-FK hard fixed,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending
+A4,pending,board + cube,Unified,FtC FK soft factor,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending
+A5,complete,board + cube,Unified,FtC FK fixed,,1.4766732853644524,1.4835290886342347,1.6323586922028313,6.291078875568765,6.299831144290776,6.35783248677042,Pending,Pending,Pending,Pending,pending,8,8,True
+B1,pending,board + cube,Sequential,FtC FK fixed,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending
+B2,pending,cube,Unified,FtC FK fixed,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending
+B3,pending,board,Unified,VISION,이 결과 JSON에 실행 결과가 없음,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,Pending,pending,Pending,Pending,Pending

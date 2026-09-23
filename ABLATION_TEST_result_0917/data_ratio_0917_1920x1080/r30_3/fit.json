@@ -1,0 +1,119 @@
+{
+  "T_gripper_cube": [
+    [
+      0.9997695162395626,
+      -0.021397445400773037,
+      0.001750350945249983,
+      -0.0014106217107574931
+    ],
+    [
+      -0.021407056622507574,
+      -0.9997547638603184,
+      0.005670102764452125,
+      -0.00018959390906770143
+    ],
+    [
+      0.0016285959816219452,
+      -0.005706265759638941,
+      -0.9999823929481003,
+      0.16160013943858167
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "T_gripper_cube_translation_mm": [
+    -1.4106217107574932,
+    -0.18959390906770143,
+    161.60013943858166
+  ],
+  "T_gripper_cube_rotvec_deg": [
+    -179.6637171390119,
+    1.9228411332856123,
+    -0.1517872614110697
+  ],
+  "T_base_cam": {
+    "2_fixed3": [
+      [
+        -0.704261270554508,
+        -0.13379375446202102,
+        0.6972196885228545,
+        -0.5633330233217504
+      ],
+      [
+        -0.7087959145907751,
+        0.18826303095915328,
+        -0.6798274653421262,
+        0.9233031957759925
+      ],
+      [
+        -0.04030402283118678,
+        -0.9729626212969487,
+        -0.22741882794217771,
+        0.2300514821818349
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "local_cam_ids": {
+    "039422061216": 0,
+    "fixed2": 1,
+    "fixed3": 2,
+    "gripper": 3
+  },
+  "cameras_excluded_from_joint_solve": [
+    "039422061216",
+    "fixed2",
+    "gripper"
+  ],
+  "pnp_accepted_per_camera": {
+    "039422061216": 5,
+    "fixed2": 5,
+    "fixed3": 5,
+    "gripper": 0
+  },
+  "selected_observations_per_camera": {
+    "039422061216": 4,
+    "fixed2": 3,
+    "fixed3": 5,
+    "gripper": 0
+  },
+  "n_captures": 5,
+  "solve_diagnostics": {
+    "success": true,
+    "message": "`ftol` termination condition is satisfied.",
+    "nfev": 11,
+    "train_reprojection_rmse_px": 0.7011046139091184,
+    "initial_reprojection_rmse_px": 2.5083156049015867,
+    "n_parameters": 12,
+    "n_residuals": 80,
+    "jacobian_rank_deficient": false
+  },
+  "per_camera_ax_zb_init_diagnostics": {
+    "fixed3": {
+      "n_poses": 5,
+      "method": "SHAH",
+      "residual_median_mm": 1.3278659568870022,
+      "residual_median_deg": 0.24555527277952716,
+      "residual_max_mm": 2.2165338070315372,
+      "residual_max_deg": 0.4557332491855666
+    }
+  },
+  "grasp_init_dispersion_across_cams": {
+    "num_total": 1,
+    "num_inliers": 1,
+    "inlier_ratio": 1.0,
+    "translation_std_mm": 0.0,
+    "rotation_std_deg": 0.0
+  },
+  "n_cams_used_for_grasp_init": 1,
+  "cube_observation_policy": "legacy"
+}
