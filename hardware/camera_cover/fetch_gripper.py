@@ -12,6 +12,11 @@ Robotiq 공식 STEP 은 계정이 있어야 받을 수 있어서, CAD 에서 나
   원점 = 로봇에 붙는 체결면 중심,  +Z = 손가락 쪽
   Y = 손가락이 벌어지는 방향,      X = 몸통 납작한 옆면 (+-37.5)
 
+베이스에서 찾은 구멍 (이 좌표계 기준):
+  M4 x4    (+-27, +-6)   z 29~36.2   어깨 윗면에 열리는 블라인드 홀, 깊이 7mm
+                                      (탭 드릴 Ø3.3 로 모델링돼 있다)
+  M5 x4    (+-16, +-27)  z 0.2~17.8  커플링 체결. 위에서 Ø10 카운터보어
+
 사용:
   python fetch_gripper.py            # 받아서 조립 -> gripper_2f85.stl, 구멍 목록 출력
   python fetch_gripper.py --holes    # 이미 받은 것으로 구멍만 다시 훑기
@@ -24,6 +29,11 @@ import sys
 import numpy as np
 import trimesh
 from trimesh.intersections import mesh_plane
+
+# 베이스는 MuJoCo Menagerie 쪽이 훨씬 자세하다(46k면 vs 34k면). ros-industrial
+# 메시에는 몸통 어깨의 M4 액세서리 구멍 4개가 아예 모델링돼 있지 않았다.
+MENAGERIE = "google-deepmind/mujoco_menagerie"
+MENAGERIE_BASE = "robotiq_2f85_v4/assets/base.stl"   # 단위 m, 축은 X<->Y 바뀜
 
 REPO = "ros-industrial-attic/robotiq"
 BASE = "robotiq_2f_85_gripper_visualization"
